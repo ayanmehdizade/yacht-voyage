@@ -1,0 +1,618 @@
+<%- include('../partials/header') %>
+
+<!-- HERO & ARAMA ÇUBUĞU -->
+<section class="relative bg-[#0B1F3A] text-white overflow-x-clip">
+    <img src="https://images.unsplash.com/photo-1567899378494-47b22a2ae96a?auto=format&fit=crop&w=1200&q=85"
+         onerror="fallbackYachtImg(this)"
+         alt="YachtVoyage Hero"
+         class="absolute inset-0 w-full h-full object-cover opacity-35">
+    <div class="absolute inset-0 bg-gradient-to-r from-[#0B1F3A] via-[#0B1F3A]/85 to-transparent"></div>
+
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 py-20 md:py-24 relative z-10">
+        <div class="max-w-2xl space-y-4">
+            <h1 class="text-4xl md:text-6xl font-extrabold leading-[1.1] tracking-tight">
+                Eşsiz Yat Deneyimini Keşfedin
+            </h1>
+            <p class="text-slate-200 text-base md:text-lg leading-relaxed">
+                Göcek, Marmaris ve Fethiye koylarında özel yat kiralama, günlük tur paketleri ve şeffaf içerik bilgisi.
+            </p>
+        </div>
+
+        <form action="/yachts" method="GET" class="mt-9 bg-white text-slate-900 p-3 md:p-3.5 rounded-2xl shadow-2xl grid grid-cols-1 md:grid-cols-12 gap-2 items-center max-w-6xl">
+            <div class="yv-dropdown relative md:col-span-3 px-3.5 py-2 rounded-xl hover:bg-slate-50 transition">
+                <input type="hidden" name="location" value="Göcek">
+                <button type="button" class="yv-dd-trigger w-full text-left flex items-center justify-between focus:outline-none">
+                    <div>
+                        <span class="block text-[10px] font-extrabold tracking-wider text-slate-400 uppercase">Kalkış Noktası</span>
+                        <span class="flex items-center space-x-2 mt-0.5 text-sm font-bold text-slate-900">
+                            <i class="fa-solid fa-location-dot text-teal-600 text-xs"></i>
+                            <span class="yv-dd-label">Göcek</span>
+                        </span>
+                    </div>
+                    <i class="yv-dd-chevron fa-solid fa-chevron-down text-xs text-slate-400 transition-transform duration-200"></i>
+                </button>
+
+                <div class="yv-dd-menu hidden max-h-60 overflow-y-auto left-0 right-0 top-[calc(100%+8px)] absolute bg-white rounded-2xl shadow-2xl border border-slate-100 p-1.5 z-50">
+                    <button type="button" data-value="Göcek" data-label="Göcek" class="yv-dd-option w-full px-3.5 py-2.5 rounded-xl flex items-center justify-between text-left bg-slate-100 font-bold text-[#0B1F3A] hover:bg-slate-50 transition">
+                        <div>
+                            <div class="text-xs">Göcek</div>
+                            <div class="text-[10px] font-normal text-slate-400">Koylar &amp; D-Marin kalkış</div>
+                        </div>
+                        <i class="yv-dd-check fa-solid fa-check text-xs text-teal-600"></i>
+                    </button>
+                    <button type="button" data-value="Marmaris" data-label="Marmaris" class="yv-dd-option w-full px-3.5 py-2.5 rounded-xl flex items-center justify-between text-left text-slate-700 hover:bg-slate-50 transition">
+                        <div>
+                            <div class="text-xs font-semibold">Marmaris</div>
+                            <div class="text-[10px] font-normal text-slate-400">Netsel Marina &amp; Hisarönü</div>
+                        </div>
+                        <i class="yv-dd-check hidden fa-solid fa-check text-xs text-teal-600"></i>
+                    </button>
+                    <button type="button" data-value="Fethiye" data-label="Fethiye" class="yv-dd-option w-full px-3.5 py-2.5 rounded-xl flex items-center justify-between text-left text-slate-700 hover:bg-slate-50 transition">
+                        <div>
+                            <div class="text-xs font-semibold">Fethiye</div>
+                            <div class="text-[10px] font-normal text-slate-400">Ece Marina &amp; Ölüdeniz</div>
+                        </div>
+                        <i class="yv-dd-check hidden fa-solid fa-check text-xs text-teal-600"></i>
+                    </button>
+                    <button type="button" data-value="Bodrum" data-label="Bodrum" class="yv-dd-option w-full px-3.5 py-2.5 rounded-xl flex items-center justify-between text-left text-slate-700 hover:bg-slate-50 transition">
+                        <div>
+                            <div class="text-xs font-semibold">Bodrum</div>
+                            <div class="text-[10px] font-normal text-slate-400">Yalıkavak &amp; Türkbükü</div>
+                        </div>
+                        <i class="yv-dd-check hidden fa-solid fa-check text-xs text-teal-600"></i>
+                    </button>
+                    <button type="button" data-value="all" data-label="Tüm Noktalar" class="yv-dd-option w-full px-3.5 py-2.5 rounded-xl flex items-center justify-between text-left text-slate-700 hover:bg-slate-50 transition">
+                        <div>
+                            <div class="text-xs font-semibold">Tüm Noktalar</div>
+                            <div class="text-[10px] font-normal text-slate-400">Tüm Ege &amp; Akdeniz rotaları</div>
+                        </div>
+                        <i class="yv-dd-check hidden fa-solid fa-check text-xs text-teal-600"></i>
+                    </button>
+                </div>
+            </div>
+
+            <div class="md:col-span-3 px-3.5 py-2 rounded-xl hover:bg-slate-50 transition md:border-l md:border-slate-200">
+                <label class="block text-[10px] font-extrabold tracking-wider text-slate-400 uppercase">Tarih</label>
+                <div class="flex items-center space-x-2 mt-0.5">
+                    <i class="fa-regular fa-calendar text-teal-600 text-xs"></i>
+                    <input type="date" name="checkIn" value="2026-06-25" class="text-sm font-bold text-slate-900 focus:outline-none w-full bg-transparent cursor-pointer">
+                </div>
+            </div>
+
+            <div class="yv-dropdown relative md:col-span-2 px-3.5 py-2 rounded-xl hover:bg-slate-50 transition md:border-l md:border-slate-200">
+                <input type="hidden" name="guests" value="">
+                <button type="button" class="yv-dd-trigger w-full text-left flex items-center justify-between focus:outline-none">
+                    <div>
+                        <span class="block text-[10px] font-extrabold tracking-wider text-slate-400 uppercase">Kişi Sayısı</span>
+                        <span class="flex items-center space-x-2 mt-0.5 text-sm font-bold text-slate-900">
+                            <i class="fa-solid fa-users text-teal-600 text-xs"></i>
+                            <span class="yv-dd-label">Tümü</span>
+                        </span>
+                    </div>
+                    <i class="yv-dd-chevron fa-solid fa-chevron-down text-xs text-slate-400 transition-transform duration-200"></i>
+                </button>
+
+                <div class="yv-dd-menu hidden max-h-60 overflow-y-auto left-0 md:-left-4 right-0 md:w-52 top-[calc(100%+8px)] absolute bg-white rounded-2xl shadow-2xl border border-slate-100 p-1.5 z-50">
+                    <button type="button" data-value="" data-label="Tümü" class="yv-dd-option w-full px-3.5 py-2.5 rounded-xl flex items-center justify-between text-left bg-slate-100 font-bold text-[#0B1F3A] hover:bg-slate-50 transition text-xs">
+                        <span>Tümü</span>
+                        <i class="yv-dd-check fa-solid fa-check text-xs text-teal-600"></i>
+                    </button>
+                    <button type="button" data-value="1-6" data-label="1 - 6 Kişi" class="yv-dd-option w-full px-3.5 py-2.5 rounded-xl flex items-center justify-between text-left text-slate-700 hover:bg-slate-50 transition text-xs">
+                        <span>1 - 6 Kişi</span>
+                        <i class="yv-dd-check hidden fa-solid fa-check text-xs text-teal-600"></i>
+                    </button>
+                    <button type="button" data-value="7-12" data-label="7 - 12 Kişi" class="yv-dd-option w-full px-3.5 py-2.5 rounded-xl flex items-center justify-between text-left text-slate-700 hover:bg-slate-50 transition text-xs">
+                        <span>7 - 12 Kişi</span>
+                        <i class="yv-dd-check hidden fa-solid fa-check text-xs text-teal-600"></i>
+                    </button>
+                    <button type="button" data-value="13+" data-label="13+ Kişi" class="yv-dd-option w-full px-3.5 py-2.5 rounded-xl flex items-center justify-between text-left text-slate-700 hover:bg-slate-50 transition text-xs">
+                        <span>13+ Kişi</span>
+                        <i class="yv-dd-check hidden fa-solid fa-check text-xs text-teal-600"></i>
+                    </button>
+                </div>
+            </div>
+
+            <div class="yv-dropdown relative md:col-span-2 px-3.5 py-2 rounded-xl hover:bg-slate-50 transition md:border-l md:border-slate-200">
+                <input type="hidden" name="category" value="all">
+                <button type="button" class="yv-dd-trigger w-full text-left flex items-center justify-between focus:outline-none">
+                    <div>
+                        <span class="block text-[10px] font-extrabold tracking-wider text-slate-400 uppercase">Yat Tipi</span>
+                        <span class="flex items-center space-x-2 mt-0.5 text-sm font-bold text-slate-900">
+                            <i class="fa-solid fa-anchor text-teal-600 text-xs"></i>
+                            <span class="yv-dd-label">Tümü</span>
+                        </span>
+                    </div>
+                    <i class="yv-dd-chevron fa-solid fa-chevron-down text-xs text-slate-400 transition-transform duration-200"></i>
+                </button>
+
+                <div class="yv-dd-menu hidden max-h-60 overflow-y-auto left-0 md:-left-6 right-0 md:w-56 top-[calc(100%+8px)] absolute bg-white rounded-2xl shadow-2xl border border-slate-100 p-1.5 z-50">
+                    <button type="button" data-value="all" data-label="Tümü" class="yv-dd-option w-full px-3.5 py-2.5 rounded-xl flex items-center justify-between text-left bg-slate-100 font-bold text-[#0B1F3A] hover:bg-slate-50 transition text-xs">
+                        <span>Tümü</span>
+                        <i class="yv-dd-check fa-solid fa-check text-xs text-teal-600"></i>
+                    </button>
+                    <button type="button" data-value="Motor Yachts" data-label="Motor Yat" class="yv-dd-option w-full px-3.5 py-2.5 rounded-xl flex items-center justify-between text-left text-slate-700 hover:bg-slate-50 transition text-xs">
+                        <span>Motor Yat</span>
+                        <i class="yv-dd-check hidden fa-solid fa-check text-xs text-teal-600"></i>
+                    </button>
+                    <button type="button" data-value="Gulets" data-label="Gulet" class="yv-dd-option w-full px-3.5 py-2.5 rounded-xl flex items-center justify-between text-left text-slate-700 hover:bg-slate-50 transition text-xs">
+                        <span>Gulet</span>
+                        <i class="yv-dd-check hidden fa-solid fa-check text-xs text-teal-600"></i>
+                    </button>
+                    <button type="button" data-value="Sailing Yachts" data-label="Yelkenli Yat" class="yv-dd-option w-full px-3.5 py-2.5 rounded-xl flex items-center justify-between text-left text-slate-700 hover:bg-slate-50 transition text-xs">
+                        <span>Yelkenli Yat</span>
+                        <i class="yv-dd-check hidden fa-solid fa-check text-xs text-teal-600"></i>
+                    </button>
+                    <button type="button" data-value="Catamarans" data-label="Katamaran" class="yv-dd-option w-full px-3.5 py-2.5 rounded-xl flex items-center justify-between text-left text-slate-700 hover:bg-slate-50 transition text-xs">
+                        <span>Katamaran</span>
+                        <i class="yv-dd-check hidden fa-solid fa-check text-xs text-teal-600"></i>
+                    </button>
+                    <button type="button" data-value="Superyachts" data-label="Süperyat" class="yv-dd-option w-full px-3.5 py-2.5 rounded-xl flex items-center justify-between text-left text-slate-700 hover:bg-slate-50 transition text-xs">
+                        <span>Süperyat</span>
+                        <i class="yv-dd-check hidden fa-solid fa-check text-xs text-teal-600"></i>
+                    </button>
+                </div>
+            </div>
+
+            <div class="md:col-span-2">
+                <button type="submit" class="w-full bg-teal-600 hover:bg-teal-700 text-white py-3.5 px-5 rounded-xl font-bold text-sm transition flex items-center justify-center space-x-2 shadow-lg">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                    <span>Yatları Keşfet</span>
+                </button>
+            </div>
+        </form>
+    </div>
+</section>
+
+<!-- GÜVEN ROZETLERİ -->
+<section class="bg-white border-b border-slate-200">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 py-7 grid grid-cols-2 md:grid-cols-4 gap-6 text-sm">
+        <div class="flex items-center space-x-3">
+            <i class="fa-solid fa-user-check text-teal-600 text-xl"></i>
+            <span class="font-bold text-slate-800">Lisanslı kaptanlar</span>
+        </div>
+        <div class="flex items-center space-x-3">
+            <i class="fa-solid fa-shield-halved text-teal-600 text-xl"></i>
+            <span class="font-bold text-slate-800">Güvenli tekneler</span>
+        </div>
+        <div class="flex items-center space-x-3">
+            <i class="fa-brands fa-whatsapp text-teal-600 text-xl"></i>
+            <span class="font-bold text-slate-800">WhatsApp desteği</span>
+        </div>
+        <div class="flex items-center space-x-3">
+            <i class="fa-regular fa-calendar-check text-teal-600 text-xl"></i>
+            <span class="font-bold text-slate-800">Ücretsiz iptal seçeneği</span>
+        </div>
+    </div>
+</section>
+
+
+
+<!-- TUR PAKETLERİ VE DAHİL OLANLAR -->
+<section id="tur-paketleri" class="max-w-7xl mx-auto px-4 sm:px-6 pt-16 space-y-8">
+    <div class="flex items-center gap-4">
+        <div class="flex-1 h-px bg-slate-200"></div>
+        <h2 class="text-2xl md:text-3xl font-extrabold text-[#0B1F3A]">Tur Paketleri &amp; Dahil Olanlar</h2>
+        <div class="flex-1 h-px bg-slate-200"></div>
+    </div>
+
+    <% const tourPackages = [
+        {
+            id: 1,
+            badge: 'GÜNLÜK PAKET',
+            title: 'Gün Batımı Turu',
+            route: 'Marmaris & Kızkumu Civarı',
+            duration: '3 Saat (18:00 - 21:00)',
+            capacity: 'En fazla 12 kişi',
+            price: 50,
+            img: 'https://images.unsplash.com/photo-1500375592092-40eb2168fd21?auto=format&fit=crop&w=800&q=80',
+            included: [
+                'Lisanslı kaptan ve yakıt',
+                'Hoş geldiniz içeceği & meyve tabağı',
+                'Yüzme molası ve ses sistemi',
+                'Yolcu sigortası'
+            ],
+            excluded: ['Özel akşam yemeği & alkollü içecekler']
+        },
+        {
+            id: 2,
+            badge: 'KEŞİF PAKETİ',
+            title: 'Cennet Adası & Fosforlu Mağara',
+            route: 'Marmaris Koyları Rotası',
+            duration: '6 Saat (10:30 - 16:30)',
+            capacity: 'En fazla 16 kişi',
+            price: 80,
+            img: 'https://images.unsplash.com/photo-1544551763-46a013bb70d5?auto=format&fit=crop&w=800&q=80',
+            included: [
+                'Kaptan & mürettebat hizmeti',
+                '3 farklı koyda yüzme molası',
+                'Şnorkel ve paddleboard ekipmanı',
+                'Öğle atıştırmalık & su/çay servisi'
+            ],
+            excluded: ['VIP transfer ve özel şef menüsü']
+        },
+        {
+            id: 3,
+            badge: 'ÖZEL KİRALAMA',
+            title: 'Özel Tekne Turu (Tam Gün)',
+            route: 'Göcek / Fethiye Özel Koylar',
+            duration: 'Tam Gün (8 Saat)',
+            capacity: 'En fazla 8 kişi',
+            price: 250,
+            img: 'https://images.unsplash.com/photo-1567899378494-47b22a2ae96a?auto=format&fit=crop&w=800&q=80',
+            included: [
+                'Size özel tekne, kaptan ve mürettebat',
+                'Rota boyunca yakıt ve koy bağlama',
+                'Klima, güneşlenme terası ve Wi-Fi',
+                'Soft içecekler, buz ve meyve ikramı'
+            ],
+            excluded: ['Özel şef menüsü & havalimanı transferi']
+        }
+    ]; %>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-7">
+        <% tourPackages.forEach(pkg => { %>
+            <div class="bg-white rounded-2xl overflow-hidden border border-slate-200 shadow-sm hover:shadow-xl transition flex flex-col justify-between">
+                <div>
+                    <div class="relative">
+                        <img src="<%= pkg.img %>" onerror="fallbackYachtImg(this)" alt="<%= pkg.title %>" class="w-full h-52 object-cover">
+                        <span class="absolute top-3 left-3 bg-[#0B1F3A]/90 text-white text-[10px] font-bold px-3 py-1 rounded-full tracking-wider">
+                            <%= pkg.badge %>
+                        </span>
+                    </div>
+                    <div class="p-6 space-y-4">
+                        <div>
+                            <h3 class="text-lg font-extrabold text-slate-900"><%= pkg.title %></h3>
+                            <p class="text-xs text-slate-500 mt-0.5"><i class="fa-solid fa-compass text-teal-600 mr-1"></i><%= pkg.route %></p>
+                        </div>
+
+                        <div class="flex flex-wrap gap-3 text-xs text-slate-600 bg-slate-50 p-3 rounded-xl">
+                            <span><i class="fa-regular fa-clock text-teal-600 mr-1"></i><%= pkg.duration %></span>
+                            <span><i class="fa-solid fa-users text-teal-600 mr-1"></i><%= pkg.capacity %></span>
+                        </div>
+
+                        <div class="space-y-1.5">
+                            <div class="text-[11px] font-bold uppercase text-emerald-700 tracking-wider">Pakete Dahil Olanlar</div>
+                            <% pkg.included.forEach(item => { %>
+                                <div class="text-xs text-slate-700 flex items-start space-x-2">
+                                    <i class="fa-solid fa-check text-emerald-600 mt-0.5"></i>
+                                    <span><%= item %></span>
+                                </div>
+                            <% }) %>
+                        </div>
+
+                        <div class="space-y-1 pt-2 border-t border-slate-100">
+                            <div class="text-[11px] font-bold uppercase text-slate-400 tracking-wider">Ekstra / Dahil Değil</div>
+                            <% pkg.excluded.forEach(ex => { %>
+                                <div class="text-xs text-slate-500 flex items-start space-x-2">
+                                    <i class="fa-solid fa-circle-info text-slate-400 mt-0.5"></i>
+                                    <span><%= ex %></span>
+                                </div>
+                            <% }) %>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="px-6 py-4 bg-slate-50/70 border-t border-slate-100 flex items-center justify-between">
+                    <div>
+                        <span class="text-[11px] text-slate-400 block">Başlangıç</span>
+                        <span class="font-extrabold text-teal-700 text-lg"><%= pkg.price %> €</span>
+                    </div>
+                    <a href="/yachts/<%= pkg.id %>" class="bg-[#0B1F3A] hover:bg-sky-900 text-white text-xs font-bold px-4 py-2.5 rounded-xl transition">
+                        İncele &amp; Kirala →
+                    </a>
+                </div>
+            </div>
+        <% }) %>
+    </div>
+</section>
+
+<!-- İNTERAKTİF ROTA & KOY REHBERİ -->
+<section id="rotalar" data-home-section class="hidden max-w-7xl mx-auto px-4 sm:px-6 pt-10 space-y-6">
+    <div class="flex flex-col md:flex-row md:items-end justify-between gap-4">
+        <div>
+            <span class="text-xs font-extrabold uppercase tracking-wider text-teal-600">Mavi Yolculuk Rotaları</span>
+            <h2 class="text-2xl md:text-3xl font-extrabold text-[#0B1F3A] mt-1">Popüler Koy &amp; Liman Rehberi</h2>
+        </div>
+        <div class="flex flex-wrap gap-2" id="routeTabs">
+            <button type="button" data-route="gocek" class="route-tab px-4 py-2 rounded-xl text-xs font-bold bg-[#0B1F3A] text-white transition">Göcek 12 Adalar</button>
+            <button type="button" data-route="marmaris" class="route-tab px-4 py-2 rounded-xl text-xs font-bold bg-white border border-slate-200 text-slate-700 hover:bg-slate-100 transition">Marmaris &amp; Hisarönü</button>
+            <button type="button" data-route="fethiye" class="route-tab px-4 py-2 rounded-xl text-xs font-bold bg-white border border-slate-200 text-slate-700 hover:bg-slate-100 transition">Fethiye &amp; Ölüdeniz</button>
+            <button type="button" data-route="bodrum" class="route-tab px-4 py-2 rounded-xl text-xs font-bold bg-white border border-slate-200 text-slate-700 hover:bg-slate-100 transition">Bodrum Koyları</button>
+        </div>
+    </div>
+
+    <div id="routeCard" class="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden grid grid-cols-1 lg:grid-cols-12 items-stretch">
+        <div class="lg:col-span-5 h-60 lg:h-[310px] relative overflow-hidden">
+            <img id="routeImg" src="https://images.unsplash.com/photo-1500375592092-40eb2168fd21?auto=format&fit=crop&w=900&q=80" onerror="fallbackYachtImg(this)" alt="Rota" class="w-full h-full object-cover">
+            <span id="routeBadge" class="absolute top-4 left-4 bg-[#0B1F3A]/90 text-white text-[11px] font-bold px-3.5 py-1.5 rounded-full">D-Marin Göcek Kalkışlı</span>
+        </div>
+        <div class="lg:col-span-7 p-6 lg:px-8 lg:py-6 flex flex-col justify-between">
+            <div class="space-y-3">
+                <div class="flex flex-wrap items-center justify-between gap-2">
+                    <h3 id="routeTitle" class="text-xl font-extrabold text-slate-900">Göcek 12 Adalar &amp; Bedri Rahmi Koyu</h3>
+                    <span id="routeDuration" class="text-xs font-bold text-teal-700 bg-teal-50 px-3 py-1 rounded-lg"><i class="fa-regular fa-compass mr-1"></i>1 - 3 Gün Önerilir</span>
+                </div>
+                <p id="routeDesc" class="text-xs sm:text-sm text-slate-600 leading-relaxed">
+                    Rüzgâra kapalı sakin koyları, çam ormanlarıyla çevrili turkuaz suları ve kısa seyir mesafeleriyle hem günübirlik hem haftalık mavi yolculukların en gözde rotası.
+                </p>
+                <div class="pt-1">
+                    <span class="block text-[10px] font-bold uppercase text-slate-400 tracking-wider mb-2">Öne Çıkan Duraklar</span>
+                    <div id="routeStops" class="flex flex-wrap gap-2 text-xs">
+                        <span class="bg-slate-100 text-slate-700 font-semibold px-3 py-1.5 rounded-lg">1. Yassıca Adaları</span>
+                        <span class="bg-slate-100 text-slate-700 font-semibold px-3 py-1.5 rounded-lg">2. Bedri Rahmi Koyu</span>
+                        <span class="bg-slate-100 text-slate-700 font-semibold px-3 py-1.5 rounded-lg">3. Kleopatra Hamamı</span>
+                        <span class="bg-slate-100 text-slate-700 font-semibold px-3 py-1.5 rounded-lg">4. Tersane Adası</span>
+                    </div>
+                </div>
+            </div>
+            <div class="pt-4 mt-4 border-t border-slate-100 flex flex-wrap items-center justify-between gap-3">
+                <div id="routeRec" class="text-xs text-slate-500">Önerilen Tekne Tipi: <strong class="text-slate-800">Katamaran &amp; Motor Yat</strong></div>
+                <a id="routeLink" href="/yachts?location=G%C3%B6cek" class="bg-teal-600 hover:bg-teal-700 text-white text-xs font-bold px-5 py-2.5 rounded-xl transition shadow">
+                    Bu Rotadaki Yatları Gör →
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- FİLO YAT BİLGİLERİ -->
+<section id="hizmetler" data-home-section class="hidden max-w-7xl mx-auto px-4 sm:px-6 pt-10 space-y-8">
+    <div>
+        <h2 class="text-2xl md:text-3xl font-extrabold text-[#0B1F3A]">Filomuzdaki Yatlar &amp; Teknik Bilgiler</h2>
+        <p class="text-slate-500 text-sm mt-1">Kapasite, kabin sayısı, hız ve donanım detaylarıyla tekneleri karşılaştırın</p>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <% yachts.slice(0, 3).forEach(y => { %>
+            <div class="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm hover:shadow-lg transition flex flex-col justify-between">
+                <div>
+                    <img src="<%= y.images[0] %>" onerror="fallbackYachtImg(this)" alt="<%= y.name %>" class="w-full h-48 object-cover">
+                    <div class="p-5 space-y-3">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <h3 class="font-extrabold text-lg text-slate-900"><%= y.name %></h3>
+                                <p class="text-xs text-slate-500"><%= y.categoryTr %> • <%= y.location %> • <%= y.length %></p>
+                            </div>
+                            <span class="font-extrabold text-[#0B1F3A] text-base">€<%= y.price.toLocaleString() %><span class="text-[11px] text-slate-400 font-normal">/gün</span></span>
+                        </div>
+
+                        <div class="grid grid-cols-3 gap-2 text-center bg-slate-50 p-2.5 rounded-xl text-xs">
+                            <div><strong class="block text-slate-800"><%= y.guests %> Kişi</strong><span class="text-[10px] text-slate-400">Kapasite</span></div>
+                            <div><strong class="block text-slate-800"><%= y.cabins %> Kabin</strong><span class="text-[10px] text-slate-400">Konaklama</span></div>
+                            <div><strong class="block text-slate-800"><%= y.crew %> Kişi</strong><span class="text-[10px] text-slate-400">Mürettebat</span></div>
+                        </div>
+
+                        <p class="text-xs text-slate-600 line-clamp-2"><%= y.description %></p>
+                    </div>
+                </div>
+                <div class="px-5 py-3.5 border-t border-slate-100 flex justify-between items-center text-xs">
+                    <span class="text-slate-500"><i class="fa-solid fa-star text-amber-400 mr-1"></i><strong><%= y.rating.toFixed(1) %></strong> (<%= y.reviews %>)</span>
+                    <a href="/yachts/<%= y.id %>" class="font-bold text-[#0B1F3A] hover:text-teal-700">Yat Detayı →</a>
+                </div>
+            </div>
+        <% }) %>
+    </div>
+</section>
+
+<!-- YAT KATEGORİLERİ -->
+<section id="kategoriler" data-home-section class="hidden max-w-7xl mx-auto px-4 sm:px-6 pt-10">
+    <div class="mb-8">
+        <h2 class="text-2xl md:text-3xl font-extrabold text-[#0B1F3A]">Yat Kategorilerimiz</h2>
+        <p class="text-slate-500 text-sm mt-1">Tekne tipine göre filomuzu inceleyin</p>
+    </div>
+
+    <div class="grid grid-cols-2 md:grid-cols-5 gap-5">
+        <% const categories = [
+            { key: 'Motor Yachts', title: 'Motor Yatlar', img: 'https://images.unsplash.com/photo-1567899378494-47b22a2ae96a?auto=format&fit=crop&w=500&q=80' },
+            { key: 'Gulets', title: 'Guletler', img: 'https://images.unsplash.com/photo-1500375592092-40eb2168fd21?auto=format&fit=crop&w=500&q=80' },
+            { key: 'Sailing Yachts', title: 'Yelkenli Yatlar', img: 'https://images.unsplash.com/photo-1534447677768-be436bb09401?auto=format&fit=crop&w=500&q=80' },
+            { key: 'Catamarans', title: 'Katamaranlar', img: 'https://images.unsplash.com/photo-1544551763-46a013bb70d5?auto=format&fit=crop&w=500&q=80' },
+            { key: 'Superyachts', title: 'Süperyatlar', img: 'https://images.unsplash.com/photo-1567899378494-47b22a2ae96a?auto=format&fit=crop&w=500&q=80' }
+        ]; %>
+
+        <% categories.forEach(cat => { %>
+            <a href="/yachts?category=<%= encodeURIComponent(cat.key) %>" class="group bg-white rounded-2xl overflow-hidden border border-slate-200 shadow-sm hover:shadow-xl transition">
+                <div class="h-36 overflow-hidden">
+                    <img src="<%= cat.img %>" onerror="fallbackYachtImg(this)" alt="<%= cat.title %>" class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
+                </div>
+                <div class="p-4">
+                    <h3 class="font-bold text-slate-900 text-sm"><%= cat.title %></h3>
+                    <span class="text-xs font-semibold text-teal-700 mt-1 inline-block">Keşfet →</span>
+                </div>
+            </a>
+        <% }) %>
+    </div>
+</section>
+
+<!-- DOĞRULANMIŞ MİSAFİR DENEYİMLERİ & SSS -->
+<section class="max-w-7xl mx-auto px-4 sm:px-6 pt-16 pb-6 grid grid-cols-1 lg:grid-cols-12 gap-8">
+    <div class="lg:col-span-6 space-y-4">
+        <span class="text-xs font-extrabold uppercase tracking-wider text-teal-600">Doğrulanmış Yorumlar</span>
+        <h2 class="text-2xl font-extrabold text-[#0B1F3A]">Misafirlerimizin Deneyimleri</h2>
+
+        <div class="space-y-4">
+            <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-2.5">
+                <div class="flex justify-between items-center">
+                    <div class="text-amber-400 text-xs"><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i></div>
+                    <span class="text-[11px] text-emerald-700 bg-emerald-50 font-bold px-2.5 py-0.5 rounded-full">✓ Doğrulanmış Kiralama</span>
+                </div>
+                <p class="text-xs text-slate-600 leading-relaxed">"Göcek koylarında 3 günlük turumuz kusursuzdu. Kaptanımız rotayı rüzgâra göre planladı, teknenin temizliği ve ikramlar beklentimizin çok üzerindeydi."</p>
+                <div class="text-xs font-bold text-slate-900">Emre Karahan <span class="font-normal text-slate-400">• Göcek Charter</span></div>
+            </div>
+
+            <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-2.5">
+                <div class="flex justify-between items-center">
+                    <div class="text-amber-400 text-xs"><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i></div>
+                    <span class="text-[11px] text-emerald-700 bg-emerald-50 font-bold px-2.5 py-0.5 rounded-full">✓ Doğrulanmış Kiralama</span>
+                </div>
+                <p class="text-xs text-slate-600 leading-relaxed">"PNR kodu ile rezervasyon takibi ve %30 kapora kolaylığı çok güven verici. Ailemizle Marmaris'te unutulmaz bir hafta sonu geçirdik."</p>
+                <div class="text-xs font-bold text-slate-900">Selin Arslan <span class="font-normal text-slate-400">• Marmaris Gulet Turu</span></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="lg:col-span-6 space-y-4">
+        <span class="text-xs font-extrabold uppercase tracking-wider text-teal-600">Merak Edilenler</span>
+        <h2 class="text-2xl font-extrabold text-[#0B1F3A]">Sıkça Sorulan Sorular</h2>
+
+        <div class="space-y-3" id="faqList">
+            <div class="bg-white rounded-2xl border border-slate-200 overflow-hidden">
+                <button type="button" class="faq-btn w-full px-5 py-4 text-left flex justify-between items-center font-bold text-sm text-slate-900">
+                    <span>Yakıt ve kaptan ücreti fiyata dahil mi?</span>
+                    <i class="fa-solid fa-plus text-xs text-teal-600 transition-transform"></i>
+                </button>
+                <div class="faq-ans hidden px-5 pb-4 text-xs text-slate-600 leading-relaxed">
+                    Tüm günlük tur paketlerimizde ve standart koylara yapılan özel kiralamalarda lisanslı kaptan, mürettebat ve rota yakıtı fiyata dahildir. Uzun mesafe özel rota talepleri önceden şeffaf biçimde belirtilir.
+                </div>
+            </div>
+
+            <div class="bg-white rounded-2xl border border-slate-200 overflow-hidden">
+                <button type="button" class="faq-btn w-full px-5 py-4 text-left flex justify-between items-center font-bold text-sm text-slate-900">
+                    <span>Rezervasyon iptali ve tarih değişikliği nasıl yapılır?</span>
+                    <i class="fa-solid fa-plus text-xs text-teal-600 transition-transform"></i>
+                </button>
+                <div class="faq-ans hidden px-5 pb-4 text-xs text-slate-600 leading-relaxed">
+                    Tur tarihine 7 gün kalaya kadar yapılan iptallerde ön ödemeniz kesintisiz iade edilir. Olumsuz hava koşullarında ise ücretsiz tarih değişikliği veya tam iade garantisi sunulur.
+                </div>
+            </div>
+
+            <div class="bg-white rounded-2xl border border-slate-200 overflow-hidden">
+                <button type="button" class="faq-btn w-full px-5 py-4 text-left flex justify-between items-center font-bold text-sm text-slate-900">
+                    <span>Tekneye kendi yiyecek ve içeceklerimizi getirebilir miyiz?</span>
+                    <i class="fa-solid fa-plus text-xs text-teal-600 transition-transform"></i>
+                </button>
+                <div class="faq-ans hidden px-5 pb-4 text-xs text-slate-600 leading-relaxed">
+                    Evet, dilerseniz kumanyanızı kendiniz getirebilir ve mürettebatımızın servisinden faydalanabilirsiniz; dilerseniz rezervasyon sırasında özel şef menüsü talep edebilirsiniz.
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<script>
+    (function () {
+        function switchHomeSection(targetId) {
+            const sections = document.querySelectorAll('[data-home-section]');
+            if (!sections.length) return;
+
+            sections.forEach(function (sec) {
+                if (targetId === 'all' || sec.id === targetId) {
+                    sec.classList.remove('hidden');
+                } else {
+                    sec.classList.add('hidden');
+                }
+            });
+
+            document.querySelectorAll('.section-switch-btn').forEach(function (btn) {
+                const isAll = btn.dataset.sectionSwitch === 'all';
+                const active = btn.dataset.sectionSwitch === targetId;
+                if (isAll) {
+                    btn.className = active
+                        ? 'section-switch-btn ml-auto px-4 py-2 rounded-xl text-xs font-bold text-white bg-teal-600 transition'
+                        : 'section-switch-btn ml-auto px-4 py-2 rounded-xl text-xs font-bold text-teal-700 bg-teal-50 hover:bg-teal-100 transition';
+                } else {
+                    btn.className = active
+                        ? 'section-switch-btn px-4 py-2 rounded-xl text-xs font-bold bg-[#0B1F3A] text-white transition'
+                        : 'section-switch-btn px-4 py-2 rounded-xl text-xs font-bold text-slate-600 hover:bg-slate-100 transition';
+                }
+            });
+        }
+
+        document.querySelectorAll('[data-section-switch]').forEach(function (el) {
+            el.addEventListener('click', function (e) {
+                const target = this.dataset.sectionSwitch;
+                if (document.getElementById(target) || target === 'all') {
+                    e.preventDefault();
+                    switchHomeSection(target);
+                    const mobileMenu = document.getElementById('mobileMenu');
+                    if (mobileMenu && !mobileMenu.classList.contains('hidden')) {
+                        mobileMenu.classList.add('hidden');
+                    }
+                }
+            });
+        });
+
+        const routesData = {
+            gocek: {
+                title: 'Göcek 12 Adalar & Bedri Rahmi Koyu',
+                badge: 'D-Marin Göcek Kalkışlı',
+                duration: '1 - 3 Gün Önerilir',
+                desc: 'Rüzgâra kapalı sakin koyları, çam ormanlarıyla çevrili turkuaz suları ve kısa seyir mesafeleriyle hem günübirlik hem haftalık mavi yolculukların en gözde rotası.',
+                stops: ['1. Yassıca Adaları', '2. Bedri Rahmi Koyu', '3. Kleopatra Hamamı', '4. Tersane Adası'],
+                rec: 'Katamaran & Motor Yat',
+                img: 'https://images.unsplash.com/photo-1500375592092-40eb2168fd21?auto=format&fit=crop&w=900&q=80',
+                link: '/yachts?location=G%C3%B6cek'
+            },
+            marmaris: {
+                title: 'Marmaris, Bozburun & Hisarönü Körfezi',
+                badge: 'Netsel Marina Kalkışlı',
+                duration: '2 - 5 Gün Önerilir',
+                desc: 'Berrak koyları, balıkçı köyleri ve gün batımı manzaralarıyla ünlü Hisarönü hattında huzurlu ve konforlu bir seyir deneyimi.',
+                stops: ['1. Cennet Adası', '2. Kumlubük', '3. Selimiye Koyu', '4. Bencik Koyu'],
+                rec: 'Gulet & Süperyat',
+                img: 'https://images.unsplash.com/photo-1544551763-46a013bb70d5?auto=format&fit=crop&w=900&q=80',
+                link: '/yachts?location=Marmaris'
+            },
+            fethiye: {
+                title: 'Fethiye, Ölüdeniz & Kelebekler Vadisi',
+                badge: 'Ece Marina Kalkışlı',
+                duration: '1 - 4 Gün Önerilir',
+                desc: 'Yüksek kayalıkların gölgesindeki gizli koylar, Akvaryum Koyu ve St. Nicholas Adası ile doğa ve yüzme tutkunlarının favorisi.',
+                stops: ['1. Kızıl Ada', '2. Kelebekler Vadisi', '3. St. Nicholas Adası', '4. Tarzan Koyu'],
+                rec: 'Motor Yat & Yelkenli Yat',
+                img: 'https://images.unsplash.com/photo-1534447677768-be436bb09401?auto=format&fit=crop&w=900&q=80',
+                link: '/yachts?location=Fethiye'
+            },
+            bodrum: {
+                title: 'Bodrum, Cennet Koyu & Orak Adası',
+                badge: 'Yalıkavak & Bodrum Kalkışlı',
+                duration: '1 - 7 Gün Önerilir',
+                desc: 'Maldivler rengindeki Orak Adası suları ve seçkin beach club duraklarıyla lüks ve dinamik bir Ege rotası.',
+                stops: ['1. Akvaryum Koyu', '2. Orak Adası', '3. Cennet Koyu', '4. Türkbükü'],
+                rec: 'Süperyat & Motor Yat',
+                img: 'https://images.unsplash.com/photo-1567899378494-47b22a2ae96a?auto=format&fit=crop&w=900&q=80',
+                link: '/yachts?location=Bodrum'
+            }
+        };
+
+        document.querySelectorAll('.route-tab').forEach(function (btn) {
+            btn.addEventListener('click', function () {
+                const key = this.dataset.route;
+                const data = routesData[key];
+                if (!data) return;
+
+                document.querySelectorAll('.route-tab').forEach(function (t) {
+                    t.className = 'route-tab px-4 py-2 rounded-xl text-xs font-bold bg-white border border-slate-200 text-slate-700 hover:bg-slate-100 transition';
+                });
+                this.className = 'route-tab px-4 py-2 rounded-xl text-xs font-bold bg-[#0B1F3A] text-white transition';
+
+                document.getElementById('routeTitle').innerText = data.title;
+                document.getElementById('routeBadge').innerText = data.badge;
+                document.getElementById('routeDuration').innerHTML = '<i class="fa-regular fa-compass mr-1"></i>' + data.duration;
+                document.getElementById('routeDesc').innerText = data.desc;
+                document.getElementById('routeImg').src = data.img;
+                document.getElementById('routeLink').href = data.link;
+                document.getElementById('routeRec').innerHTML = 'Önerilen Tekne Tipi: <strong class="text-slate-800">' + data.rec + '</strong>';
+                document.getElementById('routeStops').innerHTML = data.stops.map(function (s) {
+                    return '<span class="bg-slate-100 text-slate-700 font-semibold px-3 py-1.5 rounded-lg">' + s + '</span>';
+                }).join('');
+            });
+        });
+
+        document.querySelectorAll('.faq-btn').forEach(function (btn) {
+            btn.addEventListener('click', function () {
+                const ans = this.nextElementSibling;
+                const icon = this.querySelector('i');
+                const isOpen = !ans.classList.contains('hidden');
+                document.querySelectorAll('.faq-ans').forEach(function (a) { a.classList.add('hidden'); });
+                document.querySelectorAll('.faq-btn i').forEach(function (ic) { ic.classList.remove('rotate-45'); });
+                if (!isOpen) {
+                    ans.classList.remove('hidden');
+                    if (icon) icon.classList.add('rotate-45');
+                }
+            });
+        });
+    })();
+</script>
+
+<%- include('../partials/footer') %>

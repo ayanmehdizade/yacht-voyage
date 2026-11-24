@@ -1,0 +1,67 @@
+<%- include('../partials/header') %>
+
+<main class="max-w-7xl mx-auto px-4 sm:px-6 py-12 space-y-8">
+    <div class="flex flex-wrap items-end justify-between gap-4 border-b border-slate-200 pb-5">
+        <div>
+            <span class="text-xs font-extrabold uppercase tracking-wider text-teal-600">Hazır Programlar</span>
+            <h1 class="text-3xl md:text-4xl font-extrabold text-[#0B1F3A] mt-1">Tur Paketleri &amp; Dahil Olanlar</h1>
+        </div>
+        <a href="/yachts" class="text-xs font-bold bg-[#0B1F3A] text-white px-4 py-2.5 rounded-xl hover:bg-sky-900 transition">Tüm Yatları Gör →</a>
+    </div>
+
+    <% const tourPackages = [
+        { id: 1, badge: 'GÜNLÜK PAKET', title: 'Gün Batımı Turu', route: 'Marmaris & Kızkumu Civarı', duration: '3 Saat (18:00 - 21:00)', capacity: 'En fazla 12 kişi', price: 50, img: 'https://images.unsplash.com/photo-1500375592092-40eb2168fd21?auto=format&fit=crop&w=800&q=80', included: ['Lisanslı kaptan ve yakıt', 'Hoş geldiniz içeceği & meyve tabağı', 'Yüzme molası ve ses sistemi', 'Yolcu sigortası'], excluded: ['Özel akşam yemeği & alkollü içecekler'] },
+        { id: 2, badge: 'KEŞİF PAKETİ', title: 'Cennet Adası & Fosforlu Mağara', route: 'Marmaris Koyları Rotası', duration: '6 Saat (10:30 - 16:30)', capacity: 'En fazla 16 kişi', price: 80, img: 'https://images.unsplash.com/photo-1544551763-46a013bb70d5?auto=format&fit=crop&w=800&q=80', included: ['Kaptan & mürettebat hizmeti', '3 farklı koyda yüzme molası', 'Şnorkel ve paddleboard ekipmanı', 'Öğle atıştırmalık & su/çay servisi'], excluded: ['VIP transfer ve özel şef menüsü'] },
+        { id: 3, badge: 'ÖZEL KİRALAMA', title: 'Özel Tekne Turu (Tam Gün)', route: 'Göcek / Fethiye Özel Koylar', duration: 'Tam Gün (8 Saat)', capacity: 'En fazla 8 kişi', price: 250, img: 'https://images.unsplash.com/photo-1567899378494-47b22a2ae96a?auto=format&fit=crop&w=800&q=80', included: ['Size özel tekne, kaptan ve mürettebat', 'Rota boyunca yakıt ve koy bağlama', 'Klima, güneşlenme terası ve Wi-Fi', 'Soft içecekler, buz ve meyve ikramı'], excluded: ['Özel şef menüsü & havalimanı transferi'] }
+    ]; %>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-7">
+        <% tourPackages.forEach(pkg => { %>
+            <div class="bg-white rounded-2xl overflow-hidden border border-slate-200 shadow-sm hover:shadow-xl transition flex flex-col justify-between">
+                <div>
+                    <div class="relative">
+                        <img src="<%= pkg.img %>" onerror="fallbackYachtImg(this)" alt="<%= pkg.title %>" class="w-full h-52 object-cover">
+                        <span class="absolute top-3 left-3 bg-[#0B1F3A]/90 text-white text-[10px] font-bold px-3 py-1 rounded-full tracking-wider"><%= pkg.badge %></span>
+                    </div>
+                    <div class="p-6 space-y-4">
+                        <div>
+                            <h2 class="text-lg font-extrabold text-slate-900"><%= pkg.title %></h2>
+                            <p class="text-xs text-slate-500 mt-0.5"><i class="fa-solid fa-compass text-teal-600 mr-1"></i><%= pkg.route %></p>
+                        </div>
+                        <div class="flex flex-wrap gap-3 text-xs text-slate-600 bg-slate-50 p-3 rounded-xl">
+                            <span><i class="fa-regular fa-clock text-teal-600 mr-1"></i><%= pkg.duration %></span>
+                            <span><i class="fa-solid fa-users text-teal-600 mr-1"></i><%= pkg.capacity %></span>
+                        </div>
+                        <div class="space-y-1.5">
+                            <div class="text-[11px] font-bold uppercase text-emerald-700 tracking-wider">Pakete Dahil Olanlar</div>
+                            <% pkg.included.forEach(item => { %>
+                                <div class="text-xs text-slate-700 flex items-start space-x-2">
+                                    <i class="fa-solid fa-check text-emerald-600 mt-0.5"></i>
+                                    <span><%= item %></span>
+                                </div>
+                            <% }) %>
+                        </div>
+                        <div class="space-y-1 pt-2 border-t border-slate-100">
+                            <div class="text-[11px] font-bold uppercase text-slate-400 tracking-wider">Ekstra / Dahil Değil</div>
+                            <% pkg.excluded.forEach(ex => { %>
+                                <div class="text-xs text-slate-500 flex items-start space-x-2">
+                                    <i class="fa-solid fa-circle-info text-slate-400 mt-0.5"></i>
+                                    <span><%= ex %></span>
+                                </div>
+                            <% }) %>
+                        </div>
+                    </div>
+                </div>
+                <div class="px-6 py-4 bg-slate-50/70 border-t border-slate-100 flex items-center justify-between">
+                    <div>
+                        <span class="text-[11px] text-slate-400 block">Başlangıç</span>
+                        <span class="font-extrabold text-teal-700 text-lg"><%= pkg.price %> €</span>
+                    </div>
+                    <a href="/yachts/<%= pkg.id %>" class="bg-[#0B1F3A] hover:bg-sky-900 text-white text-xs font-bold px-4 py-2.5 rounded-xl transition">İncele &amp; Kirala →</a>
+                </div>
+            </div>
+        <% }) %>
+    </div>
+</main>
+
+<%- include('../partials/footer') %>

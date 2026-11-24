@@ -1,0 +1,80 @@
+<%- include('../partials/header') %>
+
+<main class="max-w-3xl mx-auto px-4 sm:px-6 py-14 space-y-8">
+    <div class="bg-white rounded-3xl border border-slate-200 shadow-sm p-8 text-center space-y-4">
+        <div class="w-14 h-14 rounded-2xl bg-sky-50 text-[#0B1F3A] flex items-center justify-center mx-auto text-2xl">
+            <i class="fa-solid fa-ticket"></i>
+        </div>
+        <h1 class="text-2xl md:text-3xl font-extrabold text-[#0B1F3A]">Rezervasyon Sorgulama</h1>
+        <p class="text-slate-500 text-sm">PNR referans kodunuzu girerek rezervasyon detaylarınızı görüntüleyebilir veya yönetebilirsiniz. (Örnek: <span class="font-mono font-bold text-slate-700">YV2026-2841</span>)</p>
+
+        <form action="/my-booking" method="GET" class="flex flex-col sm:flex-row gap-3 max-w-lg mx-auto pt-2">
+            <input type="text" name="pnr" value="<%= pnr %>" placeholder="Örn: YV2026-2841" required class="flex-1 p-3.5 text-sm font-mono uppercase border border-slate-200 rounded-xl focus:outline-none focus:border-[#0B1F3A]">
+            <button type="submit" class="bg-[#0B1F3A] hover:bg-sky-900 text-white px-6 py-3.5 rounded-xl font-bold text-sm transition">
+                Sorgula
+            </button>
+        </form>
+    </div>
+
+    <% if (msg) { %>
+        <div class="bg-emerald-50 border border-emerald-200 text-emerald-800 px-5 py-4 rounded-2xl text-sm font-semibold">
+            <i class="fa-solid fa-circle-check mr-2"></i><%= msg %>
+        </div>
+    <% } %>
+
+    <% if (searched && !booking) { %>
+        <div class="bg-rose-50 border border-rose-200 text-rose-700 p-6 rounded-2xl text-center text-sm font-semibold">
+            "<%= pnr %>" koduna ait rezervasyon bulunamadı. Lütfen kodunuzu kontrol edin.
+        </div>
+    <% } %>
+
+    <% if (booking) { %>
+        <div class="bg-white rounded-3xl border border-slate-200 shadow-lg p-8 space-y-6">
+            <div class="flex flex-wrap justify-between items-center gap-3 border-b border-slate-100 pb-4">
+                <div>
+                    <span class="text-xs text-slate-400 uppercase font-bold block">Rezervasyon Kodu</span>
+                    <span class="text-xl font-mono font-extrabold text-[#0B1F3A]">#<%= booking.id %></span>
+                </div>
+                <span class="px-3.5 py-1.5 rounded-full text-xs font-bold <%= booking.status === 'İptal Edildi' ? 'bg-rose-100 text-rose-700' : 'bg-emerald-100 text-emerald-700' %>">
+                    <%= booking.status %>
+                </span>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
+                <div class="bg-slate-50 p-4 rounded-xl">
+                    <span class="text-slate-400 block">Yat & Liman</span>
+                    <strong class="text-sm text-slate-900"><%= booking.yacht %> (<%= yacht.location %>)</strong>
+                </div>
+                <div class="bg-slate-50 p-4 rounded-xl">
+                    <span class="text-slate-400 block">Tarihler</span>
+                    <strong class="text-sm text-slate-900"><%= booking.checkIn %> → <%= booking.checkOut %> (<%= booking.days %> Gün)</strong>
+                </div>
+                <div class="bg-slate-50 p-4 rounded-xl">
+                    <span class="text-slate-400 block">Misafir</span>
+                    <strong class="text-sm text-slate-900"><%= booking.customer %> (<%= booking.guests %> Kişi)</strong>
+                </div>
+                <div class="bg-slate-50 p-4 rounded-xl">
+                    <span class="text-slate-400 block">Ödeme Durumu (<%= booking.paymentMethod || 'Kart' %>)</span>
+                    <strong class="text-sm text-[#0B1F3A]">Ödenen: €<%= booking.paidAmount.toLocaleString() %> / Toplam: €<%= booking.totalAmount.toLocaleString() %></strong>
+                </div>
+            </div>
+
+            <div class="flex flex-wrap justify-between items-center gap-3 pt-4 border-t border-slate-100">
+                <a href="/confirmation/<%= booking.id %>" class="px-5 py-2.5 bg-[#0B1F3A] text-white rounded-xl text-xs font-bold hover:bg-sky-900">
+                    Resmi Voucher Görüntüle
+                </a>
+
+                <% if (booking.status !== 'İptal Edildi') { %>
+                    <form action="/my-booking/cancel" method="POST" onsubmit="return confirm('Rezervasyonu iptal etmek istediğinize emin misiniz?')">
+                        <input type="hidden" name="pnr" value="<%= booking.id %>">
+                        <button type="submit" class="px-5 py-2.5 bg-rose-50 hover:bg-rose-100 text-rose-700 rounded-xl text-xs font-bold transition">
+                            Rezervasyonu İptal Et
+                        </button>
+                    </form>
+                <% } %>
+            </div>
+        </div>
+    <% } %>
+</main>
+
+<%- include('../partials/footer') %>

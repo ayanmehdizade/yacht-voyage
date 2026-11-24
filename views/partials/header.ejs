@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YachtVoyage — Yat Kiralama &amp; Tur Paketleri</title>
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%230B1F3A'/%3E%3Cpath d='M16 42h32l-4 7H20l-4-7z' fill='%2338BDF8'/%3E%3Cpath d='M33 14v24H19l14-24zm2 4l11 20H35V18z' fill='%23FFFFFF'/%3E%3C/svg%3E">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/tr.js"></script>
+    <style>
+        body { font-family: 'Plus Jakarta Sans', sans-serif; }
+        @media print { .no-print { display: none !important; } }
+        .yv-dd-menu {
+            transform-origin: top center;
+            animation: yvDdIn 0.16s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        @keyframes yvDdIn {
+            from { opacity: 0; transform: translateY(-6px) scale(0.98); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        .flatpickr-calendar {
+            font-family: 'Plus Jakarta Sans', sans-serif !important;
+            border-radius: 18px !important;
+            border: 1px solid #e2e8f0 !important;
+            box-shadow: 0 20px 45px -10px rgba(11, 31, 58, 0.22) !important;
+            padding: 10px !important;
+        }
+        .flatpickr-months .flatpickr-month {
+            color: #0B1F3A !important;
+            fill: #0B1F3A !important;
+            height: 36px !important;
+        }
+        .flatpickr-current-month .flatpickr-monthDropdown-months,
+        .flatpickr-current-month input.cur-year {
+            font-weight: 800 !important;
+            font-size: 14px !important;
+            color: #0B1F3A !important;
+        }
+        span.flatpickr-weekday {
+            color: #64748b !important;
+            font-weight: 700 !important;
+            font-size: 11px !important;
+        }
+        .flatpickr-day {
+            border-radius: 10px !important;
+            font-weight: 600 !important;
+            font-size: 12px !important;
+            color: #1e293b !important;
+        }
+        .flatpickr-day:hover {
+            background: #f1f5f9 !important;
+            border-color: #f1f5f9 !important;
+        }
+        .flatpickr-day.today {
+            border-color: #0d9488 !important;
+            color: #0d9488 !important;
+        }
+        .flatpickr-day.selected,
+        .flatpickr-day.selected:hover {
+            background: #0B1F3A !important;
+            border-color: #0B1F3A !important;
+            color: #ffffff !important;
+        }
+    </style>
+    <script>
+        function fallbackYachtImg(imgEl) {
+            if (imgEl.dataset.fallbackApplied) return;
+            imgEl.dataset.fallbackApplied = '1';
+            const svg = encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="800" height="500" viewBox="0 0 800 500"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#0B1F3A"/><stop offset="100%" stop-color="#0F766E"/></linearGradient></defs><rect width="800" height="500" fill="url(#g)"/></svg>`);
+            imgEl.src = `data:image/svg+xml;charset=utf-8,${svg}`;
+        }
+
+        document.addEventListener('DOMContentLoaded', function () {
+            const mobileBtn = document.getElementById('mobileMenuBtn');
+            const mobileMenu = document.getElementById('mobileMenu');
+            if (mobileBtn && mobileMenu) {
+                mobileBtn.addEventListener('click', function () {
+                    mobileMenu.classList.toggle('hidden');
+                });
+            }
+
+            if (typeof flatpickr !== 'undefined') {
+                document.querySelectorAll('input[type="date"]').forEach(function (inp) {
+                    flatpickr(inp, {
+                        locale: 'tr',
+                        dateFormat: 'Y-m-d',
+                        altInput: true,
+                        altFormat: 'd M Y',
+                        disableMobile: true,
+                        onChange: function () {
+                            inp.dispatchEvent(new Event('change', { bubbles: true }));
+                        }
+                    });
+                });
+            }
+
+            const wrappers = document.querySelectorAll('.yv-dropdown');
+
+            function closeAllDropdowns(exceptWrapper) {
+                wrappers.forEach(function (w) {
+                    if (w === exceptWrapper) return;
+                    w.classList.remove('z-[90]');
+                    const menu = w.querySelector('.yv-dd-menu');
+                    const chevron = w.querySelector('.yv-dd-chevron');
+                    if (menu) {
+                        menu.classList.add('hidden');
+                        menu.classList.remove('bottom-[calc(100%+8px)]');
+                        menu.classList.add('top-[calc(100%+8px)]');
+                    }
+                    if (chevron) chevron.classList.remove('rotate-180');
+                });
+            }
+
+            function positionMenu(wrapper, menu) {
+                menu.classList.remove('bottom-[calc(100%+8px)]');
+                menu.classList.add('top-[calc(100%+8px)]');
+
+                const rect = wrapper.getBoundingClientRect();
+                const menuHeight = Math.min(menu.scrollHeight || 240, 260);
+                const spaceBelow = window.innerHeight - rect.bottom;
+                const spaceAbove = rect.top;
+
+                if (spaceBelow < menuHeight + 16 && spaceAbove > spaceBelow) {
+                    menu.classList.remove('top-[calc(100%+8px)]');
+                    menu.classList.add('bottom-[calc(100%+8px)]');
+                }
+            }
+
+            wrappers.forEach(function (w) {
+                const trigger = w.querySelector('.yv-dd-trigger');
+                const menu = w.querySelector('.yv-dd-menu');
+                const labelEl = w.querySelector('.yv-dd-label');
+                const hiddenInput = w.querySelector('input[type="hidden"]');
+                const chevron = w.querySelector('.yv-dd-chevron');
+                const options = w.querySelectorAll('.yv-dd-option');
+
+                if (!trigger || !menu) return;
+
+                trigger.addEventListener('click', function (e) {
+                    e.stopPropagation();
+                    const isHidden = menu.classList.contains('hidden');
+                    closeAllDropdowns(w);
+
+                    if (isHidden) {
+                        w.classList.add('z-[90]');
+                        menu.classList.remove('hidden');
+                        positionMenu(w, menu);
+                        if (chevron) chevron.classList.add('rotate-180');
+                    } else {
+                        w.classList.remove('z-[90]');
+                        menu.classList.add('hidden');
+                        if (chevron) chevron.classList.remove('rotate-180');
+                    }
+                });
+
+                options.forEach(function (opt) {
+                    opt.addEventListener('click', function (e) {
+                        e.stopPropagation();
+                        const val = this.dataset.value || '';
+                        const text = this.dataset.label || this.innerText.trim();
+
+                        if (hiddenInput) hiddenInput.value = val;
+                        if (labelEl) labelEl.innerText = text;
+
+                        options.forEach(function (o) {
+                            o.classList.remove('bg-slate-100', 'font-bold', 'text-[#0B1F3A]');
+                            const check = o.querySelector('.yv-dd-check');
+                            if (check) check.classList.add('hidden');
+                        });
+
+                        this.classList.add('bg-slate-100', 'font-bold', 'text-[#0B1F3A]');
+                        const activeCheck = this.querySelector('.yv-dd-check');
+                        if (activeCheck) activeCheck.classList.remove('hidden');
+
+                        w.classList.remove('z-[90]');
+                        menu.classList.add('hidden');
+                        if (chevron) chevron.classList.remove('rotate-180');
+                    });
+                });
+            });
+
+            document.addEventListener('click', function () {
+                closeAllDropdowns(null);
+            });
+
+            window.addEventListener('resize', function () {
+                wrappers.forEach(function (w) {
+                    const menu = w.querySelector('.yv-dd-menu');
+                    if (menu && !menu.classList.contains('hidden')) {
+                        positionMenu(w, menu);
+                    }
+                });
+            });
+        });
+    </script>
+</head>
+<body class="bg-slate-50 text-slate-900 antialiased">
+    <div class="no-print bg-[#08172E] text-slate-300 text-xs py-2 px-4 border-b border-white/10">
+        <div class="max-w-7xl mx-auto flex justify-between items-center">
+            <div class="flex items-center space-x-4">
+                <span><i class="fa-solid fa-phone text-amber-400 mr-1.5"></i>+90 252 123 45 67</span>
+                <span class="hidden sm:inline"><i class="fa-solid fa-envelope text-amber-400 mr-1.5"></i>hello@yachtvoyage.com</span>
+            </div>
+            <div class="flex items-center space-x-4">
+                <a href="/my-booking" class="hover:text-white transition"><i class="fa-solid fa-ticket text-sky-400 mr-1"></i>PNR Sorgula</a>
+                <a href="/admin" class="text-amber-400 hover:text-amber-300 font-semibold transition">Admin Panel →</a>
+            </div>
+        </div>
+    </div>
+
+    <header class="no-print bg-[#0B1F3A] text-white sticky top-0 z-40 shadow-lg">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 h-20 flex items-center justify-between">
+            <a href="/" class="flex items-center space-x-3">
+                <div class="w-10 h-10 rounded-xl bg-white/10 border border-white/15 flex items-center justify-center">
+                    <i class="fa-solid fa-sailboat text-sky-400 text-lg"></i>
+                </div>
+                <div>
+                    <span class="text-xl font-extrabold tracking-tight block leading-none">YachtVoyage</span>
+                    <span class="text-[10px] text-sky-300 tracking-[0.2em] uppercase">Yacht Charter</span>
+                </div>
+            </a>
+
+            <nav class="hidden md:flex items-center space-x-7 text-sm font-medium text-slate-200">
+                <a href="/yachts" class="hover:text-white transition">Yatlar</a>
+                <a href="/tur-paketleri" class="hover:text-white transition">Tur Paketleri</a>
+                <a href="/rotalar" class="hover:text-white transition">Rotalar</a>
+                <a href="/kategoriler" class="hover:text-white transition">Kategoriler</a>
+                <a href="/my-booking" class="hover:text-white transition">Rezervasyonum</a>
+            </nav>
+
+            <div class="hidden md:flex items-center space-x-3">
+                <a href="/yachts" class="bg-white text-[#0B1F3A] hover:bg-sky-50 px-5 py-2.5 rounded-lg text-sm font-bold transition shadow">
+                    Hemen Rezervasyon Yap
+                </a>
+            </div>
+
+            <button id="mobileMenuBtn" type="button" class="md:hidden w-10 h-10 rounded-lg bg-white/10 flex items-center justify-center text-white">
+                <i class="fa-solid fa-bars text-lg"></i>
+            </button>
+        </div>
+
+        <div id="mobileMenu" class="hidden md:hidden bg-[#08172E] border-t border-white/10 px-4 py-4 space-y-3 text-sm">
+            <a href="/yachts" class="block py-1.5 text-slate-200 hover:text-white">Yatlar</a>
+            <a href="/tur-paketleri" class="block py-1.5 text-slate-200 hover:text-white">Tur Paketleri</a>
+            <a href="/rotalar" class="block py-1.5 text-slate-200 hover:text-white">Rotalar</a>
+            <a href="/kategoriler" class="block py-1.5 text-slate-200 hover:text-white">Kategoriler</a>
+            <a href="/my-booking" class="block py-1.5 text-slate-200 hover:text-white">Rezervasyonum (PNR)</a>
+            <a href="/admin" class="block py-1.5 text-amber-400 font-semibold">Admin Panel →</a>
+            <a href="/yachts" class="block text-center bg-white text-[#0B1F3A] py-2.5 rounded-lg font-bold">Hemen Rezervasyon Yap</a>
+        </div>
+    </header>

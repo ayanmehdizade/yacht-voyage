@@ -1,0 +1,423 @@
+{
+  "yachts": [
+    {
+      "id": 1,
+      "name": "Princess 72",
+      "category": "Motor Yachts",
+      "categoryTr": "Motor Yat",
+      "location": "Göcek",
+      "length": "22 m",
+      "year": 2021,
+      "guests": 12,
+      "cabins": 4,
+      "crew": 3,
+      "speed": "28 Knots",
+      "price": 3500,
+      "rating": 5,
+      "reviews": 24,
+      "badge": "En Çok Tercih Edilen",
+      "features": [
+        "Jakuzi",
+        "Klima",
+        "Mürettebat Dahil",
+        "Su Oyuncakları"
+      ],
+      "inclusions": [
+        "Profesyonel Kaptan ve 2 Mürettebat",
+        "Hoş Geldiniz Kokteyli & Meyve Tabağı",
+        "Liman Bağlama Ücretleri (Göcek)",
+        "Standart Su Oyuncakları",
+        "Wi-Fi ve Ses Sistemi"
+      ],
+      "itinerary": [
+        {
+          "time": "10:00",
+          "title": "Göcek Marina Hareket",
+          "desc": "Hoş geldiniz ikramı ve rota bilgilendirmesi"
+        },
+        {
+          "time": "11:30",
+          "title": "Yassıca Adaları",
+          "desc": "Turkuaz sularda yüzme ve su oyuncakları molası"
+        },
+        {
+          "time": "14:00",
+          "title": "Bedri Rahmi Koyu",
+          "desc": "Öğle yemeği servisi ve koy keşfi"
+        },
+        {
+          "time": "17:30",
+          "title": "Göcek Marina Dönüş",
+          "desc": "Gün batımı eşliğinde marinaya varış"
+        }
+      ],
+      "reviewList": [
+        {
+          "author": "Emre K.",
+          "rating": 5,
+          "date": "2026-06-12",
+          "comment": "Kaptan ve mürettebat inanılmaz ilgiliydi. Göcek koylarında rüya gibi 3 gün geçirdik."
+        },
+        {
+          "author": "Selin A.",
+          "rating": 5,
+          "date": "2026-05-28",
+          "comment": "Tekne tertemizdi, jakuzi ve güneşlenme alanı fotoğraflardan bile güzel."
+        }
+      ],
+      "description": "Turkuaz kıyılarda benzersiz bir lüks deneyimi yaşayın. Geniş güneşlenme terası, şık salonu ve deneyimli mürettebatı ile kusursuz bir mavi yolculuk sunar.",
+      "images": [
+        "https://images.unsplash.com/photo-1567899378494-47b22a2ae96a?auto=format&fit=crop&w=1200&q=80",
+        "https://images.unsplash.com/photo-1544551763-46a013bb70d5?auto=format&fit=crop&w=800&q=80",
+        "https://images.unsplash.com/photo-1500375592092-40eb2168fd21?auto=format&fit=crop&w=800&q=80",
+        "https://images.unsplash.com/photo-1534447677768-be436bb09401?auto=format&fit=crop&w=800&q=80"
+      ]
+    },
+    {
+      "id": 2,
+      "name": "Aegean Pearl Gulet",
+      "category": "Gulets",
+      "categoryTr": "Gulet",
+      "location": "Marmaris",
+      "length": "24 m",
+      "year": 2020,
+      "guests": 12,
+      "cabins": 6,
+      "crew": 4,
+      "speed": "14 Knots",
+      "price": 2500,
+      "rating": 4.9,
+      "reviews": 18,
+      "badge": "Aile & Grup Favorisi",
+      "features": [
+        "Klima",
+        "Mürettebat Dahil",
+        "Su Oyuncakları"
+      ],
+      "inclusions": [
+        "Kaptan, Aşçı ve 2 Gemici",
+        "Kano ve Ringo",
+        "Tüm Kabinlerde 24 Saat Klima"
+      ],
+      "itinerary": [
+        {
+          "time": "10:30",
+          "title": "Marmaris Netsel Marina",
+          "desc": "Tekneye biniş ve kahve ikramı"
+        },
+        {
+          "time": "12:00",
+          "title": "Cennet Adası & Fosforlu Mağara",
+          "desc": "Mağara ziyareti ve berrak sularda yüzme"
+        },
+        {
+          "time": "14:30",
+          "title": "Kumlubük Koyu",
+          "desc": "Öğle yemeği ve dinlenme"
+        },
+        {
+          "time": "18:00",
+          "title": "Marmaris Dönüş",
+          "desc": "Limana güvenli dönüş"
+        }
+      ],
+      "reviewList": [
+        {
+          "author": "Mert D.",
+          "rating": 5,
+          "date": "2026-06-04",
+          "comment": "10 kişilik arkadaş grubumuzla çok rahat ettik. Aşçının mezeleri harikaydı."
+        }
+      ],
+      "description": "Geleneksel ahşap tasarımı modern konforla birleştiren Aegean Pearl, kalabalık gruplar için Marmaris koylarında huzurlu bir rota sunar.",
+      "images": [
+        "https://images.unsplash.com/photo-1500375592092-40eb2168fd21?auto=format&fit=crop&w=1200&q=80",
+        "https://images.unsplash.com/photo-1534447677768-be436bb09401?auto=format&fit=crop&w=800&q=80",
+        "https://images.unsplash.com/photo-1544551763-46a013bb70d5?auto=format&fit=crop&w=800&q=80",
+        "https://images.unsplash.com/photo-1567899378494-47b22a2ae96a?auto=format&fit=crop&w=800&q=80"
+      ]
+    },
+    {
+      "id": 3,
+      "name": "Sun Odyssey 54",
+      "category": "Sailing Yachts",
+      "categoryTr": "Yelkenli Yat",
+      "location": "Fethiye",
+      "length": "16 m",
+      "year": 2022,
+      "guests": 8,
+      "cabins": 4,
+      "crew": 2,
+      "speed": "11 Knots",
+      "price": 1800,
+      "rating": 4.8,
+      "reviews": 15,
+      "badge": "Fiyat / Performans",
+      "features": [
+        "Klima",
+        "Mürettebat Dahil"
+      ],
+      "inclusions": [
+        "Lisanslı Yelken Kaptanı",
+        "Son Temizlik ve Nevresim Takımları",
+        "Bot ve Dıştan Takma Motor"
+      ],
+      "itinerary": [
+        {
+          "time": "10:00",
+          "title": "Fethiye Ece Marina",
+          "desc": "Yelken açılışı ve körfez seyri"
+        },
+        {
+          "time": "12:30",
+          "title": "Turunç Pınarı Koyu",
+          "desc": "Yüzme ve şnorkel molası"
+        },
+        {
+          "time": "15:00",
+          "title": "Şövalye Adası",
+          "desc": "Gün batımı öncesi sakin koy molası"
+        },
+        {
+          "time": "18:00",
+          "title": "Fethiye Dönüş",
+          "desc": "Marinaya varış"
+        }
+      ],
+      "reviewList": [
+        {
+          "author": "Caner T.",
+          "rating": 5,
+          "date": "2026-05-19",
+          "comment": "Yelken deneyimi ve Fethiye koyları muazzamdı, kesinlikle tekrar geleceğiz."
+        }
+      ],
+      "description": "Rüzgarla bütünleşmek isteyen deniz tutkunları için tasarlanan Sun Odyssey 54, ferah güvertesiyle Fethiye körfezini keşfetmek için idealdir.",
+      "images": [
+        "https://images.unsplash.com/photo-1534447677768-be436bb09401?auto=format&fit=crop&w=1200&q=80",
+        "https://images.unsplash.com/photo-1544551763-46a013bb70d5?auto=format&fit=crop&w=800&q=80",
+        "https://images.unsplash.com/photo-1500375592092-40eb2168fd21?auto=format&fit=crop&w=800&q=80",
+        "https://images.unsplash.com/photo-1567899378494-47b22a2ae96a?auto=format&fit=crop&w=800&q=80"
+      ]
+    },
+    {
+      "id": 4,
+      "name": "Lagoon 52 Catamaran",
+      "category": "Catamarans",
+      "categoryTr": "Katamaran",
+      "location": "Göcek",
+      "length": "16 m",
+      "year": 2023,
+      "guests": 10,
+      "cabins": 5,
+      "crew": 3,
+      "speed": "15 Knots",
+      "price": 3100,
+      "rating": 4.9,
+      "reviews": 21,
+      "badge": "Yeni Model",
+      "features": [
+        "Klima",
+        "Mürettebat Dahil",
+        "Su Oyuncakları"
+      ],
+      "inclusions": [
+        "Kaptan, Hostes ve Aşçı",
+        "Flybridge Lounge Alanı",
+        "Seabob ve Paddleboard"
+      ],
+      "itinerary": [
+        {
+          "time": "10:00",
+          "title": "Göcek D-Marin Hareket",
+          "desc": "Kaptan karşılama ve ikram"
+        },
+        {
+          "time": "12:00",
+          "title": "Kleopatra Hamamı Koyu",
+          "desc": "Tarihi kalıntılar ve yüzme"
+        },
+        {
+          "time": "15:00",
+          "title": "Sarsala Koyu",
+          "desc": "Su sporları ve dinlenme"
+        },
+        {
+          "time": "18:00",
+          "title": "Göcek Dönüş",
+          "desc": "Limana varış"
+        }
+      ],
+      "reviewList": [
+        {
+          "author": "Zeynep B.",
+          "rating": 5,
+          "date": "2026-06-15",
+          "comment": "Katamaranın dengesi sayesinde hiç sallanmadık, çocuklu aileler için mükemmel."
+        }
+      ],
+      "description": "Çift gövdeli dengeli yapısı ve geniş kabinleriyle maksimum konfor arayan misafirlerimizin favorisidir.",
+      "images": [
+        "https://images.unsplash.com/photo-1544551763-46a013bb70d5?auto=format&fit=crop&w=1200&q=80",
+        "https://images.unsplash.com/photo-1567899378494-47b22a2ae96a?auto=format&fit=crop&w=800&q=80",
+        "https://images.unsplash.com/photo-1534447677768-be436bb09401?auto=format&fit=crop&w=800&q=80",
+        "https://images.unsplash.com/photo-1500375592092-40eb2168fd21?auto=format&fit=crop&w=800&q=80"
+      ]
+    },
+    {
+      "id": 5,
+      "name": "Majesty 100 Superyacht",
+      "category": "Superyachts",
+      "categoryTr": "Süperyat",
+      "location": "Bodrum",
+      "length": "32 m",
+      "year": 2023,
+      "guests": 12,
+      "cabins": 5,
+      "crew": 6,
+      "speed": "24 Knots",
+      "price": 8500,
+      "rating": 5,
+      "reviews": 11,
+      "badge": "Ultra VIP",
+      "features": [
+        "Jakuzi",
+        "Klima",
+        "Mürettebat Dahil",
+        "Su Oyuncakları"
+      ],
+      "inclusions": [
+        "6 Kişilik VIP Mürettebat & Özel Şef",
+        "Güneşlenme Güvertesinde Jakuzi",
+        "Jet Ski, Seabob ve Wakeboard"
+      ],
+      "itinerary": [
+        {
+          "time": "10:30",
+          "title": "Yalıkavak Marina VIP Biniş",
+          "desc": "Şampanya ve şef tadım tabağı ile karşılama"
+        },
+        {
+          "time": "12:30",
+          "title": "Cennet Koyu Bodrum",
+          "desc": "Jet Ski ve Seabob aktivitesi"
+        },
+        {
+          "time": "15:30",
+          "title": "Türkbükü Açıkları",
+          "desc": "Özel şef akşamüstü servisi"
+        },
+        {
+          "time": "19:00",
+          "title": "Yalıkavak Dönüş",
+          "desc": "Gün batımı kokteyli ile varış"
+        }
+      ],
+      "reviewList": [
+        {
+          "author": "Kerem V.",
+          "rating": 5,
+          "date": "2026-06-18",
+          "comment": "Bodrum koylarında beş yıldızlı otel konforunda eşsiz bir deneyimdi."
+        }
+      ],
+      "description": "Ultra lüks segmentin zirvesi Majesty 100; panoramik cam duvarları ve özel şef servisiyle beş yıldızlı bir deneyim sunar.",
+      "images": [
+        "https://images.unsplash.com/photo-1567899378494-47b22a2ae96a?auto=format&fit=crop&w=1200&q=80",
+        "https://images.unsplash.com/photo-1544551763-46a013bb70d5?auto=format&fit=crop&w=800&q=80",
+        "https://images.unsplash.com/photo-1500375592092-40eb2168fd21?auto=format&fit=crop&w=800&q=80",
+        "https://images.unsplash.com/photo-1534447677768-be436bb09401?auto=format&fit=crop&w=800&q=80"
+      ]
+    }
+  ],
+  "bookings": [
+    {
+      "id": "YV2026-2643",
+      "customer": "Ayan Mehdizada",
+      "email": "ayanmehdizade859@gmail.com",
+      "phone": "+34666113183",
+      "yachtId": 1,
+      "yacht": "Princess 72",
+      "checkIn": "2026-07-22",
+      "checkOut": "2026-07-31",
+      "days": 9,
+      "guests": 6,
+      "charterType": "Özel Yat Kiralama (Konaklamalı)",
+      "extras": [
+        "VIP Havalimanı Transferi"
+      ],
+      "notes": "",
+      "discount": 1575,
+      "totalAmount": 30125,
+      "paidAmount": 9038,
+      "paymentType": "%30 Kapora",
+      "paymentMethod": "Kredi / Banka Kartı",
+      "status": "Onaylandı"
+    },
+    {
+      "id": "YV2026-1871",
+      "customer": "Ayan Mehdizada",
+      "email": "ayanmehdizade859@gmail.com",
+      "phone": "+34666113183",
+      "yachtId": 1,
+      "yacht": "Princess 72",
+      "checkIn": "2026-07-05",
+      "checkOut": "2026-07-08",
+      "days": 3,
+      "guests": 6,
+      "charterType": "Özel Yat Kiralama (Konaklamalı)",
+      "extras": [],
+      "notes": "",
+      "discount": 525,
+      "totalAmount": 9975,
+      "paidAmount": 2993,
+      "paymentType": "%30 Kapora",
+      "paymentMethod": "Marinada Ödeme",
+      "status": "Onaylandı"
+    },
+    {
+      "id": "YV2026-8627",
+      "customer": "Ayan Mehdizada",
+      "email": "ayanmehdizade859@gmail.com",
+      "phone": "+34666113183",
+      "yachtId": 1,
+      "yacht": "Princess 72",
+      "checkIn": "2026-07-05",
+      "checkOut": "2026-07-08",
+      "days": 3,
+      "guests": 6,
+      "charterType": "Özel Yat Kiralama (Konaklamalı)",
+      "extras": [],
+      "notes": "",
+      "discount": 525,
+      "totalAmount": 9975,
+      "paidAmount": 2993,
+      "paymentType": "%30 Kapora",
+      "paymentMethod": "Kredi / Banka Kartı",
+      "status": "İptal Edildi"
+    },
+    {
+      "id": "YV2026-2841",
+      "customer": "Aydın Mammedov",
+      "email": "aydin@example.com",
+      "phone": "+994 50 211 22 33",
+      "yachtId": 1,
+      "yacht": "Princess 72",
+      "checkIn": "2026-06-25",
+      "checkOut": "2026-06-28",
+      "days": 3,
+      "guests": 8,
+      "charterType": "Özel Yat Kiralama (Konaklamalı)",
+      "extras": [
+        "VIP Havalimanı Transferi"
+      ],
+      "notes": "Akşam yemeği için deniz ürünleri tercih ediyoruz.",
+      "discount": 0,
+      "totalAmount": 10700,
+      "paidAmount": 3210,
+      "paymentType": "%30 Kapora",
+      "paymentMethod": "Kredi / Banka Kartı",
+      "status": "Onaylandı"
+    }
+  ]
+}

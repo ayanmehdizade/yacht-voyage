@@ -1,0 +1,134 @@
+<footer class="no-print bg-[#0B1F3A] text-slate-300 mt-20 border-t border-white/10">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 py-14 grid grid-cols-1 md:grid-cols-4 gap-10 text-sm">
+        <div class="space-y-3">
+            <div class="text-white text-xl font-extrabold flex items-center space-x-2">
+                <i class="fa-solid fa-sailboat text-sky-400"></i>
+                <span>YachtVoyage</span>
+            </div>
+            <p class="text-slate-400 text-xs leading-relaxed">
+                Göcek, Marmaris, Fethiye ve Bodrum koylarında lisanslı kaptanlar ve özel filo ile yat kiralama ve günlük tur platformu.
+            </p>
+        </div>
+        <div>
+            <h4 class="text-white font-bold mb-3">Yat Kategorileri</h4>
+            <ul class="space-y-2 text-xs text-slate-400">
+                <li><a href="/yachts?category=Motor Yachts" class="hover:text-white">Motor Yatlar</a></li>
+                <li><a href="/yachts?category=Gulets" class="hover:text-white">Guletler</a></li>
+                <li><a href="/yachts?category=Sailing Yachts" class="hover:text-white">Yelkenli Yatlar</a></li>
+                <li><a href="/yachts?category=Catamarans" class="hover:text-white">Katamaranlar</a></li>
+                <li><a href="/yachts?category=Superyachts" class="hover:text-white">Süperyatlar</a></li>
+            </ul>
+        </div>
+        <div>
+            <h4 class="text-white font-bold mb-3">Popüler Rotalar</h4>
+            <ul class="space-y-2 text-xs text-slate-400">
+                <li><a href="/yachts?location=Göcek" class="hover:text-white">Göcek Koyları</a></li>
+                <li><a href="/yachts?location=Marmaris" class="hover:text-white">Marmaris &amp; Cennet Adası</a></li>
+                <li><a href="/yachts?location=Fethiye" class="hover:text-white">Fethiye</a></li>
+                <li><a href="/yachts?location=Bodrum" class="hover:text-white">Bodrum</a></li>
+            </ul>
+        </div>
+        <div>
+            <h4 class="text-white font-bold mb-3">7/24 Destek</h4>
+            <div class="text-white font-bold text-sm">+90 252 123 45 67</div>
+            <div class="text-sky-400 text-xs mt-1">hello@yachtvoyage.com</div>
+        </div>
+    </div>
+    <div class="border-t border-white/10 py-5 text-center text-xs text-slate-500">
+        © 2026 YachtVoyage. Tüm hakları saklıdır.
+    </div>
+</footer>
+
+<!-- CANLI YAT KONSYERJ WIDGET -->
+<div class="no-print fixed bottom-5 right-5 z-50">
+    <div id="conciergeBox" class="hidden mb-3 w-80 bg-white rounded-3xl shadow-2xl border border-slate-200 overflow-hidden text-slate-800">
+        <div class="bg-[#0B1F3A] text-white p-4 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <div class="w-9 h-9 rounded-full bg-teal-500/20 border border-teal-400/40 flex items-center justify-center text-teal-300">
+                    <i class="fa-solid fa-headset"></i>
+                </div>
+                <div>
+                    <div class="text-xs font-extrabold">YachtVoyage Konsyerj</div>
+                    <div class="text-[10px] text-emerald-300 flex items-center">
+                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 mr-1.5"></span>Çevrimiçi • Ort. 3 dk yanıt
+                    </div>
+                </div>
+            </div>
+            <button id="conciergeCloseBtn" type="button" class="text-slate-300 hover:text-white text-xs p-1">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+        <div class="p-4 space-y-3 text-xs">
+            <p class="text-slate-600 bg-slate-50 p-3 rounded-2xl leading-relaxed">
+                Merhaba! Rota planlaması, özel menü veya tekne müsaitliği için hızlıca yazabilirsiniz.
+            </p>
+            <div class="flex flex-wrap gap-1.5">
+                <button type="button" data-wa-msg="Merhaba, Göcek / Marmaris rotaları hakkında bilgi almak istiyorum." class="wa-preset px-2.5 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-[11px] transition">
+                    Rota Bilgisi
+                </button>
+                <button type="button" data-wa-msg="Merhaba, günlük tur paketleri ve fiyatlar hakkında bilgi alabilir miyim?" class="wa-preset px-2.5 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-[11px] transition">
+                    Tur Paketleri
+                </button>
+                <button type="button" data-wa-msg="Merhaba, özel şef ve VIP transfer seçeneklerini sormak istiyorum." class="wa-preset px-2.5 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-[11px] transition">
+                    Özel Hizmetler
+                </button>
+            </div>
+            <a id="conciergeWaLink" href="https://wa.me/902521234567?text=Merhaba%2C%20yat%20kiralama%20hakk%C4%B1nda%20bilgi%20almak%20istiyorum." target="_blank" rel="noopener noreferrer" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 rounded-xl flex items-center justify-center space-x-2 transition shadow">
+                <i class="fa-brands fa-whatsapp text-sm"></i>
+                <span>WhatsApp ile Bağlan</span>
+            </a>
+        </div>
+    </div>
+
+    <button id="conciergeToggleBtn" type="button" class="ml-auto bg-[#0B1F3A] hover:bg-sky-900 text-white px-4 py-3 rounded-full shadow-2xl border border-white/15 flex items-center space-x-2.5 text-xs font-bold transition">
+        <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
+        <i class="fa-brands fa-whatsapp text-emerald-400 text-base"></i>
+        <span>Yat Danışmanı</span>
+    </button>
+</div>
+
+<script>
+    (function () {
+        const toggleBtn = document.getElementById('conciergeToggleBtn');
+        const closeBtn = document.getElementById('conciergeCloseBtn');
+        const box = document.getElementById('conciergeBox');
+        const waLink = document.getElementById('conciergeWaLink');
+
+        if (toggleBtn && box) {
+            toggleBtn.addEventListener('click', function (e) {
+                e.stopPropagation();
+                box.classList.toggle('hidden');
+            });
+        }
+
+        if (closeBtn && box) {
+            closeBtn.addEventListener('click', function (e) {
+                e.stopPropagation();
+                box.classList.add('hidden');
+            });
+        }
+
+        document.querySelectorAll('.wa-preset').forEach(function (presetBtn) {
+            presetBtn.addEventListener('click', function () {
+                const msg = this.dataset.waMsg || 'Merhaba, bilgi almak istiyorum.';
+                if (waLink) {
+                    waLink.href = 'https://wa.me/902521234567?text=' + encodeURIComponent(msg);
+                }
+                document.querySelectorAll('.wa-preset').forEach(function (b) {
+                    b.classList.remove('bg-teal-600', 'text-white');
+                    b.classList.add('bg-slate-100', 'text-slate-700');
+                });
+                this.classList.remove('bg-slate-100', 'text-slate-700');
+                this.classList.add('bg-teal-600', 'text-white');
+            });
+        });
+
+        document.addEventListener('click', function (e) {
+            if (box && !box.contains(e.target) && toggleBtn && !toggleBtn.contains(e.target)) {
+                box.classList.add('hidden');
+            }
+        });
+    })();
+</script>
+</body>
+</html>
