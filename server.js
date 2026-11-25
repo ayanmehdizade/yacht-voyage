@@ -340,8 +340,8 @@ Tekne kapasitesi yasal maksimum misafir sayısını aşamaz. Kaptan, hava ve den
             phone: '+994 50 211 22 33',
             yachtId: 1,
             yacht: 'Princess 72',
-            checkIn: '2026-06-25',
-            checkOut: '2026-06-28',
+            checkIn: '2026-12-05',
+            checkOut: '2026-12-08',
             days: 3,
             guests: 8,
             charterType: 'Özel Yat Kiralama (Konaklamalı)',
@@ -350,6 +350,7 @@ Tekne kapasitesi yasal maksimum misafir sayısını aşamaz. Kaptan, hava ve den
             discount: 0,
             totalAmount: 10860,
             paidAmount: 5430,
+            refundedAmount: 0,
             paymentType: 'Hisseli Ödeme',
             paymentMethod: 'Kredi / Banka Kartı',
             status: 'Onaylandı'
@@ -399,6 +400,14 @@ function loadDB() {
 
 function saveDB(data) {
     fs.writeFileSync(DB_PATH, JSON.stringify(data, null, 2));
+}
+
+function getTodayYMD() {
+    const now = new Date();
+    const y = now.getFullYear();
+    const m = String(now.getMonth() + 1).padStart(2, '0');
+    const d = String(now.getDate()).padStart(2, '0');
+    return `${y}-${m}-${d}`;
 }
 
 function getAllAdminUsers(db) {
@@ -509,10 +518,177 @@ function requireAdmin(req, res, next) {
     return res.redirect('/admin/login');
 }
 
+app.get('/lang/:code', (req, res) => {
+    const lang = req.params.code === 'en' ? 'en' : 'tr';
+    res.setHeader('Set-Cookie', `yv_lang=${lang}; Path=/; Max-Age=31536000; SameSite=Lax`);
+    const backUrl = req.get('Referer') || '/';
+    res.redirect(backUrl);
+});
+
+const translationMemoryCache = new Map();
+
+async function translateSingleFallback(src) {
+    if (typeof fetch !== 'function') return src;
+
+    try {
+        const gUrl = 'https://translate.googleapis.com/translate_a/single?client=gtx&sl=tr&tl=en&dt=t&q=' + encodeURIComponent(src);
+        const r = await fetch(gUrl, { headers: { 'User-Agent': 'Mozilla/5.0' } });
+        if (r.ok) {
+            const data = await r.json();
+            if (Array.isArray(data) && Array.isArray(data[0])) {
+                const joined = data[0].map(part => (part && part[0]) ? part[0] : '').join('').trim();
+                if (joined && joined.toLowerCase() !== src.toLowerCase()) {
+                    return joined;
+                }
+            }
+        }
+    } catch {
+        // ikinci kaynağa geç
+    }
+
+    try {
+        const mUrl = 'https://api.mymemory.translated.net/get?q=' + encodeURIComponent(src) + '&langpair=tr|en';
+        const mr = await fetch(mUrl);
+        if (mr.ok) {
+            const mj = await mr.json();
+            const mOut = mj && mj.responseData && mj.responseData.translatedText;
+            if (mOut && typeof mOut === 'string' && mOut.trim()) {
+                return mOut.trim();
+            }
+        }
+    } catch {
+        // orijinal metni döndür
+    }
+
+    return src;
+}
+
+async function translateBatchFreeFirst(texts) {
+    const uniqueTexts = [...new Set(texts.map(t => String(t || '').trim()).filter(Boolean))];
+    const outputMap = {};
+    const pending = [];
+
+    for (const src of uniqueTexts) {
+        if (translationMemoryCache.has(src)) {
+            outputMap[src] = translationMemoryCache.get(src);
+        } else {
+            pending.push(src);
+        }
+    }
+
+    if (pending.length === 0) {
+        return outputMap;
+    }
+
+    const geminiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY || '';
+    const geminiModel = process.env.GEMINI_MODEL || 'gemini-2.5-flash';
+
+    if (geminiKey && typeof fetch === 'function') {
+        try {
+            const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(geminiModel)}:generateContent?key=${encodeURIComponent(geminiKey)}`;
+            const response = await fetch(endpoint, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    systemInstruction: {
+                        parts: [{
+                            text: 'You translate Turkish texts for a yacht charter and tour booking platform into natural, concise English. Keep yacht names ("Princess 72", "Aegean Pearl Gulet", "Sun Odyssey 54", "Lagoon 52 Catamaran", "Majesty 100 Superyacht"), brand name ("YachtVoyage"), PNR codes, currency/numbers, and place names ("Göcek", "Marmaris", "Fethiye", "Bodrum", "Yalıkavak", "Türkbükü", "Netsel Marina", "Ece Marina", "Ölüdeniz", "Cennet Adası", "Fosforlu Mağara") intact unless descriptive English is needed. Return ONLY valid JSON in this exact structure: {"translations":["..."]}.'
+                        }]
+                    },
+                    contents: [{
+                        role: 'user',
+                        parts: [{ text: JSON.stringify({ texts: pending }) }]
+                    }],
+                    generationConfig: {
+                        temperature: 0.1,
+                        responseMimeType: 'application/json'
+                    }
+                })
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                const rawJson = data &&
+                    data.candidates &&
+                    data.candidates[0] &&
+                    data.candidates[0].content &&
+                    data.candidates[0].content.parts &&
+                    data.candidates[0].content.parts[0] &&
+                    data.candidates[0].content.parts[0].text;
+
+                const parsed = rawJson ? JSON.parse(rawJson) : null;
+                const arr = parsed && Array.isArray(parsed.translations) ? parsed.translations : [];
+
+                if (arr.length === pending.length) {
+                    pending.forEach((src, idx) => {
+                        const val = (typeof arr[idx] === 'string' && arr[idx].trim()) ? arr[idx].trim() : src;
+                        translationMemoryCache.set(src, val);
+                        outputMap[src] = val;
+                    });
+                    return outputMap;
+                }
+            }
+        } catch (err) {
+            console.error('Gemini çeviri hatası, ücretsiz yedeğe geçiliyor:', err.message);
+        }
+    }
+
+    const concurrency = 6;
+    for (let i = 0; i < pending.length; i += concurrency) {
+        const chunk = pending.slice(i, i + concurrency);
+        const translatedChunk = await Promise.all(chunk.map(src => translateSingleFallback(src)));
+        chunk.forEach((src, idx) => {
+            const val = translatedChunk[idx] || src;
+            translationMemoryCache.set(src, val);
+            outputMap[src] = val;
+        });
+    }
+
+    return outputMap;
+}
+
+app.post('/api/translate', async (req, res) => {
+    try {
+        const texts = Array.isArray(req.body && req.body.texts) ? req.body.texts : [];
+        if (!texts.length) {
+            return res.json({ translations: {} });
+        }
+        const translations = await translateBatchFreeFirst(texts.slice(0, 200));
+        return res.json({ translations });
+    } catch (err) {
+        console.error('/api/translate hatası:', err.message);
+        return res.status(500).json({ translations: {}, error: 'Translation failed' });
+    }
+});
+
+app.post('/api/translate', async (req, res) => {
+    try {
+        const texts = Array.isArray(req.body && req.body.texts) ? req.body.texts : [];
+        if (!texts.length) {
+            return res.json({ translations: {} });
+        }
+        const translations = await translateBatchFreeFirst(texts.slice(0, 120));
+        return res.json({ translations });
+    } catch (err) {
+        console.error('/api/translate hatası:', err.message);
+        return res.status(500).json({ translations: {}, error: 'Translation failed' });
+    }
+});
+
 app.use((req, res, next) => {
     const db = loadDB();
+    const cookieHeader = req.headers.cookie || '';
+    const langMatch = cookieHeader.split(';').map(c => c.trim()).find(c => c.startsWith('yv_lang='));
+    const lang = (req.query.lang === 'en' || req.query.lang === 'tr')
+        ? req.query.lang
+        : (langMatch ? langMatch.split('=')[1] : 'tr');
+
+    res.locals.lang = lang === 'en' ? 'en' : 'tr';
+    res.locals.isEn = res.locals.lang === 'en';
     res.locals.siteSettings = db.siteSettings;
     res.locals.rentalContract = db.rentalContract;
+    res.locals.categories = db.categories;
+    res.locals.departurePoints = db.departurePoints;
     next();
 });
 
@@ -577,11 +753,26 @@ function isDateOverlap(startA, endA, startB, endB) {
     return startA < endB && endA > startB;
 }
 
+function isValidStrictRange(cIn, cOut) {
+    const today = getTodayYMD();
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(cIn || '') || !/^\d{4}-\d{2}-\d{2}$/.test(cOut || '')) {
+        return false;
+    }
+    if (cIn < today || cOut <= cIn) {
+        return false;
+    }
+    return true;
+}
+
 function normalizeDateRange(cIn, cOut) {
-    let start = (cIn || '2026-07-05').trim();
-    let end = (cOut || '2026-07-08').trim();
-    if (!/^\d{4}-\d{2}-\d{2}$/.test(start)) start = '2026-07-05';
-    if (!/^\d{4}-\d{2}-\d{2}$/.test(end)) end = '2026-07-08';
+    const today = getTodayYMD();
+    const fallbackStart = today;
+    const fallbackEnd = new Date(new Date(today + 'T00:00:00').getTime() + 3 * 86400000).toISOString().slice(0, 10);
+
+    let start = (cIn || fallbackStart).trim();
+    let end = (cOut || fallbackEnd).trim();
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(start)) start = fallbackStart;
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(end)) end = fallbackEnd;
 
     const d1 = new Date(start + 'T00:00:00');
     const d2 = new Date(end + 'T00:00:00');
@@ -722,7 +913,8 @@ app.get('/checkout', (req, res) => {
 
     const rawIn = (req.query.checkIn || '').trim();
     const rawOut = (req.query.checkOut || '').trim();
-    const checkInVal = /^\d{4}-\d{2}-\d{2}$/.test(rawIn) ? rawIn : '';
+    const today = getTodayYMD();
+    const checkInVal = (/^\d{4}-\d{2}-\d{2}$/.test(rawIn) && rawIn >= today) ? rawIn : '';
     const checkOutVal = (checkInVal && /^\d{4}-\d{2}-\d{2}$/.test(rawOut) && rawOut > checkInVal) ? rawOut : '';
 
     const activeExtras = (db.extras || []).filter(e => e.active !== false);
@@ -751,9 +943,14 @@ app.post('/checkout/confirm', (req, res) => {
     } = req.body;
 
     const yacht = db.yachts.find(y => Number(y.id) === Number(yachtId)) || db.yachts[0];
-    const range = normalizeDateRange(checkIn, checkOut);
-    const days = calcDays(range.checkIn, range.checkOut);
     const guestCount = Math.min(Number(yacht.guests) || 12, Math.max(1, Number(guests) || 2));
+
+    if (!isValidStrictRange(checkIn, checkOut)) {
+        return res.redirect(`/checkout?yachtId=${yacht.id}&guests=${guestCount}&error=${encodeURIComponent('Lütfen bugün veya ileri bir giriş tarihi ve çıkış tarihinden en az 1 gün sonrası için çıkış tarihi seçin.')}`);
+    }
+
+    const range = { checkIn: checkIn.trim(), checkOut: checkOut.trim() };
+    const days = calcDays(range.checkIn, range.checkOut);
 
     const conflict = db.bookings.find(b =>
         Number(b.yachtId) === Number(yacht.id) &&
@@ -818,9 +1015,9 @@ app.post('/checkout/confirm', (req, res) => {
 
     db.bookings.unshift({
         id: pnr,
-        customer: customerName,
-        email,
-        phone,
+        customer: (customerName || '').trim(),
+        email: (email || '').trim().toLowerCase(),
+        phone: (phone || '').trim(),
         yachtId: yacht.id,
         yacht: yacht.name,
         checkIn: range.checkIn,
@@ -830,13 +1027,14 @@ app.post('/checkout/confirm', (req, res) => {
         charterType: charterType || 'Özel Yat Kiralama (Konaklamalı)',
         extras: selectedExtraNames,
         extrasTotal,
-        notes: notes || '',
+        notes: (notes || '').trim(),
         discount: discountAmt + autoDisc,
         totalAmount: finalAmount,
         paidAmount: paidAmt,
+        refundedAmount: 0,
         paymentType: isFullPayment ? 'Tam Ödeme (İndirimli)' : 'Hisseli Ödeme',
-        paymentMethod: paymentMethod || 'Kredi / Banka Kartı',
-        status: paymentMethod === 'Havale / EFT' ? 'Beklemede' : 'Onaylandı'
+        paymentMethod: selectedMethod,
+        status: selectedMethod === 'Havale / EFT' ? 'Beklemede' : 'Onaylandı'
     });
 
     saveDB(db);
@@ -854,29 +1052,43 @@ app.get('/confirmation/:pnr', (req, res) => {
 app.get('/my-booking', (req, res) => {
     const db = loadDB();
     const pnr = (req.query.pnr || '').trim().toUpperCase();
+    const emailQuery = (req.query.email || '').trim().toLowerCase();
     let booking = null;
     let yacht = null;
-    const searched = Boolean(pnr);
+    const searched = Boolean(pnr || emailQuery);
 
     if (pnr) {
-        booking = db.bookings.find(b => b.id.toUpperCase() === pnr);
-        if (booking) {
+        const candidate = db.bookings.find(b => b.id.toUpperCase() === pnr);
+        if (candidate && (!emailQuery || String(candidate.email || '').toLowerCase() === emailQuery)) {
+            booking = candidate;
             yacht = db.yachts.find(y => Number(y.id) === Number(booking.yachtId)) || db.yachts[0];
         }
     }
 
-    res.render('client/my-booking', { booking, yacht, pnr, searched, msg: req.query.msg || '' });
+    res.render('client/my-booking', {
+        booking,
+        yacht,
+        pnr,
+        email: req.query.email || '',
+        searched,
+        msg: req.query.msg || ''
+    });
 });
 
 app.post('/my-booking/cancel', (req, res) => {
     const db = loadDB();
-    const { pnr } = req.body;
-    const booking = db.bookings.find(b => b.id === pnr);
+    const pnr = String(req.body.pnr || '').trim().toUpperCase();
+    const emailQuery = String(req.body.email || '').trim().toLowerCase();
+    const booking = db.bookings.find(b =>
+        b.id.toUpperCase() === pnr &&
+        (!emailQuery || String(b.email || '').toLowerCase() === emailQuery)
+    );
     if (booking) {
         booking.status = 'İptal Edildi';
+        booking.refundedAmount = Number(booking.paidAmount || 0);
         saveDB(db);
     }
-    res.redirect(`/my-booking?pnr=${encodeURIComponent(pnr)}&msg=${encodeURIComponent('Rezervasyonunuz başarıyla iptal edildi.')}`);
+    res.redirect(`/my-booking?pnr=${encodeURIComponent(pnr)}&email=${encodeURIComponent(req.body.email || '')}&msg=${encodeURIComponent('Rezervasyonunuz başarıyla iptal edildi.')}`);
 });
 
 app.get('/admin/login', (req, res) => {

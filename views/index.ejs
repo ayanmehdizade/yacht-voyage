@@ -1,154 +1,250 @@
-<!DOCTYPE html>
-<html lang="tr">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Marmaris Yacht Tours - Rezervasyon</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-</head>
-<body class="bg-slate-50 font-sans text-slate-800">
-    <!-- Top CRM Bar -->
-    <div class="bg-slate-900 text-white text-xs py-2 px-6 flex justify-between items-center">
-        <div class="flex items-center space-x-2">
-            <span class="bg-teal-500 text-slate-950 px-2 py-0.5 rounded text-[10px] font-bold uppercase">Canlı CRM</span>
-            <span>Marmaris Yacht Tours & Rezervasyon Sistemi</span>
-        </div>
-        <a href="/admin" class="bg-teal-600 hover:bg-teal-500 text-white px-3 py-1 rounded font-semibold transition">Admin Panele Giriş →</a>
-    </div>
+<%- include('../partials/header') %>
 
-    <!-- Header -->
-    <header class="bg-white border-b border-slate-200 sticky top-0 z-30">
-        <div class="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
-            <a href="/" class="flex items-center space-x-2.5">
-                <i class="fa-solid fa-sailboat text-2xl text-teal-600"></i>
-                <span class="font-bold text-lg text-slate-900">Marmaris Yacht Tours</span>
+<% const hCfg = (typeof siteSettings !== 'undefined' && siteSettings) ? siteSettings : {
+    brandName: 'YachtVoyage',
+    heroBadge: 'Göcek • Marmaris • Fethiye • Bodrum',
+    heroTitle: 'Ege ve Akdeniz koylarını kendi rotanda keşfet',
+    heroSubtitle: 'Lisanslı kaptanlar, özel yat filosu, anlık müsaitlik takvimi ve şeffaf ödeme planlarıyla mavi yolculuğunu dakikalar içinde planla.',
+    heroImage: 'https://images.unsplash.com/photo-1569263979104-865ab9cd8d5e?auto=format&fit=crop&w=1920&q=80'
+}; %>
+<% const homeYachts = (typeof yachts !== 'undefined' && Array.isArray(yachts)) ? yachts : []; %>
+<% const homeCats = (typeof categories !== 'undefined' && Array.isArray(categories)) ? categories : []; %>
+<% const homeTours = (typeof tours !== 'undefined' && Array.isArray(tours)) ? tours : []; %>
+<% const homeDeps = (typeof departurePoints !== 'undefined' && Array.isArray(departurePoints) && departurePoints.length) ? departurePoints : [
+    { name: 'Göcek' },
+    { name: 'Marmaris' },
+    { name: 'Fethiye' },
+    { name: 'Bodrum' }
+]; %>
+
+<!-- HERO & HIZLI ARAMA -->
+<section class="relative bg-[#0B1F3A] text-white overflow-hidden">
+    <div class="absolute inset-0 opacity-35 bg-cover bg-center" style="background-image: url('<%= hCfg.heroImage %>')"></div>
+    <div class="absolute inset-0 bg-gradient-to-b from-[#0B1F3A]/70 via-[#0B1F3A]/55 to-[#0B1F3A]"></div>
+
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 py-16 md:py-24 relative z-10 space-y-10">
+        <div class="max-w-3xl space-y-4">
+            <span class="inline-flex items-center space-x-2 bg-white/10 backdrop-blur-xs border border-white/15 text-sky-200 text-xs font-bold px-3.5 py-1.5 rounded-full">
+                <i class="fa-solid fa-compass text-teal-300"></i>
+                <span><%= hCfg.heroBadge %></span>
+            </span>
+            <h1 class="text-3xl sm:text-5xl font-extrabold leading-tight tracking-tight">
+                <%= hCfg.heroTitle %>
+            </h1>
+            <p class="text-slate-200 text-sm sm:text-base max-w-2xl leading-relaxed">
+                <%= hCfg.heroSubtitle %>
+            </p>
+        </div>
+
+        <form action="/yachts" method="GET" class="bg-white text-slate-800 p-4 md:p-5 rounded-3xl shadow-2xl grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 items-end">
+            <div>
+                <label class="block text-[11px] font-bold text-slate-400 uppercase mb-1">Kalkış Limanı</label>
+                <select name="location" class="w-full p-3 text-sm font-semibold border border-slate-200 rounded-xl bg-slate-50">
+                    <option value="">Tüm Limanlar</option>
+                    <% homeDeps.forEach(function(dep) { %>
+                        <option value="<%= dep.name %>"><%= dep.name %></option>
+                    <% }) %>
+                </select>
+            </div>
+
+            <div>
+                <label class="block text-[11px] font-bold text-slate-400 uppercase mb-1">Yat Kategorisi</label>
+                <select name="category" class="w-full p-3 text-sm font-semibold border border-slate-200 rounded-xl bg-slate-50">
+                    <option value="">Tüm Kategoriler</option>
+                    <% homeCats.forEach(function(cat) { %>
+                        <option value="<%= cat.key %>"><%= cat.nameTr || cat.title || cat.key %></option>
+                    <% }) %>
+                </select>
+            </div>
+
+            <div>
+                <label class="block text-[11px] font-bold text-slate-400 uppercase mb-1">Giriş Tarihi</label>
+                <input type="date" id="homeCheckIn" name="checkIn" class="w-full p-3 text-sm font-semibold border border-slate-200 rounded-xl bg-slate-50">
+            </div>
+
+            <div>
+                <label class="block text-[11px] font-bold text-slate-400 uppercase mb-1">Misafir Sayısı</label>
+                <input type="number" name="guests" min="1" max="30" placeholder="Örn: 4" class="w-full p-3 text-sm font-semibold border border-slate-200 rounded-xl bg-slate-50">
+            </div>
+
+            <div>
+                <button type="submit" class="w-full bg-teal-600 hover:bg-teal-700 text-white py-3.5 px-5 rounded-xl text-sm font-bold transition shadow-lg">
+                    <i class="fa-solid fa-magnifying-glass mr-1.5"></i>Yatları Keşfet
+                </button>
+            </div>
+        </form>
+    </div>
+</section>
+
+<main class="max-w-7xl mx-auto px-4 sm:px-6 py-14 space-y-16">
+    <!-- AVANTAJLAR -->
+    <section class="grid grid-cols-2 lg:grid-cols-4 gap-4 text-xs sm:text-sm">
+        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs flex items-center space-x-3.5">
+            <div class="w-10 h-10 rounded-xl bg-teal-50 text-teal-700 flex items-center justify-center shrink-0">
+                <i class="fa-solid fa-shield-halved text-lg"></i>
+            </div>
+            <div>
+                <div class="font-extrabold text-slate-900">Lisanslı Kaptanlar</div>
+                <div class="text-[11px] text-slate-500">Deneyimli ve belgeli mürettebat</div>
+            </div>
+        </div>
+        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs flex items-center space-x-3.5">
+            <div class="w-10 h-10 rounded-xl bg-sky-50 text-[#0B1F3A] flex items-center justify-center shrink-0">
+                <i class="fa-solid fa-calendar-check text-lg"></i>
+            </div>
+            <div>
+                <div class="font-extrabold text-slate-900">Canlı Müsaitlik</div>
+                <div class="text-[11px] text-slate-500">Çakışmasız anlık takvim kontrolü</div>
+            </div>
+        </div>
+        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs flex items-center space-x-3.5">
+            <div class="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-700 flex items-center justify-center shrink-0">
+                <i class="fa-solid fa-rotate-left text-lg"></i>
+            </div>
+            <div>
+                <div class="font-extrabold text-slate-900">Ücretsiz İptal</div>
+                <div class="text-[11px] text-slate-500">7 gün kalaya kadar %100 iade</div>
+            </div>
+        </div>
+        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs flex items-center space-x-3.5">
+            <div class="w-10 h-10 rounded-xl bg-amber-50 text-amber-700 flex items-center justify-center shrink-0">
+                <i class="fa-solid fa-headset text-lg"></i>
+            </div>
+            <div>
+                <div class="font-extrabold text-slate-900">7/24 Yat Konsyerji</div>
+                <div class="text-[11px] text-slate-500">Özel menü ve transfer desteği</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ÖNE ÇIKAN FİLO -->
+    <section class="space-y-6">
+        <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-3">
+            <div>
+                <span class="text-xs font-extrabold uppercase tracking-wider text-teal-600">Seçkin Filo</span>
+                <h2 class="text-2xl md:text-3xl font-extrabold text-[#0B1F3A] mt-1">Öne Çıkan Yatlarımız</h2>
+            </div>
+            <a href="/yachts" class="text-xs font-bold text-[#0B1F3A] hover:text-teal-700 transition">
+                Tüm Filoyu Gör (<%= homeYachts.length %> Yat) →
             </a>
-            <nav class="hidden md:flex items-center space-x-6 text-sm font-medium text-slate-600">
-                <a href="#turlar" class="hover:text-teal-600 transition">Turlar</a>
-                <a href="#avantajlar" class="hover:text-teal-600 transition">Avantajlar</a>
-                <a href="/admin" class="text-teal-700 font-semibold hover:underline">CRM Panel</a>
-            </nav>
-            <a href="#turlar" class="bg-teal-600 hover:bg-teal-700 text-white px-4 py-2 rounded-lg text-sm font-semibold transition">Rezervasyon</a>
-        </div>
-    </header>
-
-    <!-- Hero & Filtre -->
-    <div class="relative bg-slate-900 text-white py-20 px-6">
-        <div class="absolute inset-0 opacity-35 bg-cover bg-center" style="background-image: url('https://images.unsplash.com/photo-1569263979104-865ab9cd8d5e?auto=format&fit=crop&w=1920&q=80')"></div>
-        <div class="max-w-7xl mx-auto relative z-10 space-y-8">
-            <div class="max-w-2xl">
-                <h1 class="text-3xl md:text-5xl font-extrabold leading-tight mb-3">Marmaris koylarını kendi rotanda keşfet</h1>
-                <p class="text-slate-200 text-base">Marmaris’te günlük ve özel yat turları, hızlı rezervasyon ve şeffaf fiyatlarla.</p>
-            </div>
-
-            <form action="/" method="GET" class="bg-white text-slate-800 p-4 rounded-2xl shadow-xl grid grid-cols-1 md:grid-cols-4 gap-3 items-end">
-                <div>
-                    <label class="block text-[11px] font-bold text-slate-400 uppercase mb-1">Kalkış Noktası</label>
-                    <select name="location" class="w-full p-2.5 text-sm border border-slate-200 rounded-xl bg-slate-50">
-                        <option value="all">Tümü</option>
-                        <% locations.forEach(loc => { %>
-                            <option value="<%= loc %>" <%= filters.location === loc ? 'selected' : '' %>><%= loc %></option>
-                        <% }) %>
-                    </select>
-                </div>
-                <div>
-                    <label class="block text-[11px] font-bold text-slate-400 uppercase mb-1">Kişi Sayısı (Min)</label>
-                    <input type="number" name="guests" min="1" value="<%= filters.guests %>" placeholder="Örn: 4" class="w-full p-2.5 text-sm border border-slate-200 rounded-xl bg-slate-50">
-                </div>
-                <div>
-                    <label class="block text-[11px] font-bold text-slate-400 uppercase mb-1">Tur Tipi</label>
-                    <select name="type" class="w-full p-2.5 text-sm border border-slate-200 rounded-xl bg-slate-50">
-                        <option value="all">Tümü</option>
-                        <% types.forEach(t => { %>
-                            <option value="<%= t %>" <%= filters.type === t ? 'selected' : '' %>><%= t %></option>
-                        <% }) %>
-                    </select>
-                </div>
-                <div class="flex space-x-2">
-                    <button type="submit" class="flex-1 bg-teal-600 hover:bg-teal-700 text-white py-2.5 px-4 rounded-xl text-sm font-bold transition">Turları Keşfet</button>
-                    <a href="/" class="px-3 py-2.5 border border-slate-200 rounded-xl text-sm text-slate-500 hover:bg-slate-50 flex items-center" title="Sıfırla"><i class="fa-solid fa-rotate-left"></i></a>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <!-- Turlar -->
-    <main id="turlar" class="max-w-7xl mx-auto px-6 py-12 space-y-6">
-        <% if (bookedRef) { %>
-            <div class="bg-emerald-50 border border-emerald-200 text-emerald-800 px-5 py-4 rounded-xl flex items-center justify-between text-sm">
-                <div>
-                    <i class="fa-solid fa-circle-check mr-2 text-emerald-600"></i>
-                    Rezervasyon talebiniz alındı! Referans kodunuz: <strong><%= bookedRef %></strong>. CRM paneline eklendi.
-                </div>
-                <a href="/admin" class="font-bold underline">CRM'de Gör</a>
-            </div>
-        <% } %>
-
-        <div class="flex items-center justify-between">
-            <h2 class="text-2xl font-bold text-slate-900">Popüler Turlar</h2>
-            <span class="text-xs text-slate-500"><%= yachts.length %> tur listeleniyor</span>
         </div>
 
-        <% if (yachts.length === 0) { %>
-            <div class="bg-white p-10 rounded-2xl border border-slate-200 text-center text-slate-500">
-                Seçilen kriterlere uygun tur bulunamadı. <a href="/" class="text-teal-600 font-semibold underline">Filtreleri temizle</a>
+        <% const featuredYachts = homeYachts.slice(0, 6); %>
+        <% if (featuredYachts.length === 0) { %>
+            <div class="bg-white p-10 rounded-2xl border border-slate-200 text-center text-sm text-slate-500">
+                Henüz listelenecek yat bulunmuyor.
             </div>
-        <% } %>
-
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <% yachts.forEach(yacht => { %>
-                <div class="bg-white rounded-2xl overflow-hidden border border-slate-200 shadow-sm flex flex-col justify-between">
-                    <div>
-                        <img src="<%= yacht.image %>" alt="<%= yacht.name %>" class="h-48 w-full object-cover">
-                        <div class="p-5">
-                            <div class="flex items-center justify-between text-xs text-slate-400 mb-1">
-                                <span><%= yacht.type %></span>
-                                <span><%= yacht.location %></span>
+        <% } else { %>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <% featuredYachts.forEach(function(yacht) { %>
+                    <% const coverImg = (yacht.images && yacht.images[0]) || yacht.image || 'https://images.unsplash.com/photo-1567899378494-47b22a2ae96a?auto=format&fit=crop&w=900&q=80'; %>
+                    <div class="group bg-white rounded-2xl overflow-hidden border border-slate-200 shadow-sm hover:shadow-xl transition flex flex-col justify-between">
+                        <div>
+                            <a href="/yachts/<%= yacht.id %>" class="block relative h-52 overflow-hidden bg-slate-100">
+                                <img src="<%= coverImg %>" onerror="fallbackYachtImg(this)" alt="<%= yacht.name %>" class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
+                                <span class="absolute top-3 left-3 bg-[#0B1F3A]/90 text-white text-[11px] font-bold px-3 py-1 rounded-full">
+                                    <%= yacht.location %>
+                                </span>
+                                <span class="absolute top-3 right-3 bg-white/95 text-slate-800 text-[11px] font-bold px-2.5 py-1 rounded-full">
+                                    <%= yacht.categoryTr || yacht.category %>
+                                </span>
+                            </a>
+                            <div class="p-5 space-y-2.5">
+                                <h3 class="text-lg font-extrabold text-slate-900">
+                                    <a href="/yachts/<%= yacht.id %>" class="hover:text-teal-700 transition"><%= yacht.name %></a>
+                                </h3>
+                                <p class="text-xs text-slate-500 line-clamp-2 leading-relaxed">
+                                    <%= yacht.description || 'Özel kaptanlı mavi yolculuk ve günlük koy turu deneyimi.' %>
+                                </p>
+                                <div class="flex flex-wrap items-center gap-3 text-xs text-slate-600 pt-1">
+                                    <span><i class="fa-solid fa-users text-teal-600 mr-1"></i>Maks. <%= yacht.guests %> Misafir</span>
+                                    <% if (yacht.length) { %>
+                                        <span><i class="fa-solid fa-ruler-horizontal text-teal-600 mr-1"></i><%= yacht.length %></span>
+                                    <% } %>
+                                    <% if (yacht.cabins) { %>
+                                        <span><i class="fa-solid fa-bed text-teal-600 mr-1"></i><%= yacht.cabins %> Kabin</span>
+                                    <% } %>
+                                </div>
                             </div>
-                            <h3 class="text-lg font-bold text-slate-900"><%= yacht.name %></h3>
-                            <p class="text-xs text-slate-500 mt-1"><%= yacht.description %></p>
-                            <div class="flex items-center space-x-4 text-xs text-slate-600 mt-3">
-                                <span><i class="fa-regular fa-clock text-teal-600 mr-1"></i><%= yacht.duration %></span>
-                                <span><i class="fa-solid fa-users text-teal-600 mr-1"></i>En fazla <%= yacht.guests %> kişi</span>
+                        </div>
+
+                        <div class="px-5 py-4 bg-slate-50 border-t border-slate-100 flex items-center justify-between gap-2">
+                            <div>
+                                <span class="text-[11px] text-slate-400 block">Günlük Başlangıç</span>
+                                <span class="text-lg font-extrabold text-[#0B1F3A]">€<%= Number(yacht.price || 0).toLocaleString() %></span>
                             </div>
-                            <p class="text-teal-700 font-extrabold text-lg mt-4"><%= yacht.price %> € <span class="text-xs font-normal text-slate-400">'dan başlayan fiyatlar</span></p>
+                            <div class="flex items-center space-x-2">
+                                <a href="/yachts/<%= yacht.id %>" class="px-3.5 py-2 rounded-xl border border-slate-300 text-xs font-bold text-slate-700 hover:bg-slate-100 transition">
+                                    Detay
+                                </a>
+                                <a href="/checkout/<%= yacht.id %>" class="px-4 py-2 rounded-xl bg-teal-600 hover:bg-teal-700 text-white text-xs font-bold transition shadow-xs">
+                                    Rezerv Et
+                                </a>
+                            </div>
                         </div>
                     </div>
+                <% }) %>
+            </div>
+        <% } %>
+    </section>
 
-                    <form action="/book" method="POST" class="p-5 pt-4 border-t border-slate-100 space-y-2.5 bg-slate-50/60">
-                        <input type="hidden" name="yachtName" value="<%= yacht.name %>">
-                        <input type="text" name="customerName" placeholder="Adınız Soyadınız" required class="w-full p-2 text-sm border border-slate-300 rounded-lg bg-white">
-                        <div class="grid grid-cols-2 gap-2">
-                            <input type="date" name="date" required class="p-2 text-xs border border-slate-300 rounded-lg bg-white">
-                            <input type="number" name="guests" min="1" max="<%= yacht.guests %>" value="2" required class="p-2 text-xs border border-slate-300 rounded-lg bg-white" placeholder="Kişi">
-                        </div>
-                        <input type="text" name="phone" placeholder="Telefon (İsteğe bağlı)" class="w-full p-2 text-xs border border-slate-300 rounded-lg bg-white">
-                        <button type="submit" class="w-full bg-slate-900 hover:bg-teal-600 text-white py-2.5 rounded-lg text-sm font-semibold transition">Rezerv Et</button>
-                    </form>
+    <!-- POPÜLER ROTALAR / TURLAR -->
+    <% if (homeTours.length > 0) { %>
+        <section class="space-y-6">
+            <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-3">
+                <div>
+                    <span class="text-xs font-extrabold uppercase tracking-wider text-teal-600">Özel Rotalar</span>
+                    <h2 class="text-2xl md:text-3xl font-extrabold text-[#0B1F3A] mt-1">Popüler Mavi Yolculuk Paketleri</h2>
                 </div>
-            <% }) %>
-        </div>
+                <a href="/rotalar" class="text-xs font-bold text-[#0B1F3A] hover:text-teal-700 transition">
+                    Tüm Rotaları İncele →
+                </a>
+            </div>
 
-        <!-- Avantajlar Bar -->
-        <section id="avantajlar" class="grid grid-cols-2 md:grid-cols-4 gap-4 pt-6 border-t border-slate-200 text-sm text-slate-700">
-            <div class="bg-white p-4 rounded-xl border border-slate-200 flex items-center space-x-3">
-                <i class="fa-solid fa-shield-halved text-teal-600 text-lg"></i>
-                <span class="font-medium">Lisanslı kaptanlar</span>
-            </div>
-            <div class="bg-white p-4 rounded-xl border border-slate-200 flex items-center space-x-3">
-                <i class="fa-solid fa-ship text-teal-600 text-lg"></i>
-                <span class="font-medium">Güvenli tekneler</span>
-            </div>
-            <div class="bg-white p-4 rounded-xl border border-slate-200 flex items-center space-x-3">
-                <i class="fa-brands fa-whatsapp text-teal-600 text-lg"></i>
-                <span class="font-medium">WhatsApp desteği</span>
-            </div>
-            <div class="bg-white p-4 rounded-xl border border-slate-200 flex items-center space-x-3">
-                <i class="fa-regular fa-calendar-check text-teal-600 text-lg"></i>
-                <span class="font-medium">Ücretsiz iptal seçeneği</span>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <% homeTours.slice(0, 2).forEach(function(tour) { %>
+                    <% const linkedYacht = homeYachts.find(function(y) { return Number(y.id) === Number(tour.yachtId); }); %>
+                    <% const tourImg = tour.img || (linkedYacht && linkedYacht.images && linkedYacht.images[0]) || 'https://images.unsplash.com/photo-1500375592092-40eb2168fd21?auto=format&fit=crop&w=900&q=80'; %>
+                    <div class="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm flex flex-col sm:flex-row">
+                        <img src="<%= tourImg %>" onerror="fallbackYachtImg(this)" alt="<%= tour.title %>" class="w-full sm:w-48 h-48 sm:h-auto object-cover shrink-0">
+                        <div class="p-5 flex flex-col justify-between flex-1 space-y-3">
+                            <div>
+                                <div class="flex items-center justify-between gap-2">
+                                    <span class="text-[11px] font-bold text-teal-700 uppercase"><%= tour.region %></span>
+                                    <span class="text-[11px] font-bold bg-slate-100 text-slate-700 px-2.5 py-0.5 rounded-md">
+                                        <%= tour.durationLabel || ((tour.durationDays || 1) + ' Gün') %>
+                                    </span>
+                                </div>
+                                <h3 class="text-base font-extrabold text-slate-900 mt-1"><%= tour.title %></h3>
+                                <p class="text-xs text-slate-500 mt-1 line-clamp-2"><%= tour.summary %></p>
+                            </div>
+                            <div class="pt-2 border-t border-slate-100 flex items-center justify-between">
+                                <span class="text-xs font-bold text-slate-700">
+                                    <%= linkedYacht ? linkedYacht.name : (tour.region + ' Rotası') %>
+                                </span>
+                                <a href="<%= linkedYacht ? ('/yachts/' + linkedYacht.id) : ('/yachts?location=' + encodeURIComponent(tour.region || '')) %>" class="text-xs font-extrabold text-teal-700 hover:underline">
+                                    İncele →
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                <% }) %>
             </div>
         </section>
-    </main>
-</body>
-</html>
+    <% } %>
+</main>
+
+<script>
+    (function () {
+        const homeIn = document.getElementById('homeCheckIn');
+        if (homeIn) {
+            const now = new Date();
+            const y = now.getFullYear();
+            const m = String(now.getMonth() + 1).padStart(2, '0');
+            const d = String(now.getDate()).padStart(2, '0');
+            homeIn.min = y + '-' + m + '-' + d;
+        }
+    })();
+</script>
+
+<%- include('../partials/footer') %>

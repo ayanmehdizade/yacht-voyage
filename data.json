@@ -332,6 +332,29 @@
   ],
   "bookings": [
     {
+      "id": "YV2026-9178",
+      "customer": "Ayan Mehdizada",
+      "email": "ayanmehdizade859@gmail.com",
+      "phone": "+34666113183",
+      "yachtId": 4,
+      "yacht": "Lagoon 52 Catamaran",
+      "checkIn": "2026-11-25",
+      "checkOut": "2026-11-27",
+      "days": 2,
+      "guests": 6,
+      "charterType": "Özel Yat Kiralama (Konaklamalı)",
+      "extras": [],
+      "extrasTotal": 0,
+      "notes": "",
+      "discount": 0,
+      "totalAmount": 6200,
+      "paidAmount": 3100,
+      "refundedAmount": 3100,
+      "paymentType": "Hisseli Ödeme",
+      "paymentMethod": "Kredi / Banka Kartı",
+      "status": "İptal Edildi"
+    },
+    {
       "id": "YV2026-9445",
       "customer": "Ayan Mehdizada",
       "email": "ayanmehdizade859@gmail.com",
@@ -564,6 +587,51 @@
       "name": "Seabob & Su Sporları Paketi",
       "pricePerGuest": 85,
       "active": true
+    }
+  ],
+  "siteSettings": {
+    "brandName": "YachtVoyage",
+    "brandSubtext": "Yacht Charter",
+    "phone": "+90 252 123 45 67",
+    "whatsappNumber": "902521234567",
+    "email": "hello@yachtvoyage.com",
+    "footerAbout": "Göcek, Marmaris, Fethiye ve Bodrum koylarında lisanslı kaptanlar ve özel filo ile yat kiralama ve günlük tur platformu.",
+    "copyrightText": "© 2026 YachtVoyage. Tüm hakları saklıdır.",
+    "conciergeWelcome": "Merhaba! Rota planlaması, özel menü veya tekne müsaitliği için hızlıca yazabilirsiniz."
+  },
+  "adminUsers": [
+    {
+      "id": 1,
+      "name": "Main Admin",
+      "email": "admin@yachtvoyage.com",
+      "password": "Yacht2026!",
+      "role": "admin"
+    }
+  ],
+  "rentalContract": {
+    "title": "YachtVoyage Tekne Kiralama ve İptal Sözleşmesi",
+    "body": "1. Taraflar ve Konu\nİşbu sözleşme, YachtVoyage Turizm Yatçılık A.Ş. ile rezervasyon formunda bilgileri yer alan misafir arasında, seçilen yatın belirtilen tarihlerde mürettebatlı/kaptanlı kiralanması şartlarını düzenler.\n\n2. Ödeme Planı ve Bakiye Tahsilatı\nHisseli Ödeme seçeneğinde belirlenen ön ödeme yüzdesi rezervasyon anında tahsil edilir; kalan bakiye tekneye biniş günü marinada nakit veya POS ile ödenir. Tam Ödeme (İndirimli) seçeneğinde indirimli toplam tutarın tamamı rezervasyon sırasında tahsil edilir.\n\n3. İptal ve Tarih Değişikliği\nSeyir başlangıç tarihine 7 gün kalaya kadar yapılan iptallerde ödenen tutarın %100'ü kesintisiz iade edilir. Olumsuz hava koşulları ve liman başkanlığı seyir yasaklarında ücretsiz tarih değişikliği veya tam iade sağlanır.\n\n4. Güvenlik ve Kapasite Kuralları\nTekne kapasitesi yasal maksimum misafir sayısını aşamaz. Kaptan, hava ve deniz güvenliği gereği rotada değişiklik yapma yetkisine sahiptir."
+  },
+  "departurePoints": [
+    {
+      "id": 1,
+      "name": "Göcek",
+      "desc": "Koylar & D-Marin kalkış"
+    },
+    {
+      "id": 2,
+      "name": "Marmaris",
+      "desc": "Netsel Marina & Hisarönü"
+    },
+    {
+      "id": 3,
+      "name": "Fethiye",
+      "desc": "Ece Marina & Ölüdeniz"
+    },
+    {
+      "id": 4,
+      "name": "Bodrum",
+      "desc": "Yalıkavak & Türkbükü"
     }
   ]
 }

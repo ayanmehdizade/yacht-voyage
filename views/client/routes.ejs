@@ -1,42 +1,68 @@
 <%- include('../partials/header') %>
 
+<% const routesIsEn = (typeof isEn !== 'undefined') ? Boolean(isEn) : (typeof lang !== 'undefined' && lang === 'en'); %>
+
 <main class="max-w-7xl mx-auto px-4 sm:px-6 py-12 space-y-8">
-    <div class="border-b border-slate-200 pb-5">
-        <span class="text-xs font-extrabold uppercase tracking-wider text-teal-600">Mavi Yolculuk Rotaları</span>
-        <h1 class="text-3xl md:text-4xl font-extrabold text-[#0B1F3A] mt-1">Popüler Koy &amp; Liman Rehberi</h1>
+    <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4 border-b border-slate-200 pb-5">
+        <div>
+            <span class="text-xs font-extrabold uppercase tracking-wider text-teal-600"><%= routesIsEn ? 'Blue Cruise Routes' : 'Mavi Yolculuk Rotaları' %></span>
+            <h1 class="text-3xl md:text-4xl font-extrabold text-[#0B1F3A] mt-1"><%= routesIsEn ? 'Popular Cove & Marina Guide' : 'Popüler Koy & Liman Rehberi' %></h1>
+        </div>
+        <a href="/tur-paketleri" class="text-xs font-bold text-[#0B1F3A] hover:text-teal-700 transition">
+            <%= routesIsEn ? 'View All Tour Packages →' : 'Tüm Tur Paketlerini Gör →' %>
+        </a>
     </div>
 
     <% const routeTours = (typeof tours !== 'undefined' && Array.isArray(tours)) ? tours : []; %>
     <% const routeYachts = (typeof yachts !== 'undefined' && Array.isArray(yachts)) ? yachts : []; %>
+    <% const summaryTrToEn = {
+        'Yassıca Adaları, Bedri Rahmi Koyu ve Tersane Adası duraklarıyla tam gün özel tekne turu.': 'Full-day private yacht tour with stops at Yassıca Islands, Bedri Rahmi Cove, and Tersane Island.',
+        'Cennet Koyu, Türkbükü ve Orak Adası arasında lüks konaklamalı özel rota.': 'Private luxury overnight route between Paradise Bay (Cennet Koyu), Türkbükü, and Orak Island.'
+    }; %>
 
     <% if (routeTours.length === 0) { %>
         <div class="bg-white p-10 rounded-2xl border border-slate-200 text-center space-y-2">
-            <p class="text-sm font-bold text-slate-700">Henüz aktif rota veya tur bulunmuyor.</p>
-            <p class="text-xs text-slate-500">Admin paneldeki <strong>Turlar &amp; Kategoriler</strong> bölümünden yeni rota/tur ekleyebilirsiniz.</p>
+            <p class="text-sm font-bold text-slate-700"><%= routesIsEn ? 'No active routes or tours available yet.' : 'Henüz aktif rota veya tur bulunmuyor.' %></p>
+            <p class="text-xs text-slate-500">
+                <%= routesIsEn
+                    ? 'You can add new routes or tours from the Tours & Categories section in the admin panel.'
+                    : 'Admin paneldeki Turlar & Kategoriler bölümünden yeni rota/tur ekleyebilirsiniz.' %>
+            </p>
         </div>
     <% } else { %>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-7">
-            <% routeTours.forEach(tour => { %>
-                <% const linkedYacht = routeYachts.find(y => Number(y.id) === Number(tour.yachtId)) || routeYachts[0]; %>
+            <% routeTours.forEach(function(tour) { %>
+                <% const linkedYacht = routeYachts.find(function(y) { return Number(y.id) === Number(tour.yachtId); }); %>
                 <% const tourImg = tour.img || (linkedYacht && linkedYacht.images && linkedYacht.images[0]) || 'https://images.unsplash.com/photo-1500375592092-40eb2168fd21?auto=format&fit=crop&w=900&q=80'; %>
-                <% const stops = Array.isArray(tour.included) ? tour.included.slice(0, 3) : []; %>
+                <% const tourTitle = (routesIsEn && tour.titleEn) ? tour.titleEn : tour.title; %>
+                <% const tourRegion = (routesIsEn && tour.regionEn) ? tour.regionEn : tour.region; %>
+                <% const daysNum = Number(tour.durationDays || 1); %>
+                <% const tourDuration = (routesIsEn && tour.durationLabelEn)
+                    ? tour.durationLabelEn
+                    : (tour.durationLabel || (routesIsEn ? (daysNum + (daysNum === 1 ? ' Day' : ' Days')) : (daysNum + ' Gün'))); %>
+                <% const tourSummary = routesIsEn
+                    ? (tour.summaryEn || summaryTrToEn[tour.summary] || tour.summary || (tourRegion + ' private yacht route and cove exploration.'))
+                    : (tour.summary || (tourRegion + ' hattında özel tekne rotası ve koy keşfi.')); %>
+                <% const rawStops = (routesIsEn && Array.isArray(tour.includedEn) && tour.includedEn.length) ? tour.includedEn : (Array.isArray(tour.included) ? tour.included : []); %>
+                <% const stops = rawStops.slice(0, 3); %>
                 <% const locQuery = encodeURIComponent(tour.region || (linkedYacht && linkedYacht.location) || ''); %>
-                <div class="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm flex flex-col justify-between">
+                <% const targetUrl = linkedYacht ? ('/yachts/' + linkedYacht.id) : ('/yachts?location=' + locQuery); %>
+                <div class="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm hover:shadow-md transition flex flex-col justify-between">
                     <div>
-                        <img src="<%= tourImg %>" onerror="fallbackYachtImg(this)" alt="<%= tour.title %>" class="w-full h-52 object-cover">
+                        <img src="<%= tourImg %>" onerror="fallbackYachtImg(this)" alt="<%= tourTitle %>" class="w-full h-52 object-cover">
                         <div class="p-6 space-y-3">
                             <div class="flex justify-between items-start gap-3">
-                                <h2 class="text-xl font-extrabold text-slate-900"><%= tour.title %></h2>
+                                <h2 class="text-xl font-extrabold text-slate-900"><%= tourTitle %></h2>
                                 <span class="text-xs font-bold text-teal-700 bg-teal-50 px-3 py-1 rounded-lg shrink-0">
-                                    <%= tour.durationLabel || ((tour.durationDays || 1) + ' Gün') %>
+                                    <%= tourDuration %>
                                 </span>
                             </div>
                             <p class="text-xs text-slate-600 leading-relaxed">
-                                <%= tour.summary || (tour.region + ' hattında özel tekne rotası ve koy keşfi.') %>
+                                <%= tourSummary %>
                             </p>
                             <% if (stops.length > 0) { %>
                                 <div class="flex flex-wrap gap-1.5 pt-1 text-[11px] font-semibold text-slate-700">
-                                    <% stops.forEach((item, idx) => { %>
+                                    <% stops.forEach(function(item, idx) { %>
                                         <span class="bg-slate-100 px-2.5 py-1 rounded-lg"><%= idx + 1 %>. <%= item %></span>
                                     <% }) %>
                                 </div>
@@ -45,13 +71,15 @@
                     </div>
                     <div class="px-6 py-4 bg-slate-50 border-t border-slate-100 flex justify-between items-center gap-3">
                         <span class="text-xs text-slate-500">
-                            Bölge: <strong class="text-slate-800"><%= tour.region %></strong>
+                            <%= routesIsEn ? 'Region:' : 'Bölge:' %> <strong class="text-slate-800"><%= tourRegion %></strong>
                             <% if (linkedYacht) { %>
-                                • Yat: <strong class="text-slate-800"><%= linkedYacht.name %></strong>
+                                • <%= routesIsEn ? 'Yacht:' : 'Yat:' %> <strong class="text-slate-800"><%= linkedYacht.name %></strong>
+                            <% } else if (tour.capacityLabel) { %>
+                                • <strong class="text-slate-800"><%= tour.capacityLabel %></strong>
                             <% } %>
                         </span>
-                        <a href="<%= linkedYacht ? ('/yachts/' + linkedYacht.id) : ('/yachts?location=' + locQuery) %>" class="bg-teal-600 hover:bg-teal-700 text-white text-xs font-bold px-4 py-2 rounded-xl transition shrink-0">
-                            İncele →
+                        <a href="<%= targetUrl %>" class="bg-teal-600 hover:bg-teal-700 text-white text-xs font-bold px-4 py-2 rounded-xl transition shrink-0">
+                            <%= routesIsEn ? 'Explore →' : 'İncele →' %>
                         </a>
                     </div>
                 </div>

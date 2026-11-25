@@ -1,49 +1,108 @@
 <%- include('../partials/header') %>
 
+<% const tpIsEn = (typeof isEn !== 'undefined') ? Boolean(isEn) : (typeof lang !== 'undefined' && lang === 'en'); %>
+
 <main class="max-w-7xl mx-auto px-4 sm:px-6 py-12 space-y-8">
     <div class="flex flex-wrap items-end justify-between gap-4 border-b border-slate-200 pb-5">
         <div>
-            <span class="text-xs font-extrabold uppercase tracking-wider text-teal-600">Hazır Programlar</span>
-            <h1 class="text-3xl md:text-4xl font-extrabold text-[#0B1F3A] mt-1">Tur Paketleri &amp; Dahil Olanlar</h1>
+            <span class="text-xs font-extrabold uppercase tracking-wider text-teal-600"><%= tpIsEn ? 'Curated Programs' : 'Hazır Programlar' %></span>
+            <h1 class="text-3xl md:text-4xl font-extrabold text-[#0B1F3A] mt-1"><%= tpIsEn ? "Tour Packages & What's Included" : 'Tur Paketleri & Dahil Olanlar' %></h1>
+            <p class="text-xs sm:text-sm text-slate-500 mt-1">
+                <%= tpIsEn
+                    ? 'The scope, duration, and package rate of your selected tour are carried directly to the checkout summary.'
+                    : 'Seçtiğiniz turun kapsamı, süresi ve paket ücreti doğrudan ödeme özetine taşınır.' %>
+            </p>
         </div>
-        <a href="/yachts" class="text-xs font-bold bg-[#0B1F3A] text-white px-4 py-2.5 rounded-xl hover:bg-sky-900 transition">Tüm Yatları Gör →</a>
+        <a href="/yachts" class="text-xs font-bold bg-[#0B1F3A] text-white px-4 py-2.5 rounded-xl hover:bg-sky-900 transition">
+            <%= tpIsEn ? 'View All Yachts →' : 'Tüm Yatları Gör →' %>
+        </a>
     </div>
 
     <% const dynTours = (typeof tours !== 'undefined' && Array.isArray(tours)) ? tours : []; %>
     <% const yachtList = (typeof yachts !== 'undefined' && Array.isArray(yachts)) ? yachts : []; %>
+    <% const fallbackImgs = [
+        'https://images.unsplash.com/photo-1500375592092-40eb2168fd21?auto=format&fit=crop&w=800&q=80',
+        'https://images.unsplash.com/photo-1544551763-46a013bb70d5?auto=format&fit=crop&w=800&q=80',
+        'https://images.unsplash.com/photo-1567899378494-47b22a2ae96a?auto=format&fit=crop&w=800&q=80',
+        'https://images.unsplash.com/photo-1534447677768-be436bb09401?auto=format&fit=crop&w=800&q=80'
+    ]; %>
+    <% const defaultIncludedTr = ['Lisanslı kaptan ve mürettebat', 'Rota boyunca koy molaları']; %>
+    <% const defaultIncludedEn = ['Licensed captain and crew', 'Cove stops along the route']; %>
+    <% const defaultExcludedTr = ['Özel menü ve havalimanı transferi']; %>
+    <% const defaultExcludedEn = ['Custom menu and airport transfer']; %>
+    <% const itemTrToEn = {
+        'Lisanslı kaptan ve mürettebat': 'Licensed captain and crew',
+        'Rota boyunca koy molaları': 'Cove stops along the route',
+        'Özel menü ve havalimanı transferi': 'Custom menu and airport transfer'
+    }; %>
+    <% const summaryTrToEn = {
+        'Yassıca Adaları, Bedri Rahmi Koyu ve Tersane Adası duraklarıyla tam gün özel tekne turu.': 'Full-day private yacht tour with stops at Yassıca Islands, Bedri Rahmi Cove, and Tersane Island.',
+        'Cennet Koyu, Türkbükü ve Orak Adası arasında lüks konaklamalı özel rota.': 'Private luxury overnight route between Paradise Bay (Cennet Koyu), Türkbükü, and Orak Island.'
+    }; %>
 
     <% if (dynTours.length === 0) { %>
         <div class="bg-white p-10 rounded-2xl border border-slate-200 text-center space-y-2">
-            <p class="text-sm font-bold text-slate-700">Şu an aktif tur paketi bulunmuyor.</p>
-            <p class="text-xs text-slate-500">Admin paneldeki <strong>Turlar &amp; Kategoriler</strong> bölümünden yeni tur ekleyebilirsiniz.</p>
+            <p class="text-sm font-bold text-slate-700"><%= tpIsEn ? 'No active tour packages available right now.' : 'Şu an aktif tur paketi bulunmuyor.' %></p>
+            <p class="text-xs text-slate-500">
+                <%= tpIsEn
+                    ? 'You can add new tours from the Tours & Categories section in the admin panel.'
+                    : 'Admin paneldeki Turlar & Kategoriler bölümünden yeni tur ekleyebilirsiniz.' %>
+            </p>
         </div>
     <% } else { %>
         <div class="grid grid-cols-1 md:grid-cols-3 gap-7">
-            <% dynTours.forEach(pkg => { %>
+            <% dynTours.forEach((pkg, idx) => { %>
                 <% const linkedYacht = yachtList.find(y => Number(y.id) === Number(pkg.yachtId)) || yachtList[0]; %>
-                <% const pkgImg = pkg.img || (linkedYacht && linkedYacht.images && linkedYacht.images[0]) || 'https://images.unsplash.com/photo-1500375592092-40eb2168fd21?auto=format&fit=crop&w=800&q=80'; %>
-                <% const pkgIncluded = (Array.isArray(pkg.included) && pkg.included.length) ? pkg.included : ['Lisanslı kaptan ve mürettebat', 'Rota boyunca koy molaları']; %>
-                <% const pkgExcluded = (Array.isArray(pkg.excluded) && pkg.excluded.length) ? pkg.excluded : ['Özel menü ve havalimanı transferi']; %>
+                <% const pkgImg = pkg.img || fallbackImgs[idx % fallbackImgs.length]; %>
+                <% const pkgTitle = (tpIsEn && pkg.titleEn) ? pkg.titleEn : pkg.title; %>
+                <% const pkgRegion = (tpIsEn && pkg.regionEn) ? pkg.regionEn : pkg.region; %>
+                <% const pkgSummary = tpIsEn
+                    ? (pkg.summaryEn || summaryTrToEn[pkg.summary] || pkg.summary)
+                    : pkg.summary; %>
+                <% const pkgBadge = (tpIsEn && pkg.badgeEn) ? pkg.badgeEn : (pkg.badge || (tpIsEn ? 'TOUR PACKAGE' : 'TUR PAKETİ')); %>
+                <% const daysNum = Number(pkg.durationDays || 1); %>
+                <% const pkgDuration = (tpIsEn && pkg.durationLabelEn)
+                    ? pkg.durationLabelEn
+                    : (pkg.durationLabel || (tpIsEn ? (daysNum + (daysNum === 1 ? ' Day' : ' Days')) : (daysNum + ' Gün'))); %>
+                <% const pkgCapacity = (tpIsEn && pkg.capacityLabelEn)
+                    ? pkg.capacityLabelEn
+                    : (pkg.capacityLabel || (linkedYacht ? (tpIsEn ? ('Up to ' + linkedYacht.guests + ' guests') : ('En fazla ' + linkedYacht.guests + ' kişi')) : (tpIsEn ? 'Private Group' : 'Özel Grup'))); %>
+                <% const rawInc = (tpIsEn && Array.isArray(pkg.includedEn) && pkg.includedEn.length)
+                    ? pkg.includedEn
+                    : ((Array.isArray(pkg.included) && pkg.included.length) ? pkg.included : (tpIsEn ? defaultIncludedEn : defaultIncludedTr)); %>
+                <% const pkgIncluded = tpIsEn ? rawInc.map(item => itemTrToEn[item] || item) : rawInc; %>
+                <% const rawExc = (tpIsEn && Array.isArray(pkg.excludedEn) && pkg.excludedEn.length)
+                    ? pkg.excludedEn
+                    : ((Array.isArray(pkg.excluded) && pkg.excluded.length) ? pkg.excluded : (tpIsEn ? defaultExcludedEn : defaultExcludedTr)); %>
+                <% const pkgExcluded = tpIsEn ? rawExc.map(ex => itemTrToEn[ex] || ex) : rawExc; %>
+                <% const pkgPrice = Number(pkg.pricePerDay || 0); %>
                 <div class="bg-white rounded-2xl overflow-hidden border border-slate-200 shadow-sm hover:shadow-xl transition flex flex-col justify-between">
                     <div>
                         <div class="relative">
-                            <img src="<%= pkgImg %>" onerror="fallbackYachtImg(this)" alt="<%= pkg.title %>" class="w-full h-52 object-cover">
-                            <span class="absolute top-3 left-3 bg-[#0B1F3A]/90 text-white text-[10px] font-bold px-3 py-1 rounded-full tracking-wider"><%= pkg.badge || 'TUR PAKETİ' %></span>
+                            <img src="<%= pkgImg %>" onerror="fallbackYachtImg(this)" alt="<%= pkgTitle %>" class="w-full h-52 object-cover">
+                            <span class="absolute top-3 left-3 bg-[#0B1F3A]/90 text-white text-[10px] font-bold px-3 py-1 rounded-full tracking-wider"><%= pkgBadge %></span>
+                            <% if (linkedYacht) { %>
+                                <span class="absolute bottom-3 right-3 bg-white/95 text-[#0B1F3A] text-[10px] font-extrabold px-2.5 py-1 rounded-lg shadow">
+                                    <%= tpIsEn ? 'Yacht:' : 'Tekne:' %> <%= linkedYacht.name %>
+                                </span>
+                            <% } %>
                         </div>
                         <div class="p-6 space-y-4">
                             <div>
-                                <h2 class="text-lg font-extrabold text-slate-900"><%= pkg.title %></h2>
-                                <p class="text-xs text-slate-500 mt-0.5"><i class="fa-solid fa-compass text-teal-600 mr-1"></i><%= pkg.region %></p>
+                                <h2 class="text-lg font-extrabold text-slate-900"><%= pkgTitle %></h2>
+                                <p class="text-xs text-slate-500 mt-0.5"><i class="fa-solid fa-compass text-teal-600 mr-1"></i><%= pkgRegion %></p>
                             </div>
                             <div class="flex flex-wrap gap-3 text-xs text-slate-600 bg-slate-50 p-3 rounded-xl">
-                                <span><i class="fa-regular fa-clock text-teal-600 mr-1"></i><%= pkg.durationLabel || (pkg.durationDays + ' Gün') %></span>
-                                <span><i class="fa-solid fa-users text-teal-600 mr-1"></i><%= pkg.capacityLabel || (linkedYacht ? ('En fazla ' + linkedYacht.guests + ' kişi') : 'Özel Grup') %></span>
+                                <span><i class="fa-regular fa-clock text-teal-600 mr-1"></i><%= pkgDuration %></span>
+                                <span><i class="fa-solid fa-users text-teal-600 mr-1"></i><%= pkgCapacity %></span>
                             </div>
-                            <% if (pkg.summary) { %>
-                                <p class="text-xs text-slate-600 leading-relaxed"><%= pkg.summary %></p>
+                            <% if (pkgSummary) { %>
+                                <p class="text-xs text-slate-600 leading-relaxed"><%= pkgSummary %></p>
                             <% } %>
                             <div class="space-y-1.5">
-                                <div class="text-[11px] font-bold uppercase text-emerald-700 tracking-wider">Pakete Dahil Olanlar</div>
+                                <div class="text-[11px] font-bold uppercase text-emerald-700 tracking-wider">
+                                    <%= tpIsEn ? "WHAT'S INCLUDED IN THE PACKAGE" : 'Pakete Dahil Olanlar' %>
+                                </div>
                                 <% pkgIncluded.forEach(item => { %>
                                     <div class="text-xs text-slate-700 flex items-start space-x-2">
                                         <i class="fa-solid fa-check text-emerald-600 mt-0.5"></i>
@@ -52,7 +111,9 @@
                                 <% }) %>
                             </div>
                             <div class="space-y-1 pt-2 border-t border-slate-100">
-                                <div class="text-[11px] font-bold uppercase text-slate-400 tracking-wider">Ekstra / Dahil Değil</div>
+                                <div class="text-[11px] font-bold uppercase text-slate-400 tracking-wider">
+                                    <%= tpIsEn ? 'EXTRA / NOT INCLUDED' : 'Ekstra / Dahil Değil' %>
+                                </div>
                                 <% pkgExcluded.forEach(ex => { %>
                                     <div class="text-xs text-slate-500 flex items-start space-x-2">
                                         <i class="fa-solid fa-circle-info text-slate-400 mt-0.5"></i>
@@ -62,12 +123,21 @@
                             </div>
                         </div>
                     </div>
-                    <div class="px-6 py-4 bg-slate-50/70 border-t border-slate-100 flex items-center justify-between">
+                    <div class="px-6 py-4 bg-slate-50/70 border-t border-slate-100 flex items-center justify-between gap-2">
                         <div>
-                            <span class="text-[11px] text-slate-400 block">Başlangıç</span>
-                            <span class="font-extrabold text-teal-700 text-lg"><%= Number(pkg.pricePerDay || 0).toLocaleString() %> €</span>
+                            <span class="text-[11px] text-slate-400 block"><%= tpIsEn ? 'Package Rate' : 'Paket Ücreti' %></span>
+                            <span class="font-extrabold text-teal-700 text-lg">€<%= pkgPrice.toLocaleString() %></span>
                         </div>
-                        <a href="/yachts/<%= linkedYacht ? linkedYacht.id : '' %>" class="bg-[#0B1F3A] hover:bg-sky-900 text-white text-xs font-bold px-4 py-2.5 rounded-xl transition">İncele &amp; Kirala →</a>
+                        <div class="flex items-center gap-2">
+                            <% if (linkedYacht) { %>
+                                <a href="/yachts/<%= linkedYacht.id %>" class="text-xs font-bold text-slate-700 hover:text-[#0B1F3A] px-3 py-2.5 rounded-xl border border-slate-200 bg-white transition">
+                                    <%= tpIsEn ? 'Yacht Details' : 'Yat Detayı' %>
+                                </a>
+                            <% } %>
+                            <a href="/checkout?yachtId=<%= linkedYacht ? linkedYacht.id : 1 %>&tourId=<%= pkg.id %>" class="bg-[#0B1F3A] hover:bg-sky-900 text-white text-xs font-bold px-4 py-2.5 rounded-xl transition">
+                                <%= tpIsEn ? 'Select Package →' : 'Paketi Seç →' %>
+                            </a>
+                        </div>
                     </div>
                 </div>
             <% }) %>

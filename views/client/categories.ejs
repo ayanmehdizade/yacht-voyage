@@ -1,42 +1,81 @@
 <%- include('../partials/header') %>
 
-<main class="max-w-7xl mx-auto px-4 sm:px-6 py-12 space-y-8">
-    <div class="border-b border-slate-200 pb-5">
-        <span class="text-xs font-extrabold uppercase tracking-wider text-teal-600">Filo Tipleri</span>
-        <h1 class="text-3xl md:text-4xl font-extrabold text-[#0B1F3A] mt-1">Yat Kategorilerimiz</h1>
-    </div>
+<% const catIsEn = (typeof isEn !== 'undefined') ? Boolean(isEn) : (typeof lang !== 'undefined' && lang === 'en'); %>
+<% const listCats = (typeof categories !== 'undefined' && Array.isArray(categories)) ? categories : []; %>
+<% const allYachts = (typeof yachts !== 'undefined' && Array.isArray(yachts)) ? yachts : []; %>
+<% const catImgMap = {
+    'Motor Yachts': 'https://images.unsplash.com/photo-1567899378494-47b22a2ae96a?auto=format&fit=crop&w=800&q=80',
+    'Gulets': 'https://images.unsplash.com/photo-1500375592092-40eb2168fd21?auto=format&fit=crop&w=800&q=80',
+    'Sailing Yachts': 'https://images.unsplash.com/photo-1534447677768-be436bb09401?auto=format&fit=crop&w=800&q=80',
+    'Catamarans': 'https://images.unsplash.com/photo-1544551763-46a013bb70d5?auto=format&fit=crop&w=800&q=80',
+    'Superyachts': 'https://images.unsplash.com/photo-1567899378494-47b22a2ae96a?auto=format&fit=crop&w=800&q=80'
+}; %>
+<% const catSingularEn = {
+    'Motor Yachts': 'Motor Yacht',
+    'Gulets': 'Gulet',
+    'Sailing Yachts': 'Sailing Yacht',
+    'Catamarans': 'Catamaran',
+    'Superyachts': 'Superyacht'
+}; %>
+<% const catDescEn = {
+    'Motor Yachts': 'High speed and modern deck comfort',
+    'Gulets': 'Traditional wooden elegance and spacious family cabins',
+    'Sailing Yachts': 'Free sailing with the wind and balanced gulf cruising',
+    'Catamarans': 'Wide twin-hull living space and stability',
+    'Superyachts': 'Top-tier luxury with private chef and VIP crew'
+}; %>
 
-    <% const catImgMap = {
-        'Motor Yachts': 'https://images.unsplash.com/photo-1567899378494-47b22a2ae96a?auto=format&fit=crop&w=600&q=80',
-        'Gulets': 'https://images.unsplash.com/photo-1500375592092-40eb2168fd21?auto=format&fit=crop&w=600&q=80',
-        'Sailing Yachts': 'https://images.unsplash.com/photo-1534447677768-be436bb09401?auto=format&fit=crop&w=600&q=80',
-        'Catamarans': 'https://images.unsplash.com/photo-1544551763-46a013bb70d5?auto=format&fit=crop&w=600&q=80',
-        'Superyachts': 'https://images.unsplash.com/photo-1567899378494-47b22a2ae96a?auto=format&fit=crop&w=600&q=80'
-    }; %>
-    <% const listCats = (typeof categories !== 'undefined' && Array.isArray(categories)) ? categories : []; %>
+<main class="max-w-7xl mx-auto px-4 sm:px-6 py-12 space-y-8">
+    <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4 border-b border-slate-200 pb-5">
+        <div>
+            <span class="text-xs font-extrabold uppercase tracking-wider text-teal-600"><%= catIsEn ? 'Fleet Types' : 'Filo Tipleri' %></span>
+            <h1 class="text-3xl md:text-4xl font-extrabold text-[#0B1F3A] mt-1"><%= catIsEn ? 'Our Yacht Categories' : 'Yat Kategorilerimiz' %></h1>
+        </div>
+        <a href="/yachts" class="text-xs font-bold text-[#0B1F3A] hover:text-teal-700 transition">
+            <%= catIsEn ? 'View All Yachts →' : 'Tüm Yatları Görüntüle →' %>
+        </a>
+    </div>
 
     <% if (listCats.length === 0) { %>
         <div class="bg-white p-10 rounded-2xl border border-slate-200 text-center space-y-2">
-            <p class="text-sm font-bold text-slate-700">Henüz kategori tanımlanmamış.</p>
-            <p class="text-xs text-slate-500">Admin paneldeki <strong>Turlar &amp; Kategoriler</strong> bölümünden yeni kategori ekleyebilirsiniz.</p>
+            <p class="text-sm font-bold text-slate-700"><%= catIsEn ? 'No categories defined yet.' : 'Henüz kategori tanımlanmamış.' %></p>
+            <p class="text-xs text-slate-500">
+                <%= catIsEn
+                    ? 'You can add new categories from the Tours & Categories section in the admin panel.'
+                    : 'Admin paneldeki Turlar & Kategoriler bölümünden yeni kategori ekleyebilirsiniz.' %>
+            </p>
         </div>
     <% } else { %>
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            <% listCats.forEach(cat => { %>
-                <% const catTitle = cat.nameTr || cat.title || cat.key; %>
+            <% listCats.forEach(function(cat) { %>
+                <% const catTitle = catIsEn
+                    ? (catSingularEn[cat.key] || cat.nameEn || cat.titleEn || cat.key || cat.nameTr)
+                    : (cat.nameTr || cat.title || cat.key); %>
+                <% const catDesc = catIsEn
+                    ? (cat.descEn || catDescEn[cat.key] || cat.desc || 'Private yacht category')
+                    : (cat.desc || 'Özel yat kategorisi'); %>
                 <% const catImg = cat.img || catImgMap[cat.key] || catImgMap['Motor Yachts']; %>
+                <% const matchedCount = allYachts.filter(function(y) {
+                    return String(y.category || '').toLowerCase() === String(cat.key || '').toLowerCase() ||
+                           String(y.categoryTr || '').toLowerCase() === String((cat.nameTr || cat.title || cat.key) || '').toLowerCase();
+                }).length; %>
+                <% const displayCount = (typeof cat.yachtCount === 'number') ? cat.yachtCount : matchedCount; %>
                 <a href="/yachts?category=<%= encodeURIComponent(cat.key) %>" class="group bg-white rounded-2xl overflow-hidden border border-slate-200 shadow-sm hover:shadow-xl transition flex flex-col justify-between">
                     <div>
-                        <div class="h-44 overflow-hidden">
+                        <div class="relative h-44 overflow-hidden bg-slate-100">
                             <img src="<%= catImg %>" onerror="fallbackYachtImg(this)" alt="<%= catTitle %>" class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
+                            <span class="absolute top-3 right-3 bg-[#0B1F3A]/90 text-white text-[11px] font-bold px-2.5 py-1 rounded-full">
+                                <%= displayCount %> <%= catIsEn ? (displayCount === 1 ? 'Yacht' : 'Yachts') : 'Yat' %>
+                            </span>
                         </div>
                         <div class="p-5 space-y-1.5">
                             <h2 class="font-extrabold text-slate-900 text-base"><%= catTitle %></h2>
-                            <p class="text-xs text-slate-500 leading-relaxed"><%= cat.desc || 'Özel yat kategorisi' %></p>
+                            <p class="text-xs text-slate-500 leading-relaxed"><%= catDesc %></p>
                         </div>
                     </div>
-                    <div class="px-5 py-3.5 bg-slate-50 border-t border-slate-100 text-xs font-bold text-teal-700">
-                        Bu Kategorideki Yatları Gör →
+                    <div class="px-5 py-3.5 bg-slate-50 border-t border-slate-100 text-xs font-bold text-teal-700 flex items-center justify-between">
+                        <span><%= catIsEn ? 'View Yachts in Category' : 'Bu Kategorideki Yatları Gör' %></span>
+                        <span>→</span>
                     </div>
                 </a>
             <% }) %>

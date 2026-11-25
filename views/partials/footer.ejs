@@ -1,12 +1,47 @@
-<% const fCfg = (typeof siteSettings !== 'undefined' && siteSettings) ? siteSettings : {
+<%
+const fCurLang = (typeof lang !== 'undefined' && lang === 'en') ? 'en' : 'tr';
+const fEn = (typeof isEn !== 'undefined') ? Boolean(isEn) : (fCurLang === 'en');
+const fCfg = (typeof siteSettings !== 'undefined' && siteSettings) ? siteSettings : {
     brandName: 'YachtVoyage',
     phone: '+90 252 123 45 67',
     whatsappNumber: '902521234567',
     email: 'hello@yachtvoyage.com',
-    footerAbout: 'Göcek, Marmaris, Fethiye ve Bodrum koylarında lisanslı kaptanlar ve özel filo ile yat kiralama ve günlük tur platformu.',
-    copyrightText: '© 2026 YachtVoyage. Tüm hakları saklıdır.',
-    conciergeWelcome: 'Merhaba! Rota planlaması, özel menü veya tekne müsaitliği için hızlıca yazabilirsiniz.'
-}; %>
+    footerAbout: fEn
+        ? 'Private yacht charter and daily boat tour platform with licensed captains across Gocek, Marmaris, Fethiye, and Bodrum.'
+        : 'Göcek, Marmaris, Fethiye ve Bodrum koylarında lisanslı kaptanlar ve özel filo ile yat kiralama ve günlük tur platformu.',
+    copyrightText: fEn
+        ? '© 2026 YachtVoyage. All rights reserved.'
+        : '© 2026 YachtVoyage. Tüm hakları saklıdır.',
+    conciergeWelcome: fEn
+        ? 'Hello! Feel free to message us for route planning, custom menus, or yacht availability.'
+        : 'Merhaba! Rota planlaması, özel menü veya tekne müsaitliği için hızlıca yazabilirsiniz.'
+};
+const fCats = (typeof categories !== 'undefined' && Array.isArray(categories) && categories.length) ? categories : [
+    { key: 'Motor Yachts', nameTr: 'Motor Yatlar', nameEn: 'Motor Yachts' },
+    { key: 'Gulets', nameTr: 'Guletler', nameEn: 'Gulets' },
+    { key: 'Sailing Yachts', nameTr: 'Yelkenli Yatlar', nameEn: 'Sailing Yachts' },
+    { key: 'Catamarans', nameTr: 'Katamaranlar', nameEn: 'Catamarans' },
+    { key: 'Superyachts', nameTr: 'Süperyatlar', nameEn: 'Superyachts' }
+];
+const fDeps = (typeof departurePoints !== 'undefined' && Array.isArray(departurePoints) && departurePoints.length) ? departurePoints : [
+    { name: 'Göcek', desc: fEn ? 'Gocek Bays' : 'Göcek Koyları' },
+    { name: 'Marmaris', desc: fEn ? 'Marmaris & Paradise Island' : 'Marmaris & Cennet Adası' },
+    { name: 'Fethiye', desc: 'Fethiye' },
+    { name: 'Bodrum', desc: 'Bodrum' }
+];
+const presetRouteMsg = fEn
+    ? 'Hello, I would like information about Gocek and Marmaris routes.'
+    : 'Merhaba, Göcek / Marmaris rotaları hakkında bilgi almak istiyorum.';
+const presetToursMsg = fEn
+    ? 'Hello, could I get details on daily tour packages and pricing?'
+    : 'Merhaba, günlük tur paketleri ve fiyatlar hakkında bilgi alabilir miyim?';
+const presetServicesMsg = fEn
+    ? 'Hello, I would like to ask about private chef and VIP transfer options.'
+    : 'Merhaba, özel şef ve VIP transfer seçeneklerini sormak istiyorum.';
+const defaultWaUrl = 'https://wa.me/' + fCfg.whatsappNumber + '?text=' + encodeURIComponent(
+    fEn ? 'Hello, I would like information about yacht charter.' : 'Merhaba, yat kiralama hakkında bilgi almak istiyorum.'
+);
+%>
 
 <footer class="no-print bg-[#0B1F3A] text-slate-300 mt-20 border-t border-white/10">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 py-14 grid grid-cols-1 md:grid-cols-4 gap-10 text-sm">
@@ -20,28 +55,48 @@
             </p>
         </div>
         <div>
-            <h4 class="text-white font-bold mb-3">Yat Kategorileri</h4>
+            <h4 class="text-white font-bold mb-3"><%= fEn ? 'Yacht Categories' : 'Yat Kategorileri' %></h4>
             <ul class="space-y-2 text-xs text-slate-400">
-                <li><a href="/yachts?category=Motor Yachts" class="hover:text-white">Motor Yatlar</a></li>
-                <li><a href="/yachts?category=Gulets" class="hover:text-white">Guletler</a></li>
-                <li><a href="/yachts?category=Sailing Yachts" class="hover:text-white">Yelkenli Yatlar</a></li>
-                <li><a href="/yachts?category=Catamarans" class="hover:text-white">Katamaranlar</a></li>
-                <li><a href="/yachts?category=Superyachts" class="hover:text-white">Süperyatlar</a></li>
+                <% fCats.forEach(function(cat) { %>
+                    <li>
+                        <a href="/yachts?category=<%= encodeURIComponent(cat.key) %>" class="hover:text-white transition">
+                            <%= fEn ? (cat.nameEn || cat.nameTr || cat.title || cat.key) : (cat.nameTr || cat.title || cat.key) %>
+                        </a>
+                    </li>
+                <% }) %>
             </ul>
         </div>
         <div>
-            <h4 class="text-white font-bold mb-3">Popüler Rotalar</h4>
+            <h4 class="text-white font-bold mb-3"><%= fEn ? 'Popular Routes' : 'Popüler Rotalar' %></h4>
             <ul class="space-y-2 text-xs text-slate-400">
-                <li><a href="/yachts?location=Göcek" class="hover:text-white">Göcek Koyları</a></li>
-                <li><a href="/yachts?location=Marmaris" class="hover:text-white">Marmaris &amp; Cennet Adası</a></li>
-                <li><a href="/yachts?location=Fethiye" class="hover:text-white">Fethiye</a></li>
-                <li><a href="/yachts?location=Bodrum" class="hover:text-white">Bodrum</a></li>
+                <% fDeps.forEach(function(dep) { %>
+                    <li>
+                        <a href="/yachts?location=<%= encodeURIComponent(dep.name) %>" class="hover:text-white transition">
+                            <%= dep.desc || dep.name %>
+                        </a>
+                    </li>
+                <% }) %>
             </ul>
         </div>
-        <div>
-            <h4 class="text-white font-bold mb-3">7/24 Destek</h4>
+        <div class="space-y-2.5">
+            <h4 class="text-white font-bold mb-3"><%= fEn ? '24/7 Support' : '7/24 Destek' %></h4>
             <div class="text-white font-bold text-sm"><%= fCfg.phone %></div>
-            <div class="text-sky-400 text-xs mt-1"><%= fCfg.email %></div>
+            <div class="text-sky-400 text-xs"><%= fCfg.email %></div>
+            <div class="pt-1">
+                <a href="https://wa.me/<%= fCfg.whatsappNumber %>" target="_blank" rel="noopener noreferrer" class="inline-flex items-center space-x-1.5 text-xs font-bold text-emerald-400 hover:text-emerald-300 transition">
+                    <i class="fa-brands fa-whatsapp text-sm"></i>
+                    <span><%= fEn ? 'WhatsApp Support Line' : 'WhatsApp Destek Hattı' %></span>
+                </a>
+            </div>
+            <div class="pt-2 flex items-center space-x-3 text-xs">
+                <a href="/admin" class="inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-white font-bold transition">
+                    <i class="fa-solid fa-user-shield text-sky-400"></i>
+                    <span><%= fEn ? 'Admin Panel' : 'Admin Girişi' %></span>
+                </a>
+                <a href="/lang/<%= fEn ? 'tr' : 'en' %>" class="text-slate-400 hover:text-white font-bold underline">
+                    <%= fEn ? 'Türkçe' : 'English' %>
+                </a>
+            </div>
         </div>
     </div>
     <div class="border-t border-white/10 py-5 text-center text-xs text-slate-500">
@@ -59,9 +114,9 @@
                     <i class="fa-solid fa-headset"></i>
                 </div>
                 <div>
-                    <div class="text-xs font-extrabold"><%= fCfg.brandName %> Konsyerj</div>
+                    <div class="text-xs font-extrabold"><%= fCfg.brandName %> <%= fEn ? 'Concierge' : 'Konsyerj' %></div>
                     <div class="text-[10px] text-emerald-300 flex items-center">
-                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 mr-1.5"></span>Çevrimiçi • Ort. 3 dk yanıt
+                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 mr-1.5"></span><%= fEn ? 'Online • Avg. 3 min reply' : 'Çevrimiçi • Ort. 3 dk yanıt' %>
                     </div>
                 </div>
             </div>
@@ -74,19 +129,19 @@
                 <%= fCfg.conciergeWelcome %>
             </p>
             <div class="flex flex-wrap gap-1.5">
-                <button type="button" data-wa-msg="Merhaba, Göcek / Marmaris rotaları hakkında bilgi almak istiyorum." class="wa-preset px-2.5 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-[11px] transition">
-                    Rota Bilgisi
+                <button type="button" data-wa-msg="<%= presetRouteMsg %>" class="wa-preset px-2.5 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-[11px] transition">
+                    <%= fEn ? 'Route Info' : 'Rota Bilgisi' %>
                 </button>
-                <button type="button" data-wa-msg="Merhaba, günlük tur paketleri ve fiyatlar hakkında bilgi alabilir miyim?" class="wa-preset px-2.5 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-[11px] transition">
-                    Tur Paketleri
+                <button type="button" data-wa-msg="<%= presetToursMsg %>" class="wa-preset px-2.5 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-[11px] transition">
+                    <%= fEn ? 'Tour Packages' : 'Tur Paketleri' %>
                 </button>
-                <button type="button" data-wa-msg="Merhaba, özel şef ve VIP transfer seçeneklerini sormak istiyorum." class="wa-preset px-2.5 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-[11px] transition">
-                    Özel Hizmetler
+                <button type="button" data-wa-msg="<%= presetServicesMsg %>" class="wa-preset px-2.5 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-[11px] transition">
+                    <%= fEn ? 'Special Services' : 'Özel Hizmetler' %>
                 </button>
             </div>
-            <a id="conciergeWaLink" href="https://wa.me/<%= fCfg.whatsappNumber %>?text=Merhaba%2C%20yat%20kiralama%20hakk%C4%B1nda%20bilgi%20almak%20istiyorum." target="_blank" rel="noopener noreferrer" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 rounded-xl flex items-center justify-center space-x-2 transition shadow">
+            <a id="conciergeWaLink" href="<%= defaultWaUrl %>" target="_blank" rel="noopener noreferrer" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 rounded-xl flex items-center justify-center space-x-2 transition shadow">
                 <i class="fa-brands fa-whatsapp text-sm"></i>
-                <span>WhatsApp ile Bağlan</span>
+                <span><%= fEn ? 'Connect via WhatsApp' : 'WhatsApp ile Bağlan' %></span>
             </a>
         </div>
     </div>
@@ -94,7 +149,7 @@
     <button id="conciergeToggleBtn" type="button" class="ml-auto bg-[#0B1F3A] hover:bg-sky-900 text-white px-4 py-3 rounded-full shadow-2xl border border-white/15 flex items-center space-x-2.5 text-xs font-bold transition">
         <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
         <i class="fa-brands fa-whatsapp text-emerald-400 text-base"></i>
-        <span>Yat Danışmanı</span>
+        <span><%= fEn ? 'Yacht Advisor' : 'Yat Danışmanı' %></span>
     </button>
 </div>
 
@@ -138,6 +193,12 @@
 
         document.addEventListener('click', function (e) {
             if (box && !box.contains(e.target) && toggleBtn && !toggleBtn.contains(e.target)) {
+                box.classList.add('hidden');
+            }
+        });
+
+        document.addEventListener('keydown', function (e) {
+            if (e.key === 'Escape' && box) {
                 box.classList.add('hidden');
             }
         });

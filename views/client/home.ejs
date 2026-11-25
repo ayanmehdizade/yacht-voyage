@@ -1,11 +1,22 @@
 <%- include('../partials/header') %>
 
+<% const homeIsEn = (typeof isEn !== 'undefined') ? Boolean(isEn) : (typeof lang !== 'undefined' && lang === 'en'); %>
+
 <style>
     #homeDateInput::-webkit-calendar-picker-indicator {
         display: none;
         -webkit-appearance: none;
     }
 </style>
+
+<% const todayIso = new Date().toISOString().slice(0, 10); %>
+<% const depList = (typeof departurePoints !== 'undefined' && Array.isArray(departurePoints) && departurePoints.length) ? departurePoints : [
+    { name: 'Göcek', desc: homeIsEn ? 'Coves & D-Marin departure' : 'Koylar & D-Marin kalkış' },
+    { name: 'Marmaris', desc: homeIsEn ? 'Netsel Marina & Hisarönü' : 'Netsel Marina & Hisarönü' },
+    { name: 'Fethiye', desc: homeIsEn ? 'Ece Marina & Ölüdeniz' : 'Ece Marina & Ölüdeniz' },
+    { name: 'Bodrum', desc: homeIsEn ? 'Yalıkavak & Türkbükü' : 'Yalıkavak & Türkbükü' }
+]; %>
+<% const defaultDep = depList[0] || { name: 'Göcek', desc: homeIsEn ? 'Coves & D-Marin departure' : 'Koylar & D-Marin kalkış' }; %>
 
 <!-- HERO & ARAMA ÇUBUĞU -->
 <section class="relative bg-[#0B1F3A] text-white overflow-x-clip">
@@ -18,33 +29,29 @@
     <div class="max-w-7xl mx-auto px-4 sm:px-6 py-20 md:py-24 relative z-10">
         <div class="max-w-2xl space-y-4">
             <h1 class="text-4xl md:text-6xl font-extrabold leading-[1.1] tracking-tight">
-                Eşsiz Yat Deneyimini Keşfedin
+                <%= homeIsEn ? 'Discover a Unique Yacht Experience' : 'Eşsiz Yat Deneyimini Keşfedin' %>
             </h1>
             <p class="text-slate-200 text-base md:text-lg leading-relaxed">
-                Göcek, Marmaris ve Fethiye koylarında özel yat kiralama, günlük tur paketleri ve şeffaf içerik bilgisi.
+                <%= homeIsEn
+                    ? 'Private yacht charters, daily tour packages and transparent itinerary details across Göcek, Marmaris, Fethiye and Bodrum coves.'
+                    : 'Göcek, Marmaris, Fethiye ve Bodrum koylarında özel yat kiralama, günlük tur paketleri ve şeffaf içerik bilgisi.' %>
             </p>
         </div>
 
         <form action="/yachts" method="GET" class="mt-9 bg-white text-slate-900 p-3 md:p-3.5 rounded-2xl shadow-2xl grid grid-cols-1 md:grid-cols-12 gap-2 items-center max-w-6xl">
             <div class="yv-dropdown relative md:col-span-3 px-3.5 py-2 rounded-xl hover:bg-slate-50 transition">
-                <input type="hidden" name="location" value="Göcek">
+                <input type="hidden" name="location" value="<%= defaultDep.name %>">
                 <button type="button" class="yv-dd-trigger w-full text-left flex items-center justify-between focus:outline-none">
                     <div>
-                        <span class="block text-[10px] font-extrabold tracking-wider text-slate-400 uppercase">Kalkış Noktası</span>
+                        <span class="block text-[10px] font-extrabold tracking-wider text-slate-400 uppercase"><%= homeIsEn ? 'Departure Point' : 'Kalkış Noktası' %></span>
                         <span class="flex items-center space-x-2 mt-0.5 text-sm font-bold text-slate-900">
                             <i class="fa-solid fa-location-dot text-teal-600 text-xs"></i>
-                            <span class="yv-dd-label">Göcek</span>
+                            <span class="yv-dd-label"><%= defaultDep.name %></span>
                         </span>
                     </div>
                     <i class="yv-dd-chevron fa-solid fa-chevron-down text-xs text-slate-400 transition-transform duration-200"></i>
                 </button>
 
-                <% const depList = (typeof departurePoints !== 'undefined' && Array.isArray(departurePoints) && departurePoints.length) ? departurePoints : [
-                    { name: 'Göcek', desc: 'Koylar & D-Marin kalkış' },
-                    { name: 'Marmaris', desc: 'Netsel Marina & Hisarönü' },
-                    { name: 'Fethiye', desc: 'Ece Marina & Ölüdeniz' },
-                    { name: 'Bodrum', desc: 'Yalıkavak & Türkbükü' }
-                ]; %>
                 <div class="yv-dd-menu hidden max-h-60 overflow-y-auto left-0 right-0 top-[calc(100%+8px)] absolute bg-white rounded-2xl shadow-2xl border border-slate-100 p-1.5 z-50">
                     <% depList.forEach(function(dp, idx) { %>
                         <button type="button" data-value="<%= dp.name %>" data-label="<%= dp.name %>" class="yv-dd-option w-full px-3.5 py-2.5 rounded-xl flex items-center justify-between text-left <%= idx === 0 ? 'bg-slate-100 font-bold text-[#0B1F3A]' : 'text-slate-700' %> hover:bg-slate-50 transition">
@@ -55,10 +62,10 @@
                             <i class="yv-dd-check <%= idx === 0 ? '' : 'hidden' %> fa-solid fa-check text-xs text-teal-600"></i>
                         </button>
                     <% }) %>
-                    <button type="button" data-value="all" data-label="Tüm Noktalar" class="yv-dd-option w-full px-3.5 py-2.5 rounded-xl flex items-center justify-between text-left text-slate-700 hover:bg-slate-50 transition">
+                    <button type="button" data-value="all" data-label="<%= homeIsEn ? 'All Points' : 'Tüm Noktalar' %>" class="yv-dd-option w-full px-3.5 py-2.5 rounded-xl flex items-center justify-between text-left text-slate-700 hover:bg-slate-50 transition">
                         <div>
-                            <div class="text-xs font-semibold">Tüm Noktalar</div>
-                            <div class="text-[10px] font-normal text-slate-400">Tüm Ege &amp; Akdeniz rotaları</div>
+                            <div class="text-xs font-semibold"><%= homeIsEn ? 'All Points' : 'Tüm Noktalar' %></div>
+                            <div class="text-[10px] font-normal text-slate-400"><%= homeIsEn ? 'All Aegean & Mediterranean routes' : 'Tüm Ege & Akdeniz rotaları' %></div>
                         </div>
                         <i class="yv-dd-check hidden fa-solid fa-check text-xs text-teal-600"></i>
                     </button>
@@ -66,28 +73,31 @@
             </div>
 
             <div class="relative md:col-span-3 px-3.5 py-2 rounded-xl hover:bg-slate-50 transition md:border-l md:border-slate-200">
-                <label for="homeDateInput" class="block text-[10px] font-extrabold tracking-wider text-slate-400 uppercase">Tarih</label>
+                <div class="flex items-center justify-between">
+                    <label for="homeDateInput" class="block text-[10px] font-extrabold tracking-wider text-slate-400 uppercase"><%= homeIsEn ? 'Date' : 'Tarih' %></label>
+                    <button type="button" id="homeDateClear" class="text-[10px] font-bold text-slate-400 hover:text-rose-600"><%= homeIsEn ? 'Clear' : 'Temizle' %></button>
+                </div>
 
                 <div class="flex items-center space-x-2 mt-0.5">
                     <i class="fa-regular fa-calendar text-teal-600 text-xs"></i>
-                    <input type="date" id="homeDateInput" name="checkIn" data-no-flatpickr="true" value="2026-06-25" class="text-sm font-bold text-slate-900 focus:outline-none w-full bg-transparent cursor-pointer">
+                    <input type="date" id="homeDateInput" name="checkIn" min="<%= todayIso %>" data-no-flatpickr="true" value="" placeholder="<%= homeIsEn ? 'Select date' : 'Tarih seçin' %>" class="text-sm font-bold text-slate-900 focus:outline-none w-full bg-transparent cursor-pointer">
                 </div>
 
                 <div id="homeDatePopover" class="hidden left-0 top-[calc(100%+10px)] absolute w-[340px] max-w-[92vw] bg-white border border-slate-200 rounded-2xl shadow-2xl p-4 space-y-3 z-50 overflow-hidden text-slate-900">
                     <div class="flex items-center justify-between">
                         <button type="button" id="homeCalPrev" class="w-8 h-8 rounded-lg hover:bg-slate-100 flex items-center justify-center text-slate-700 font-bold shrink-0">‹</button>
-                        <div id="homeCalTitle" class="text-sm font-extrabold text-[#0B1F3A] text-center">Haziran 2026</div>
+                        <div id="homeCalTitle" class="text-sm font-extrabold text-[#0B1F3A] text-center"><%= homeIsEn ? 'Calendar' : 'Takvim' %></div>
                         <button type="button" id="homeCalNext" class="w-8 h-8 rounded-lg hover:bg-slate-100 flex items-center justify-center text-slate-700 font-bold shrink-0">›</button>
                     </div>
 
                     <div class="grid grid-cols-[repeat(7,minmax(0,1fr))] gap-1 text-center text-[11px] font-bold text-slate-400">
-                        <div>Pzt</div>
-                        <div>Sal</div>
-                        <div>Çar</div>
-                        <div>Per</div>
-                        <div>Cum</div>
-                        <div>Cmt</div>
-                        <div>Paz</div>
+                        <div><%= homeIsEn ? 'Mon' : 'Pzt' %></div>
+                        <div><%= homeIsEn ? 'Tue' : 'Sal' %></div>
+                        <div><%= homeIsEn ? 'Wed' : 'Çar' %></div>
+                        <div><%= homeIsEn ? 'Thu' : 'Per' %></div>
+                        <div><%= homeIsEn ? 'Fri' : 'Cum' %></div>
+                        <div><%= homeIsEn ? 'Sat' : 'Cmt' %></div>
+                        <div><%= homeIsEn ? 'Sun' : 'Paz' %></div>
                     </div>
 
                     <div id="homeCalGrid" class="grid grid-cols-[repeat(7,minmax(0,1fr))] gap-1 text-center text-xs"></div>
@@ -95,11 +105,11 @@
                     <div class="pt-2.5 border-t border-slate-100 flex items-center justify-between text-[11px] font-bold px-1">
                         <span class="inline-flex items-center gap-1.5 text-emerald-700">
                             <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 inline-block shrink-0"></span>
-                            <span>Yeşil: Boş</span>
+                            <span><%= homeIsEn ? 'Green: Available' : 'Yeşil: Boş' %></span>
                         </span>
                         <span class="inline-flex items-center gap-1.5 text-rose-700">
                             <span class="w-2.5 h-2.5 rounded-full bg-rose-500 inline-block shrink-0"></span>
-                            <span>Kırmızı: Dolu</span>
+                            <span><%= homeIsEn ? 'Red: Booked' : 'Kırmızı: Dolu' %></span>
                         </span>
                     </div>
                 </div>
@@ -109,30 +119,30 @@
                 <input type="hidden" name="guests" value="">
                 <button type="button" class="yv-dd-trigger w-full text-left flex items-center justify-between focus:outline-none">
                     <div>
-                        <span class="block text-[10px] font-extrabold tracking-wider text-slate-400 uppercase">Kişi Sayısı</span>
+                        <span class="block text-[10px] font-extrabold tracking-wider text-slate-400 uppercase"><%= homeIsEn ? 'Guests' : 'Kişi Sayısı' %></span>
                         <span class="flex items-center space-x-2 mt-0.5 text-sm font-bold text-slate-900">
                             <i class="fa-solid fa-users text-teal-600 text-xs"></i>
-                            <span class="yv-dd-label">Tümü</span>
+                            <span class="yv-dd-label"><%= homeIsEn ? 'All' : 'Tümü' %></span>
                         </span>
                     </div>
                     <i class="yv-dd-chevron fa-solid fa-chevron-down text-xs text-slate-400 transition-transform duration-200"></i>
                 </button>
 
                 <div class="yv-dd-menu hidden max-h-60 overflow-y-auto left-0 md:-left-4 right-0 md:w-52 top-[calc(100%+8px)] absolute bg-white rounded-2xl shadow-2xl border border-slate-100 p-1.5 z-50">
-                    <button type="button" data-value="" data-label="Tümü" class="yv-dd-option w-full px-3.5 py-2.5 rounded-xl flex items-center justify-between text-left bg-slate-100 font-bold text-[#0B1F3A] hover:bg-slate-50 transition text-xs">
-                        <span>Tümü</span>
+                    <button type="button" data-value="" data-label="<%= homeIsEn ? 'All' : 'Tümü' %>" class="yv-dd-option w-full px-3.5 py-2.5 rounded-xl flex items-center justify-between text-left bg-slate-100 font-bold text-[#0B1F3A] hover:bg-slate-50 transition text-xs">
+                        <span><%= homeIsEn ? 'All' : 'Tümü' %></span>
                         <i class="yv-dd-check fa-solid fa-check text-xs text-teal-600"></i>
                     </button>
-                    <button type="button" data-value="1-6" data-label="1 - 6 Kişi" class="yv-dd-option w-full px-3.5 py-2.5 rounded-xl flex items-center justify-between text-left text-slate-700 hover:bg-slate-50 transition text-xs">
-                        <span>1 - 6 Kişi</span>
+                    <button type="button" data-value="1-6" data-label="<%= homeIsEn ? '1 - 6 Guests' : '1 - 6 Kişi' %>" class="yv-dd-option w-full px-3.5 py-2.5 rounded-xl flex items-center justify-between text-left text-slate-700 hover:bg-slate-50 transition text-xs">
+                        <span><%= homeIsEn ? '1 - 6 Guests' : '1 - 6 Kişi' %></span>
                         <i class="yv-dd-check hidden fa-solid fa-check text-xs text-teal-600"></i>
                     </button>
-                    <button type="button" data-value="7-12" data-label="7 - 12 Kişi" class="yv-dd-option w-full px-3.5 py-2.5 rounded-xl flex items-center justify-between text-left text-slate-700 hover:bg-slate-50 transition text-xs">
-                        <span>7 - 12 Kişi</span>
+                    <button type="button" data-value="7-12" data-label="<%= homeIsEn ? '7 - 12 Guests' : '7 - 12 Kişi' %>" class="yv-dd-option w-full px-3.5 py-2.5 rounded-xl flex items-center justify-between text-left text-slate-700 hover:bg-slate-50 transition text-xs">
+                        <span><%= homeIsEn ? '7 - 12 Guests' : '7 - 12 Kişi' %></span>
                         <i class="yv-dd-check hidden fa-solid fa-check text-xs text-teal-600"></i>
                     </button>
-                    <button type="button" data-value="13+" data-label="13+ Kişi" class="yv-dd-option w-full px-3.5 py-2.5 rounded-xl flex items-center justify-between text-left text-slate-700 hover:bg-slate-50 transition text-xs">
-                        <span>13+ Kişi</span>
+                    <button type="button" data-value="13+" data-label="<%= homeIsEn ? '13+ Guests' : '13+ Kişi' %>" class="yv-dd-option w-full px-3.5 py-2.5 rounded-xl flex items-center justify-between text-left text-slate-700 hover:bg-slate-50 transition text-xs">
+                        <span><%= homeIsEn ? '13+ Guests' : '13+ Kişi' %></span>
                         <i class="yv-dd-check hidden fa-solid fa-check text-xs text-teal-600"></i>
                     </button>
                 </div>
@@ -142,38 +152,38 @@
                 <input type="hidden" name="category" value="all">
                 <button type="button" class="yv-dd-trigger w-full text-left flex items-center justify-between focus:outline-none">
                     <div>
-                        <span class="block text-[10px] font-extrabold tracking-wider text-slate-400 uppercase">Yat Tipi</span>
+                        <span class="block text-[10px] font-extrabold tracking-wider text-slate-400 uppercase"><%= homeIsEn ? 'Yacht Type' : 'Yat Tipi' %></span>
                         <span class="flex items-center space-x-2 mt-0.5 text-sm font-bold text-slate-900">
                             <i class="fa-solid fa-anchor text-teal-600 text-xs"></i>
-                            <span class="yv-dd-label">Tümü</span>
+                            <span class="yv-dd-label"><%= homeIsEn ? 'All' : 'Tümü' %></span>
                         </span>
                     </div>
                     <i class="yv-dd-chevron fa-solid fa-chevron-down text-xs text-slate-400 transition-transform duration-200"></i>
                 </button>
 
                 <div class="yv-dd-menu hidden max-h-60 overflow-y-auto left-0 md:-left-6 right-0 md:w-56 top-[calc(100%+8px)] absolute bg-white rounded-2xl shadow-2xl border border-slate-100 p-1.5 z-50">
-                    <button type="button" data-value="all" data-label="Tümü" class="yv-dd-option w-full px-3.5 py-2.5 rounded-xl flex items-center justify-between text-left bg-slate-100 font-bold text-[#0B1F3A] hover:bg-slate-50 transition text-xs">
-                        <span>Tümü</span>
+                    <button type="button" data-value="all" data-label="<%= homeIsEn ? 'All' : 'Tümü' %>" class="yv-dd-option w-full px-3.5 py-2.5 rounded-xl flex items-center justify-between text-left bg-slate-100 font-bold text-[#0B1F3A] hover:bg-slate-50 transition text-xs">
+                        <span><%= homeIsEn ? 'All' : 'Tümü' %></span>
                         <i class="yv-dd-check fa-solid fa-check text-xs text-teal-600"></i>
                     </button>
-                    <button type="button" data-value="Motor Yachts" data-label="Motor Yat" class="yv-dd-option w-full px-3.5 py-2.5 rounded-xl flex items-center justify-between text-left text-slate-700 hover:bg-slate-50 transition text-xs">
-                        <span>Motor Yat</span>
+                    <button type="button" data-value="Motor Yachts" data-label="<%= homeIsEn ? 'Motor Yacht' : 'Motor Yat' %>" class="yv-dd-option w-full px-3.5 py-2.5 rounded-xl flex items-center justify-between text-left text-slate-700 hover:bg-slate-50 transition text-xs">
+                        <span><%= homeIsEn ? 'Motor Yacht' : 'Motor Yat' %></span>
                         <i class="yv-dd-check hidden fa-solid fa-check text-xs text-teal-600"></i>
                     </button>
                     <button type="button" data-value="Gulets" data-label="Gulet" class="yv-dd-option w-full px-3.5 py-2.5 rounded-xl flex items-center justify-between text-left text-slate-700 hover:bg-slate-50 transition text-xs">
                         <span>Gulet</span>
                         <i class="yv-dd-check hidden fa-solid fa-check text-xs text-teal-600"></i>
                     </button>
-                    <button type="button" data-value="Sailing Yachts" data-label="Yelkenli Yat" class="yv-dd-option w-full px-3.5 py-2.5 rounded-xl flex items-center justify-between text-left text-slate-700 hover:bg-slate-50 transition text-xs">
-                        <span>Yelkenli Yat</span>
+                    <button type="button" data-value="Sailing Yachts" data-label="<%= homeIsEn ? 'Sailing Yacht' : 'Yelkenli Yat' %>" class="yv-dd-option w-full px-3.5 py-2.5 rounded-xl flex items-center justify-between text-left text-slate-700 hover:bg-slate-50 transition text-xs">
+                        <span><%= homeIsEn ? 'Sailing Yacht' : 'Yelkenli Yat' %></span>
                         <i class="yv-dd-check hidden fa-solid fa-check text-xs text-teal-600"></i>
                     </button>
-                    <button type="button" data-value="Catamarans" data-label="Katamaran" class="yv-dd-option w-full px-3.5 py-2.5 rounded-xl flex items-center justify-between text-left text-slate-700 hover:bg-slate-50 transition text-xs">
-                        <span>Katamaran</span>
+                    <button type="button" data-value="Catamarans" data-label="<%= homeIsEn ? 'Catamaran' : 'Katamaran' %>" class="yv-dd-option w-full px-3.5 py-2.5 rounded-xl flex items-center justify-between text-left text-slate-700 hover:bg-slate-50 transition text-xs">
+                        <span><%= homeIsEn ? 'Catamaran' : 'Katamaran' %></span>
                         <i class="yv-dd-check hidden fa-solid fa-check text-xs text-teal-600"></i>
                     </button>
-                    <button type="button" data-value="Superyachts" data-label="Süperyat" class="yv-dd-option w-full px-3.5 py-2.5 rounded-xl flex items-center justify-between text-left text-slate-700 hover:bg-slate-50 transition text-xs">
-                        <span>Süperyat</span>
+                    <button type="button" data-value="Superyachts" data-label="<%= homeIsEn ? 'Superyacht' : 'Süperyat' %>" class="yv-dd-option w-full px-3.5 py-2.5 rounded-xl flex items-center justify-between text-left text-slate-700 hover:bg-slate-50 transition text-xs">
+                        <span><%= homeIsEn ? 'Superyacht' : 'Süperyat' %></span>
                         <i class="yv-dd-check hidden fa-solid fa-check text-xs text-teal-600"></i>
                     </button>
                 </div>
@@ -182,7 +192,7 @@
             <div class="md:col-span-2">
                 <button type="submit" class="w-full bg-teal-600 hover:bg-teal-700 text-white py-3.5 px-5 rounded-xl font-bold text-sm transition flex items-center justify-center space-x-2 shadow-lg">
                     <i class="fa-solid fa-magnifying-glass"></i>
-                    <span>Yatları Keşfet</span>
+                    <span><%= homeIsEn ? 'Explore Yachts' : 'Yatları Keşfet' %></span>
                 </button>
             </div>
         </form>
@@ -194,19 +204,19 @@
     <div class="max-w-7xl mx-auto px-4 sm:px-6 py-7 grid grid-cols-2 md:grid-cols-4 gap-6 text-sm">
         <div class="flex items-center space-x-3">
             <i class="fa-solid fa-user-check text-teal-600 text-xl"></i>
-            <span class="font-bold text-slate-800">Lisanslı kaptanlar</span>
+            <span class="font-bold text-slate-800"><%= homeIsEn ? 'Licensed captains' : 'Lisanslı kaptanlar' %></span>
         </div>
         <div class="flex items-center space-x-3">
             <i class="fa-solid fa-shield-halved text-teal-600 text-xl"></i>
-            <span class="font-bold text-slate-800">Güvenli tekneler</span>
+            <span class="font-bold text-slate-800"><%= homeIsEn ? 'Safe vessels' : 'Güvenli tekneler' %></span>
         </div>
         <div class="flex items-center space-x-3">
             <i class="fa-brands fa-whatsapp text-teal-600 text-xl"></i>
-            <span class="font-bold text-slate-800">WhatsApp desteği</span>
+            <span class="font-bold text-slate-800"><%= homeIsEn ? 'WhatsApp support' : 'WhatsApp desteği' %></span>
         </div>
         <div class="flex items-center space-x-3">
             <i class="fa-regular fa-calendar-check text-teal-600 text-xl"></i>
-            <span class="font-bold text-slate-800">Ücretsiz iptal seçeneği</span>
+            <span class="font-bold text-slate-800"><%= homeIsEn ? 'Free cancellation option' : 'Ücretsiz iptal seçeneği' %></span>
         </div>
     </div>
 </section>
@@ -215,44 +225,51 @@
 <section id="tur-paketleri" class="max-w-7xl mx-auto px-4 sm:px-6 pt-16 space-y-8">
     <div class="flex items-center gap-4">
         <div class="flex-1 h-px bg-slate-200"></div>
-        <h2 class="text-2xl md:text-3xl font-extrabold text-[#0B1F3A]">Tur Paketleri &amp; Dahil Olanlar</h2>
+        <h2 class="text-2xl md:text-3xl font-extrabold text-[#0B1F3A]"><%= homeIsEn ? 'Tour Packages & What’s Included' : 'Tur Paketleri & Dahil Olanlar' %></h2>
         <div class="flex-1 h-px bg-slate-200"></div>
     </div>
 
     <% const homeTours = (typeof tours !== 'undefined' && Array.isArray(tours)) ? tours : []; %>
+    <% const fallbackTourImgs = [
+        'https://images.unsplash.com/photo-1500375592092-40eb2168fd21?auto=format&fit=crop&w=800&q=80',
+        'https://images.unsplash.com/photo-1544551763-46a013bb70d5?auto=format&fit=crop&w=800&q=80',
+        'https://images.unsplash.com/photo-1567899378494-47b22a2ae96a?auto=format&fit=crop&w=800&q=80'
+    ]; %>
 
     <% if (homeTours.length === 0) { %>
         <div class="bg-white p-8 rounded-2xl border border-slate-200 text-center text-xs text-slate-500">
-            Henüz yayınlanmış tur paketi bulunmuyor. Admin panelden ekleyebilirsiniz.
+            <%= homeIsEn ? 'No tour packages published yet. You can add them from the admin panel.' : 'Henüz yayınlanmış tur paketi bulunmuyor. Admin panelden ekleyebilirsiniz.' %>
         </div>
     <% } else { %>
         <div class="grid grid-cols-1 md:grid-cols-3 gap-7">
-            <% homeTours.slice(0, 3).forEach(pkg => { %>
+            <% homeTours.slice(0, 3).forEach((pkg, pIdx) => { %>
                 <% const linkedYacht = (typeof yachts !== 'undefined' && Array.isArray(yachts)) ? (yachts.find(y => Number(y.id) === Number(pkg.yachtId)) || yachts[0]) : null; %>
-                <% const pkgImg = pkg.img || (linkedYacht && linkedYacht.images && linkedYacht.images[0]) || 'https://images.unsplash.com/photo-1500375592092-40eb2168fd21?auto=format&fit=crop&w=800&q=80'; %>
-                <% const pkgIncluded = (Array.isArray(pkg.included) && pkg.included.length) ? pkg.included : ['Lisanslı kaptan ve yakıt', 'Yüzme molaları ve ikramlar']; %>
-                <% const pkgExcluded = (Array.isArray(pkg.excluded) && pkg.excluded.length) ? pkg.excluded : ['Özel menü & havalimanı transferi']; %>
+                <% const pkgImg = pkg.img || fallbackTourImgs[pIdx % fallbackTourImgs.length]; %>
+                <% const pkgTitle = (homeIsEn && pkg.titleEn) ? pkg.titleEn : pkg.title; %>
+                <% const pkgRegion = (homeIsEn && pkg.regionEn) ? pkg.regionEn : pkg.region; %>
+                <% const pkgIncluded = (homeIsEn && Array.isArray(pkg.includedEn) && pkg.includedEn.length) ? pkg.includedEn : ((Array.isArray(pkg.included) && pkg.included.length) ? pkg.included : (homeIsEn ? ['Licensed captain and fuel', 'Swimming stops and refreshments'] : ['Lisanslı kaptan ve yakıt', 'Yüzme molaları ve ikramlar'])); %>
+                <% const pkgExcluded = (homeIsEn && Array.isArray(pkg.excludedEn) && pkg.excludedEn.length) ? pkg.excludedEn : ((Array.isArray(pkg.excluded) && pkg.excluded.length) ? pkg.excluded : (homeIsEn ? ['Custom menu & airport transfer'] : ['Özel menü & havalimanı transferi'])); %>
                 <div class="bg-white rounded-2xl overflow-hidden border border-slate-200 shadow-sm hover:shadow-xl transition flex flex-col justify-between">
                     <div>
                         <div class="relative">
-                            <img src="<%= pkgImg %>" onerror="fallbackYachtImg(this)" alt="<%= pkg.title %>" class="w-full h-52 object-cover">
+                            <img src="<%= pkgImg %>" onerror="fallbackYachtImg(this)" alt="<%= pkgTitle %>" class="w-full h-52 object-cover">
                             <span class="absolute top-3 left-3 bg-[#0B1F3A]/90 text-white text-[10px] font-bold px-3 py-1 rounded-full tracking-wider">
-                                <%= pkg.badge || 'TUR PAKETİ' %>
+                                <%= (homeIsEn && pkg.badgeEn) ? pkg.badgeEn : (pkg.badge || (homeIsEn ? 'TOUR PACKAGE' : 'TUR PAKETİ')) %>
                             </span>
                         </div>
                         <div class="p-6 space-y-4">
                             <div>
-                                <h3 class="text-lg font-extrabold text-slate-900"><%= pkg.title %></h3>
-                                <p class="text-xs text-slate-500 mt-0.5"><i class="fa-solid fa-compass text-teal-600 mr-1"></i><%= pkg.region %></p>
+                                <h3 class="text-lg font-extrabold text-slate-900"><%= pkgTitle %></h3>
+                                <p class="text-xs text-slate-500 mt-0.5"><i class="fa-solid fa-compass text-teal-600 mr-1"></i><%= pkgRegion %></p>
                             </div>
 
                             <div class="flex flex-wrap gap-3 text-xs text-slate-600 bg-slate-50 p-3 rounded-xl">
-                                <span><i class="fa-regular fa-clock text-teal-600 mr-1"></i><%= pkg.durationLabel || (pkg.durationDays + ' Gün') %></span>
-                                <span><i class="fa-solid fa-users text-teal-600 mr-1"></i><%= pkg.capacityLabel || (linkedYacht ? ('En fazla ' + linkedYacht.guests + ' kişi') : 'Özel Grup') %></span>
+                                <span><i class="fa-regular fa-clock text-teal-600 mr-1"></i><%= pkg.durationLabel || (pkg.durationDays + (homeIsEn ? (Number(pkg.durationDays) === 1 ? ' Day' : ' Days') : ' Gün')) %></span>
+                                <span><i class="fa-solid fa-users text-teal-600 mr-1"></i><%= pkg.capacityLabel || (linkedYacht ? (homeIsEn ? ('Up to ' + linkedYacht.guests + ' guests') : ('En fazla ' + linkedYacht.guests + ' kişi')) : (homeIsEn ? 'Private Group' : 'Özel Grup')) %></span>
                             </div>
 
                             <div class="space-y-1.5">
-                                <div class="text-[11px] font-bold uppercase text-emerald-700 tracking-wider">Pakete Dahil Olanlar</div>
+                                <div class="text-[11px] font-bold uppercase text-emerald-700 tracking-wider"><%= homeIsEn ? 'Included in Package' : 'Pakete Dahil Olanlar' %></div>
                                 <% pkgIncluded.forEach(item => { %>
                                     <div class="text-xs text-slate-700 flex items-start space-x-2">
                                         <i class="fa-solid fa-check text-emerald-600 mt-0.5"></i>
@@ -262,7 +279,7 @@
                             </div>
 
                             <div class="space-y-1 pt-2 border-t border-slate-100">
-                                <div class="text-[11px] font-bold uppercase text-slate-400 tracking-wider">Ekstra / Dahil Değil</div>
+                                <div class="text-[11px] font-bold uppercase text-slate-400 tracking-wider"><%= homeIsEn ? 'Extra / Not Included' : 'Ekstra / Dahil Değil' %></div>
                                 <% pkgExcluded.forEach(ex => { %>
                                     <div class="text-xs text-slate-500 flex items-start space-x-2">
                                         <i class="fa-solid fa-circle-info text-slate-400 mt-0.5"></i>
@@ -275,11 +292,11 @@
 
                     <div class="px-6 py-4 bg-slate-50/70 border-t border-slate-100 flex items-center justify-between">
                         <div>
-                            <span class="text-[11px] text-slate-400 block">Başlangıç</span>
+                            <span class="text-[11px] text-slate-400 block"><%= homeIsEn ? 'Package Price' : 'Paket Fiyatı' %></span>
                             <span class="font-extrabold text-teal-700 text-lg"><%= Number(pkg.pricePerDay || 0).toLocaleString() %> €</span>
                         </div>
-                        <a href="/yachts/<%= linkedYacht ? linkedYacht.id : '' %>" class="bg-[#0B1F3A] hover:bg-sky-900 text-white text-xs font-bold px-4 py-2.5 rounded-xl transition">
-                            İncele &amp; Kirala →
+                        <a href="/checkout?yachtId=<%= linkedYacht ? linkedYacht.id : 1 %>&tourId=<%= pkg.id %>" class="bg-[#0B1F3A] hover:bg-sky-900 text-white text-xs font-bold px-4 py-2.5 rounded-xl transition">
+                            <%= homeIsEn ? 'Select Package →' : 'Paketi Seç →' %>
                         </a>
                     </div>
                 </div>
@@ -292,45 +309,47 @@
 <section id="rotalar" data-home-section class="hidden max-w-7xl mx-auto px-4 sm:px-6 pt-10 space-y-6">
     <div class="flex flex-col md:flex-row md:items-end justify-between gap-4">
         <div>
-            <span class="text-xs font-extrabold uppercase tracking-wider text-teal-600">Mavi Yolculuk Rotaları</span>
-            <h2 class="text-2xl md:text-3xl font-extrabold text-[#0B1F3A] mt-1">Popüler Koy &amp; Liman Rehberi</h2>
+            <span class="text-xs font-extrabold uppercase tracking-wider text-teal-600"><%= homeIsEn ? 'Blue Cruise Routes' : 'Mavi Yolculuk Rotaları' %></span>
+            <h2 class="text-2xl md:text-3xl font-extrabold text-[#0B1F3A] mt-1"><%= homeIsEn ? 'Popular Cove & Marina Guide' : 'Popüler Koy & Liman Rehberi' %></h2>
         </div>
         <div class="flex flex-wrap gap-2" id="routeTabs">
-            <button type="button" data-route="gocek" class="route-tab px-4 py-2 rounded-xl text-xs font-bold bg-[#0B1F3A] text-white transition">Göcek 12 Adalar</button>
-            <button type="button" data-route="marmaris" class="route-tab px-4 py-2 rounded-xl text-xs font-bold bg-white border border-slate-200 text-slate-700 hover:bg-slate-100 transition">Marmaris &amp; Hisarönü</button>
-            <button type="button" data-route="fethiye" class="route-tab px-4 py-2 rounded-xl text-xs font-bold bg-white border border-slate-200 text-slate-700 hover:bg-slate-100 transition">Fethiye &amp; Ölüdeniz</button>
-            <button type="button" data-route="bodrum" class="route-tab px-4 py-2 rounded-xl text-xs font-bold bg-white border border-slate-200 text-slate-700 hover:bg-slate-100 transition">Bodrum Koyları</button>
+            <button type="button" data-route="gocek" class="route-tab px-4 py-2 rounded-xl text-xs font-bold bg-[#0B1F3A] text-white transition"><%= homeIsEn ? 'Göcek 12 Islands' : 'Göcek 12 Adalar' %></button>
+            <button type="button" data-route="marmaris" class="route-tab px-4 py-2 rounded-xl text-xs font-bold bg-white border border-slate-200 text-slate-700 hover:bg-slate-100 transition"><%= homeIsEn ? 'Marmaris & Hisarönü' : 'Marmaris & Hisarönü' %></button>
+            <button type="button" data-route="fethiye" class="route-tab px-4 py-2 rounded-xl text-xs font-bold bg-white border border-slate-200 text-slate-700 hover:bg-slate-100 transition"><%= homeIsEn ? 'Fethiye & Ölüdeniz' : 'Fethiye & Ölüdeniz' %></button>
+            <button type="button" data-route="bodrum" class="route-tab px-4 py-2 rounded-xl text-xs font-bold bg-white border border-slate-200 text-slate-700 hover:bg-slate-100 transition"><%= homeIsEn ? 'Bodrum Coves' : 'Bodrum Koyları' %></button>
         </div>
     </div>
 
     <div id="routeCard" class="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden grid grid-cols-1 lg:grid-cols-12 items-stretch">
         <div class="lg:col-span-5 h-60 lg:h-[310px] relative overflow-hidden">
-            <img id="routeImg" src="https://images.unsplash.com/photo-1500375592092-40eb2168fd21?auto=format&fit=crop&w=900&q=80" onerror="fallbackYachtImg(this)" alt="Rota" class="w-full h-full object-cover">
-            <span id="routeBadge" class="absolute top-4 left-4 bg-[#0B1F3A]/90 text-white text-[11px] font-bold px-3.5 py-1.5 rounded-full">D-Marin Göcek Kalkışlı</span>
+            <img id="routeImg" src="https://images.unsplash.com/photo-1500375592092-40eb2168fd21?auto=format&fit=crop&w=900&q=80" onerror="fallbackYachtImg(this)" alt="<%= homeIsEn ? 'Route' : 'Rota' %>" class="w-full h-full object-cover">
+            <span id="routeBadge" class="absolute top-4 left-4 bg-[#0B1F3A]/90 text-white text-[11px] font-bold px-3.5 py-1.5 rounded-full"><%= homeIsEn ? 'Departure from D-Marin Göcek' : 'D-Marin Göcek Kalkışlı' %></span>
         </div>
         <div class="lg:col-span-7 p-6 lg:px-8 lg:py-6 flex flex-col justify-between">
             <div class="space-y-3">
                 <div class="flex flex-wrap items-center justify-between gap-2">
-                    <h3 id="routeTitle" class="text-xl font-extrabold text-slate-900">Göcek 12 Adalar &amp; Bedri Rahmi Koyu</h3>
-                    <span id="routeDuration" class="text-xs font-bold text-teal-700 bg-teal-50 px-3 py-1 rounded-lg"><i class="fa-regular fa-compass mr-1"></i>1 - 3 Gün Önerilir</span>
+                    <h3 id="routeTitle" class="text-xl font-extrabold text-slate-900"><%= homeIsEn ? 'Göcek 12 Islands & Bedri Rahmi Cove' : 'Göcek 12 Adalar & Bedri Rahmi Koyu' %></h3>
+                    <span id="routeDuration" class="text-xs font-bold text-teal-700 bg-teal-50 px-3 py-1 rounded-lg"><i class="fa-regular fa-compass mr-1"></i><%= homeIsEn ? '1 - 3 Days Recommended' : '1 - 3 Gün Önerilir' %></span>
                 </div>
                 <p id="routeDesc" class="text-xs sm:text-sm text-slate-600 leading-relaxed">
-                    Rüzgâra kapalı sakin koyları, çam ormanlarıyla çevrili turkuaz suları ve kısa seyir mesafeleriyle hem günübirlik hem haftalık mavi yolculukların en gözde rotası.
+                    <%= homeIsEn
+                        ? 'A favorite route for both daily and weekly cruises thanks to wind-sheltered coves, turquoise pine-lined waters and short sailing distances.'
+                        : 'Rüzgâra kapalı sakin koyları, çam ormanlarıyla çevrili turkuaz suları ve kısa seyir mesafeleriyle hem günübirlik hem haftalık mavi yolculukların en gözde rotası.' %>
                 </p>
                 <div class="pt-1">
-                    <span class="block text-[10px] font-bold uppercase text-slate-400 tracking-wider mb-2">Öne Çıkan Duraklar</span>
+                    <span id="routeStopsLabel" class="block text-[10px] font-bold uppercase text-slate-400 tracking-wider mb-2"><%= homeIsEn ? 'Featured Stops' : 'Öne Çıkan Duraklar' %></span>
                     <div id="routeStops" class="flex flex-wrap gap-2 text-xs">
-                        <span class="bg-slate-100 text-slate-700 font-semibold px-3 py-1.5 rounded-lg">1. Yassıca Adaları</span>
-                        <span class="bg-slate-100 text-slate-700 font-semibold px-3 py-1.5 rounded-lg">2. Bedri Rahmi Koyu</span>
-                        <span class="bg-slate-100 text-slate-700 font-semibold px-3 py-1.5 rounded-lg">3. Kleopatra Hamamı</span>
-                        <span class="bg-slate-100 text-slate-700 font-semibold px-3 py-1.5 rounded-lg">4. Tersane Adası</span>
+                        <span class="bg-slate-100 text-slate-700 font-semibold px-3 py-1.5 rounded-lg"><%= homeIsEn ? '1. Yassıca Islands' : '1. Yassıca Adaları' %></span>
+                        <span class="bg-slate-100 text-slate-700 font-semibold px-3 py-1.5 rounded-lg"><%= homeIsEn ? '2. Bedri Rahmi Cove' : '2. Bedri Rahmi Koyu' %></span>
+                        <span class="bg-slate-100 text-slate-700 font-semibold px-3 py-1.5 rounded-lg"><%= homeIsEn ? '3. Cleopatra Bath' : '3. Kleopatra Hamamı' %></span>
+                        <span class="bg-slate-100 text-slate-700 font-semibold px-3 py-1.5 rounded-lg"><%= homeIsEn ? '4. Tersane Island' : '4. Tersane Adası' %></span>
                     </div>
                 </div>
             </div>
             <div class="pt-4 mt-4 border-t border-slate-100 flex flex-wrap items-center justify-between gap-3">
-                <div id="routeRec" class="text-xs text-slate-500">Önerilen Tekne Tipi: <strong class="text-slate-800">Katamaran &amp; Motor Yat</strong></div>
+                <div id="routeRec" class="text-xs text-slate-500"><%= homeIsEn ? 'Recommended Yacht Type:' : 'Önerilen Tekne Tipi:' %> <strong class="text-slate-800"><%= homeIsEn ? 'Catamaran & Motor Yacht' : 'Katamaran & Motor Yat' %></strong></div>
                 <a id="routeLink" href="/yachts?location=G%C3%B6cek" class="bg-teal-600 hover:bg-teal-700 text-white text-xs font-bold px-5 py-2.5 rounded-xl transition shadow">
-                    Bu Rotadaki Yatları Gör →
+                    <%= homeIsEn ? 'View Yachts on This Route →' : 'Bu Rotadaki Yatları Gör →' %>
                 </a>
             </div>
         </div>
@@ -340,12 +359,14 @@
 <!-- FİLO YAT BİLGİLERİ -->
 <section id="hizmetler" data-home-section class="hidden max-w-7xl mx-auto px-4 sm:px-6 pt-10 space-y-8">
     <div>
-        <h2 class="text-2xl md:text-3xl font-extrabold text-[#0B1F3A]">Filomuzdaki Yatlar &amp; Teknik Bilgiler</h2>
-        <p class="text-slate-500 text-sm mt-1">Kapasite, kabin sayısı, hız ve donanım detaylarıyla tekneleri karşılaştırın</p>
+        <h2 class="text-2xl md:text-3xl font-extrabold text-[#0B1F3A]"><%= homeIsEn ? 'Fleet Yachts & Technical Specs' : 'Filomuzdaki Yatlar & Teknik Bilgiler' %></h2>
+        <p class="text-slate-500 text-sm mt-1"><%= homeIsEn ? 'Compare vessels by capacity, cabin count, speed and onboard equipment' : 'Kapasite, kabin sayısı, hız ve donanım detaylarıyla tekneleri karşılaştırın' %></p>
     </div>
 
     <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
         <% yachts.slice(0, 3).forEach(y => { %>
+            <% const yCat = homeIsEn ? (y.categoryEn || y.category || y.categoryTr) : (y.categoryTr || y.category); %>
+            <% const yDesc = (homeIsEn && y.descriptionEn) ? y.descriptionEn : y.description; %>
             <div class="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm hover:shadow-lg transition flex flex-col justify-between">
                 <div>
                     <img src="<%= y.images[0] %>" onerror="fallbackYachtImg(this)" alt="<%= y.name %>" class="w-full h-48 object-cover">
@@ -353,23 +374,23 @@
                         <div class="flex justify-between items-start">
                             <div>
                                 <h3 class="font-extrabold text-lg text-slate-900"><%= y.name %></h3>
-                                <p class="text-xs text-slate-500"><%= y.categoryTr %> • <%= y.location %> • <%= y.length %></p>
+                                <p class="text-xs text-slate-500"><%= yCat %> • <%= y.location %> • <%= y.length %></p>
                             </div>
-                            <span class="font-extrabold text-[#0B1F3A] text-base">€<%= y.price.toLocaleString() %><span class="text-[11px] text-slate-400 font-normal">/gün</span></span>
+                            <span class="font-extrabold text-[#0B1F3A] text-base">€<%= y.price.toLocaleString() %><span class="text-[11px] text-slate-400 font-normal"><%= homeIsEn ? '/day' : '/gün' %></span></span>
                         </div>
 
                         <div class="grid grid-cols-3 gap-2 text-center bg-slate-50 p-2.5 rounded-xl text-xs">
-                            <div><strong class="block text-slate-800"><%= y.guests %> Kişi</strong><span class="text-[10px] text-slate-400">Kapasite</span></div>
-                            <div><strong class="block text-slate-800"><%= y.cabins %> Kabin</strong><span class="text-[10px] text-slate-400">Konaklama</span></div>
-                            <div><strong class="block text-slate-800"><%= y.crew %> Kişi</strong><span class="text-[10px] text-slate-400">Mürettebat</span></div>
+                            <div><strong class="block text-slate-800"><%= y.guests %> <%= homeIsEn ? 'Guests' : 'Kişi' %></strong><span class="text-[10px] text-slate-400"><%= homeIsEn ? 'Capacity' : 'Kapasite' %></span></div>
+                            <div><strong class="block text-slate-800"><%= y.cabins %> <%= homeIsEn ? (Number(y.cabins) === 1 ? 'Cabin' : 'Cabins') : 'Kabin' %></strong><span class="text-[10px] text-slate-400"><%= homeIsEn ? 'Accommodation' : 'Konaklama' %></span></div>
+                            <div><strong class="block text-slate-800"><%= y.crew %> <%= homeIsEn ? 'Crew' : 'Kişi' %></strong><span class="text-[10px] text-slate-400"><%= homeIsEn ? 'Crew' : 'Mürettebat' %></span></div>
                         </div>
 
-                        <p class="text-xs text-slate-600 line-clamp-2"><%= y.description %></p>
+                        <p class="text-xs text-slate-600 line-clamp-2"><%= yDesc %></p>
                     </div>
                 </div>
                 <div class="px-5 py-3.5 border-t border-slate-100 flex justify-between items-center text-xs">
                     <span class="text-slate-500"><i class="fa-solid fa-star text-amber-400 mr-1"></i><strong><%= y.rating.toFixed(1) %></strong> (<%= y.reviews %>)</span>
-                    <a href="/yachts/<%= y.id %>" class="font-bold text-[#0B1F3A] hover:text-teal-700">Yat Detayı →</a>
+                    <a href="/yachts/<%= y.id %>" class="font-bold text-[#0B1F3A] hover:text-teal-700"><%= homeIsEn ? 'Yacht Details →' : 'Yat Detayı →' %></a>
                 </div>
             </div>
         <% }) %>
@@ -377,11 +398,10 @@
 </section>
 
 <!-- YAT KATEGORİLERİ -->
-<!-- YAT KATEGORİLERİ -->
 <section id="kategoriler" data-home-section class="hidden max-w-7xl mx-auto px-4 sm:px-6 pt-10">
     <div class="mb-8">
-        <h2 class="text-2xl md:text-3xl font-extrabold text-[#0B1F3A]">Yat Kategorilerimiz</h2>
-        <p class="text-slate-500 text-sm mt-1">Tekne tipine göre filomuzu inceleyin</p>
+        <h2 class="text-2xl md:text-3xl font-extrabold text-[#0B1F3A]"><%= homeIsEn ? 'Our Yacht Categories' : 'Yat Kategorilerimiz' %></h2>
+        <p class="text-slate-500 text-sm mt-1"><%= homeIsEn ? 'Browse our fleet by vessel type' : 'Tekne tipine göre filomuzu inceleyin' %></p>
     </div>
 
     <% const homeCatImgMap = {
@@ -395,7 +415,7 @@
 
     <div class="grid grid-cols-2 md:grid-cols-5 gap-5">
         <% homeCats.forEach(cat => { %>
-            <% const catTitle = cat.nameTr || cat.title || cat.key; %>
+            <% const catTitle = homeIsEn ? (cat.nameEn || cat.titleEn || cat.key || cat.nameTr) : (cat.nameTr || cat.title || cat.key); %>
             <% const catImg = cat.img || homeCatImgMap[cat.key] || 'https://images.unsplash.com/photo-1567899378494-47b22a2ae96a?auto=format&fit=crop&w=500&q=80'; %>
             <a href="/yachts?category=<%= encodeURIComponent(cat.key) %>" class="group bg-white rounded-2xl overflow-hidden border border-slate-200 shadow-sm hover:shadow-xl transition">
                 <div class="h-36 overflow-hidden">
@@ -403,7 +423,7 @@
                 </div>
                 <div class="p-4">
                     <h3 class="font-bold text-slate-900 text-sm"><%= catTitle %></h3>
-                    <span class="text-xs font-semibold text-teal-700 mt-1 inline-block">Keşfet →</span>
+                    <span class="text-xs font-semibold text-teal-700 mt-1 inline-block"><%= homeIsEn ? 'Explore →' : 'Keşfet →' %></span>
                 </div>
             </a>
         <% }) %>
@@ -413,73 +433,89 @@
 <!-- DOĞRULANMIŞ MİSAFİR DENEYİMLERİ & SSS -->
 <section class="max-w-7xl mx-auto px-4 sm:px-6 pt-16 pb-6 grid grid-cols-1 lg:grid-cols-12 gap-8">
     <div class="lg:col-span-6 space-y-4">
-        <span class="text-xs font-extrabold uppercase tracking-wider text-teal-600">Doğrulanmış Yorumlar</span>
-        <h2 class="text-2xl font-extrabold text-[#0B1F3A]">Misafirlerimizin Deneyimleri</h2>
+        <span class="text-xs font-extrabold uppercase tracking-wider text-teal-600"><%= homeIsEn ? 'Verified Reviews' : 'Doğrulanmış Yorumlar' %></span>
+        <h2 class="text-2xl font-extrabold text-[#0B1F3A]"><%= homeIsEn ? 'Guest Experiences' : 'Misafirlerimizin Deneyimleri' %></h2>
 
         <div class="space-y-4">
             <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-2.5">
                 <div class="flex justify-between items-center">
                     <div class="text-amber-400 text-xs"><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i></div>
-                    <span class="text-[11px] text-emerald-700 bg-emerald-50 font-bold px-2.5 py-0.5 rounded-full">✓ Doğrulanmış Kiralama</span>
+                    <span class="text-[11px] text-emerald-700 bg-emerald-50 font-bold px-2.5 py-0.5 rounded-full"><%= homeIsEn ? '✓ Verified Charter' : '✓ Doğrulanmış Kiralama' %></span>
                 </div>
-                <p class="text-xs text-slate-600 leading-relaxed">"Göcek koylarında 3 günlük turumuz kusursuzdu. Kaptanımız rotayı rüzgâra göre planladı, teknenin temizliği ve ikramlar beklentimizin çok üzerindeydi."</p>
+                <p class="text-xs text-slate-600 leading-relaxed">
+                    <%= homeIsEn
+                        ? '"Our 3-day trip in the Göcek coves was flawless. Our captain planned the route with the wind, and the cleanliness of the yacht and refreshments exceeded our expectations."'
+                        : '"Göcek koylarında 3 günlük turumuz kusursuzdu. Kaptanımız rotayı rüzgâra göre planladı, teknenin temizliği ve ikramlar beklentimizin çok üzerindeydi."' %>
+                </p>
                 <div class="text-xs font-bold text-slate-900">Emre Karahan <span class="font-normal text-slate-400">• Göcek Charter</span></div>
             </div>
 
             <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-2.5">
                 <div class="flex justify-between items-center">
                     <div class="text-amber-400 text-xs"><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i></div>
-                    <span class="text-[11px] text-emerald-700 bg-emerald-50 font-bold px-2.5 py-0.5 rounded-full">✓ Doğrulanmış Kiralama</span>
+                    <span class="text-[11px] text-emerald-700 bg-emerald-50 font-bold px-2.5 py-0.5 rounded-full"><%= homeIsEn ? '✓ Verified Charter' : '✓ Doğrulanmış Kiralama' %></span>
                 </div>
-                <p class="text-xs text-slate-600 leading-relaxed">"PNR kodu ile rezervasyon takibi ve %30 kapora kolaylığı çok güven verici. Ailemizle Marmaris'te unutulmaz bir hafta sonu geçirdik."</p>
-                <div class="text-xs font-bold text-slate-900">Selin Arslan <span class="font-normal text-slate-400">• Marmaris Gulet Turu</span></div>
+                <p class="text-xs text-slate-600 leading-relaxed">
+                    <%= homeIsEn
+                        ? '"PNR booking tracking and flexible payment options feel very reliable. We spent an unforgettable weekend in Marmaris with our family."'
+                        : '"PNR kodu ile rezervasyon takibi ve esnek ödeme seçenekleri çok güven verici. Ailemizle Marmaris\'te unutulmaz bir hafta sonu geçirdik."' %>
+                </p>
+                <div class="text-xs font-bold text-slate-900">Selin Arslan <span class="font-normal text-slate-400">• <%= homeIsEn ? 'Marmaris Gulet Tour' : 'Marmaris Gulet Turu' %></span></div>
             </div>
         </div>
     </div>
 
     <div class="lg:col-span-6 space-y-4">
-        <span class="text-xs font-extrabold uppercase tracking-wider text-teal-600">Merak Edilenler</span>
-        <h2 class="text-2xl font-extrabold text-[#0B1F3A]">Sıkça Sorulan Sorular</h2>
+        <span class="text-xs font-extrabold uppercase tracking-wider text-teal-600"><%= homeIsEn ? 'Good to Know' : 'Merak Edilenler' %></span>
+        <h2 class="text-2xl font-extrabold text-[#0B1F3A]"><%= homeIsEn ? 'Frequently Asked Questions' : 'Sıkça Sorulan Sorular' %></h2>
 
         <div class="space-y-3" id="faqList">
             <div class="bg-white rounded-2xl border border-slate-200 overflow-hidden">
                 <button type="button" class="faq-btn w-full px-5 py-4 text-left flex justify-between items-center font-bold text-sm text-slate-900">
-                    <span>Yakıt ve kaptan ücreti fiyata dahil mi?</span>
+                    <span><%= homeIsEn ? 'Are fuel and captain fees included in the price?' : 'Yakıt ve kaptan ücreti fiyata dahil mi?' %></span>
                     <i class="fa-solid fa-plus text-xs text-teal-600 transition-transform"></i>
                 </button>
                 <div class="faq-ans hidden px-5 pb-4 text-xs text-slate-600 leading-relaxed">
-                    Tüm günlük tur paketlerimizde ve standart koylara yapılan özel kiralamalarda lisanslı kaptan, mürettebat ve rota yakıtı fiyata dahildir. Uzun mesafe özel rota talepleri önceden şeffaf biçimde belirtilir.
+                    <%= homeIsEn
+                        ? 'All daily tour packages and private charters along standard coves include a licensed captain, crew and route fuel. Long-distance custom route requests are stated transparently in advance.'
+                        : 'Tüm günlük tur paketlerimizde ve standart koylara yapılan özel kiralamalarda lisanslı kaptan, mürettebat ve rota yakıtı fiyata dahildir. Uzun mesafe özel rota talepleri önceden şeffaf biçimde belirtilir.' %>
                 </div>
             </div>
 
             <div class="bg-white rounded-2xl border border-slate-200 overflow-hidden">
                 <button type="button" class="faq-btn w-full px-5 py-4 text-left flex justify-between items-center font-bold text-sm text-slate-900">
-                    <span>Rezervasyon iptali ve tarih değişikliği nasıl yapılır?</span>
+                    <span><%= homeIsEn ? 'How do cancellation and date changes work?' : 'Rezervasyon iptali ve tarih değişikliği nasıl yapılır?' %></span>
                     <i class="fa-solid fa-plus text-xs text-teal-600 transition-transform"></i>
                 </button>
                 <div class="faq-ans hidden px-5 pb-4 text-xs text-slate-600 leading-relaxed">
-                    Tur tarihine 7 gün kalaya kadar yapılan iptallerde ön ödemeniz kesintisiz iade edilir. Olumsuz hava koşullarında ise ücretsiz tarih değişikliği veya tam iade garantisi sunulur.
+                    <%= homeIsEn
+                        ? 'Cancellations made up to 7 days before the tour date receive a full refund of your deposit. In adverse weather conditions, free date change or a full refund is guaranteed.'
+                        : 'Tur tarihine 7 gün kalaya kadar yapılan iptallerde ön ödemeniz kesintisiz iade edilir. Olumsuz hava koşullarında ise ücretsiz tarih değişikliği veya tam iade garantisi sunulur.' %>
                 </div>
             </div>
 
             <div class="bg-white rounded-2xl border border-slate-200 overflow-hidden">
                 <button type="button" class="faq-btn w-full px-5 py-4 text-left flex justify-between items-center font-bold text-sm text-slate-900">
-                    <span>Tekneye kendi yiyecek ve içeceklerimizi getirebilir miyiz?</span>
+                    <span><%= homeIsEn ? 'Can we bring our own food and beverages on board?' : 'Tekneye kendi yiyecek ve içeceklerimizi getirebilir miyiz?' %></span>
                     <i class="fa-solid fa-plus text-xs text-teal-600 transition-transform"></i>
                 </button>
                 <div class="faq-ans hidden px-5 pb-4 text-xs text-slate-600 leading-relaxed">
-                    Evet, dilerseniz kumanyanızı kendiniz getirebilir ve mürettebatımızın servisinden faydalanabilirsiniz; dilerseniz rezervasyon sırasında özel şef menüsü talep edebilirsiniz.
+                    <%= homeIsEn
+                        ? 'Yes, you can bring your own provisions and enjoy service from our crew, or request a private chef menu during booking.'
+                        : 'Evet, dilerseniz kumanyanızı kendiniz getirebilir ve mürettebatımızın servisinden faydalanabilirsiniz; dilerseniz rezervasyon sırasında özel şef menüsü talep edebilirsiniz.' %>
                 </div>
             </div>
         </div>
     </div>
 </section>
 
-<div id="homeBookedData" data-booked='<%- JSON.stringify(typeof homeBookings !== "undefined" ? homeBookings : []) %>' class="hidden"></div>
+<div id="homeBookedData" data-booked='<%- JSON.stringify(typeof homeBookings !== "undefined" ? homeBookings : []) %>' data-today="<%= todayIso %>" class="hidden"></div>
 
 <script>
     (function () {
+        const isEnHome = document.documentElement.dataset.yvEn === '1';
         const bookedEl = document.getElementById('homeBookedData');
+        const todayStr = (bookedEl && bookedEl.dataset.today) ? bookedEl.dataset.today : new Date().toISOString().slice(0, 10);
         let bookedRanges = [];
         if (bookedEl && bookedEl.dataset.booked) {
             try {
@@ -491,22 +527,29 @@
         window.HOME_BOOKED_RANGES = bookedRanges;
 
         const dateInput = document.getElementById('homeDateInput');
+        const clearBtn = document.getElementById('homeDateClear');
         const popover = document.getElementById('homeDatePopover');
         const gridEl = document.getElementById('homeCalGrid');
         const titleEl = document.getElementById('homeCalTitle');
         const prevBtn = document.getElementById('homeCalPrev');
         const nextBtn = document.getElementById('homeCalNext');
 
-        const months = ['Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran', 'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık'];
+        const months = isEnHome
+            ? ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
+            : ['Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran', 'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık'];
 
-        const initD = dateInput && dateInput.value ? new Date(dateInput.value + 'T00:00:00') : new Date('2026-06-25T00:00:00');
-        let curYear = isNaN(initD.getTime()) ? 2026 : initD.getFullYear();
-        let curMonth = isNaN(initD.getTime()) ? 5 : initD.getMonth();
+        const baseDate = new Date(todayStr + 'T00:00:00');
+        let curYear = isNaN(baseDate.getTime()) ? 2026 : baseDate.getFullYear();
+        let curMonth = isNaN(baseDate.getTime()) ? 10 : baseDate.getMonth();
 
         function isBooked(ymd) {
             return bookedRanges.some(function (r) {
                 return ymd >= r.checkIn && ymd < r.checkOut;
             });
+        }
+
+        function isPast(ymd) {
+            return ymd < todayStr;
         }
 
         function renderCal() {
@@ -527,16 +570,23 @@
 
             for (let d = 1; d <= daysCount; d++) {
                 const ymd = curYear + '-' + String(curMonth + 1).padStart(2, '0') + '-' + String(d).padStart(2, '0');
-                const booked = isBooked(ymd);
+                const past = isPast(ymd);
+                const booked = !past && isBooked(ymd);
 
                 const btn = document.createElement('button');
                 btn.type = 'button';
                 btn.textContent = d;
-                btn.className = booked
-                    ? 'w-full h-8 rounded-lg font-extrabold bg-rose-500 text-white cursor-not-allowed flex items-center justify-center'
-                    : 'w-full h-8 rounded-lg font-bold bg-emerald-100 text-emerald-800 hover:bg-emerald-500 hover:text-white transition flex items-center justify-center';
 
-                if (!booked) {
+                if (past) {
+                    btn.className = 'w-full h-8 rounded-lg font-medium bg-slate-100 text-slate-300 cursor-not-allowed flex items-center justify-center';
+                } else if (booked) {
+                    btn.className = 'w-full h-8 rounded-lg font-extrabold bg-rose-500 text-white cursor-not-allowed flex items-center justify-center';
+                } else {
+                    const selected = dateInput && dateInput.value === ymd;
+                    btn.className = selected
+                        ? 'w-full h-8 rounded-lg font-extrabold bg-[#0B1F3A] text-white ring-2 ring-teal-500 flex items-center justify-center'
+                        : 'w-full h-8 rounded-lg font-bold bg-emerald-100 text-emerald-800 hover:bg-emerald-500 hover:text-white transition flex items-center justify-center';
+
                     btn.addEventListener('click', function () {
                         if (dateInput) {
                             dateInput.value = ymd;
@@ -550,11 +600,20 @@
             }
         }
 
+        if (clearBtn && dateInput) {
+            clearBtn.addEventListener('click', function (e) {
+                e.preventDefault();
+                e.stopPropagation();
+                dateInput.value = '';
+                renderCal();
+            });
+        }
+
         if (dateInput && popover) {
             dateInput.addEventListener('mousedown', function (e) {
                 e.preventDefault();
                 document.querySelectorAll('.yv-dd-menu').forEach(function (m) { m.classList.add('hidden'); });
-                const parsed = dateInput.value ? new Date(dateInput.value + 'T00:00:00') : null;
+                const parsed = dateInput.value ? new Date(dateInput.value + 'T00:00:00') : baseDate;
                 if (parsed && !isNaN(parsed.getTime())) {
                     curYear = parsed.getFullYear();
                     curMonth = parsed.getMonth();
@@ -631,7 +690,48 @@
             });
         });
 
-        const routesData = {
+        const routesData = isEnHome ? {
+            gocek: {
+                title: 'Göcek 12 Islands & Bedri Rahmi Cove',
+                badge: 'Departure from D-Marin Göcek',
+                duration: '1 - 3 Days Recommended',
+                desc: 'A favorite route for both daily and weekly cruises thanks to wind-sheltered coves, turquoise pine-lined waters and short sailing distances.',
+                stops: ['1. Yassıca Islands', '2. Bedri Rahmi Cove', '3. Cleopatra Bath', '4. Tersane Island'],
+                rec: 'Catamaran & Motor Yacht',
+                img: 'https://images.unsplash.com/photo-1500375592092-40eb2168fd21?auto=format&fit=crop&w=900&q=80',
+                link: '/yachts?location=G%C3%B6cek'
+            },
+            marmaris: {
+                title: 'Marmaris, Bozburun & Hisarönü Gulf',
+                badge: 'Departure from Netsel Marina',
+                duration: '2 - 5 Days Recommended',
+                desc: 'A peaceful and comfortable cruising experience along the Hisarönü line famous for clear coves, fishing villages and sunset views.',
+                stops: ['1. Paradise Island', '2. Kumlubük', '3. Selimiye Cove', '4. Bencik Cove'],
+                rec: 'Gulet & Superyacht',
+                img: 'https://images.unsplash.com/photo-1544551763-46a013bb70d5?auto=format&fit=crop&w=900&q=80',
+                link: '/yachts?location=Marmaris'
+            },
+            fethiye: {
+                title: 'Fethiye, Ölüdeniz & Butterfly Valley',
+                badge: 'Departure from Ece Marina',
+                duration: '1 - 4 Days Recommended',
+                desc: 'A favorite for nature and swimming lovers with hidden coves in the shade of high cliffs, Aquarium Cove and St. Nicholas Island.',
+                stops: ['1. Kızıl Island', '2. Butterfly Valley', '3. St. Nicholas Island', '4. Tarzan Cove'],
+                rec: 'Motor Yacht & Sailing Yacht',
+                img: 'https://images.unsplash.com/photo-1534447677768-be436bb09401?auto=format&fit=crop&w=900&q=80',
+                link: '/yachts?location=Fethiye'
+            },
+            bodrum: {
+                title: 'Bodrum, Paradise Cove & Orak Island',
+                badge: 'Departure from Yalıkavak & Bodrum',
+                duration: '1 - 7 Days Recommended',
+                desc: 'A lively and upscale Aegean route with Maldives-blue waters around Orak Island and exclusive beach club stops.',
+                stops: ['1. Aquarium Cove', '2. Orak Island', '3. Paradise Cove', '4. Türkbükü'],
+                rec: 'Superyacht & Motor Yacht',
+                img: 'https://images.unsplash.com/photo-1567899378494-47b22a2ae96a?auto=format&fit=crop&w=900&q=80',
+                link: '/yachts?location=Bodrum'
+            }
+        } : {
             gocek: {
                 title: 'Göcek 12 Adalar & Bedri Rahmi Koyu',
                 badge: 'D-Marin Göcek Kalkışlı',
@@ -691,7 +791,8 @@
                 document.getElementById('routeDesc').innerText = data.desc;
                 document.getElementById('routeImg').src = data.img;
                 document.getElementById('routeLink').href = data.link;
-                document.getElementById('routeRec').innerHTML = 'Önerilen Tekne Tipi: <strong class="text-slate-800">' + data.rec + '</strong>';
+                const recPrefix = isEnHome ? 'Recommended Yacht Type: ' : 'Önerilen Tekne Tipi: ';
+                document.getElementById('routeRec').innerHTML = recPrefix + '<strong class="text-slate-800">' + data.rec + '</strong>';
                 document.getElementById('routeStops').innerHTML = data.stops.map(function (s) {
                     return '<span class="bg-slate-100 text-slate-700 font-semibold px-3 py-1.5 rounded-lg">' + s + '</span>';
                 }).join('');

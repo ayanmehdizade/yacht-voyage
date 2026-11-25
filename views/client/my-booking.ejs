@@ -1,74 +1,129 @@
 <%- include('../partials/header') %>
 
+<% const mbIsEn = (typeof isEn !== 'undefined') ? Boolean(isEn) : (typeof lang !== 'undefined' && lang === 'en'); %>
+<% const emailVal = (typeof email !== 'undefined' && email) ? email : ''; %>
+<% const msgTrToEn = {
+    'Rezervasyonunuz başarıyla iptal edildi.': 'Your booking has been successfully cancelled.',
+    'Rezervasyon başarıyla iptal edildi.': 'Booking successfully cancelled.'
+}; %>
+<% const displayMsg = msg ? (mbIsEn ? (msgTrToEn[msg] || msg) : msg) : ''; %>
+
 <main class="max-w-3xl mx-auto px-4 sm:px-6 py-14 space-y-8">
     <div class="bg-white rounded-3xl border border-slate-200 shadow-sm p-8 text-center space-y-4">
         <div class="w-14 h-14 rounded-2xl bg-sky-50 text-[#0B1F3A] flex items-center justify-center mx-auto text-2xl">
             <i class="fa-solid fa-ticket"></i>
         </div>
-        <h1 class="text-2xl md:text-3xl font-extrabold text-[#0B1F3A]">Rezervasyon Sorgulama</h1>
-        <p class="text-slate-500 text-sm">PNR referans kodunuzu girerek rezervasyon detaylarınızı görüntüleyebilir veya yönetebilirsiniz. (Örnek: <span class="font-mono font-bold text-slate-700">YV2026-2841</span>)</p>
+        <h1 class="text-2xl md:text-3xl font-extrabold text-[#0B1F3A]"><%= mbIsEn ? 'Booking Lookup' : 'Rezervasyon Sorgulama' %></h1>
+        <p class="text-slate-500 text-sm">
+            <%= mbIsEn
+                ? 'For your security, enter both your PNR code and booking email address to view and manage your reservation details.'
+                : 'Güvenliğiniz için rezervasyon detaylarını görüntülemek ve yönetmek adına PNR kodunuzu ve rezervasyon e-posta adresinizi birlikte girin.' %>
+        </p>
 
-        <form action="/my-booking" method="GET" class="flex flex-col sm:flex-row gap-3 max-w-lg mx-auto pt-2">
-            <input type="text" name="pnr" value="<%= pnr %>" placeholder="Örn: YV2026-2841" required class="flex-1 p-3.5 text-sm font-mono uppercase border border-slate-200 rounded-xl focus:outline-none focus:border-[#0B1F3A]">
-            <button type="submit" class="bg-[#0B1F3A] hover:bg-sky-900 text-white px-6 py-3.5 rounded-xl font-bold text-sm transition">
-                Sorgula
-            </button>
+        <form action="/my-booking" method="GET" class="grid grid-cols-1 sm:grid-cols-12 gap-3 max-w-2xl mx-auto pt-2 text-left">
+            <div class="sm:col-span-5">
+                <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1"><%= mbIsEn ? 'PNR Code *' : 'PNR Kodu *' %></label>
+                <input type="text" name="pnr" value="<%= pnr %>" placeholder="<%= mbIsEn ? 'E.g. YV2026-2841' : 'Örn: YV2026-2841' %>" required class="w-full p-3.5 text-sm font-mono uppercase border border-slate-200 rounded-xl focus:outline-none focus:border-[#0B1F3A]">
+            </div>
+            <div class="sm:col-span-5">
+                <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1"><%= mbIsEn ? 'Email Address *' : 'E-posta Adresi *' %></label>
+                <input type="email" name="email" value="<%= emailVal %>" placeholder="<%= mbIsEn ? 'example@mail.com' : 'ornek@mail.com' %>" required class="w-full p-3.5 text-sm border border-slate-200 rounded-xl focus:outline-none focus:border-[#0B1F3A]">
+            </div>
+            <div class="sm:col-span-2 flex items-end">
+                <button type="submit" class="w-full bg-[#0B1F3A] hover:bg-sky-900 text-white px-5 py-3.5 rounded-xl font-bold text-sm transition">
+                    <%= mbIsEn ? 'Search' : 'Sorgula' %>
+                </button>
+            </div>
         </form>
     </div>
 
-    <% if (msg) { %>
+    <% if (displayMsg) { %>
         <div class="bg-emerald-50 border border-emerald-200 text-emerald-800 px-5 py-4 rounded-2xl text-sm font-semibold">
-            <i class="fa-solid fa-circle-check mr-2"></i><%= msg %>
+            <i class="fa-solid fa-circle-check mr-2"></i><%= displayMsg %>
         </div>
     <% } %>
 
     <% if (searched && !booking) { %>
         <div class="bg-rose-50 border border-rose-200 text-rose-700 p-6 rounded-2xl text-center text-sm font-semibold">
-            "<%= pnr %>" koduna ait rezervasyon bulunamadı. Lütfen kodunuzu kontrol edin.
+            <%= mbIsEn
+                ? 'No reservation found matching the entered PNR code and email address. Please check your details.'
+                : 'Girilen PNR kodu ve e-posta adresi eşleşen bir rezervasyon bulunamadı. Lütfen bilgilerinizi kontrol edin.' %>
         </div>
     <% } %>
 
     <% if (booking) { %>
+        <% const isCancelled = (booking.status === 'İptal Edildi' || booking.status === 'Cancelled'); %>
+        <% const statusLabel = mbIsEn
+            ? (isCancelled ? 'Cancelled' : (booking.status === 'Onaylandı' ? 'Confirmed' : booking.status))
+            : booking.status; %>
+        <% const payStatusText = mbIsEn
+            ? (booking.paymentStatusEn || (isCancelled ? 'Refund / Accounting Review' : (Number(booking.paidAmount || 0) >= Number(booking.totalAmount || 0) ? 'Paid in Full' : 'Deposit Paid')))
+            : (booking.paymentStatus || (isCancelled ? 'İade / Muhasebe İncelemesinde' : (Number(booking.paidAmount || 0) >= Number(booking.totalAmount || 0) ? 'Tam Ödendi' : 'Ön Ödeme Alındı'))); %>
+        <% const refundedAmt = Number(booking.refundedAmount || 0); %>
+        <% const daysNum = Number(booking.days || 1); %>
+        <% const guestsNum = Number(booking.guests || 1); %>
+        <% const methodLabel = mbIsEn
+            ? ({ 'Kart': 'Card', 'Kredi / Banka Kartı': 'Credit / Debit Card', 'Havale / EFT': 'Bank Transfer / EFT', 'Nakit / Marina Ödemesi': 'Cash / Marina Payment' }[booking.paymentMethod] || booking.paymentMethod || 'Card')
+            : (booking.paymentMethod || 'Kart'); %>
         <div class="bg-white rounded-3xl border border-slate-200 shadow-lg p-8 space-y-6">
             <div class="flex flex-wrap justify-between items-center gap-3 border-b border-slate-100 pb-4">
                 <div>
-                    <span class="text-xs text-slate-400 uppercase font-bold block">Rezervasyon Kodu</span>
+                    <span class="text-xs text-slate-400 uppercase font-bold block"><%= mbIsEn ? 'Booking Code' : 'Rezervasyon Kodu' %></span>
                     <span class="text-xl font-mono font-extrabold text-[#0B1F3A]">#<%= booking.id %></span>
                 </div>
-                <span class="px-3.5 py-1.5 rounded-full text-xs font-bold <%= booking.status === 'İptal Edildi' ? 'bg-rose-100 text-rose-700' : 'bg-emerald-100 text-emerald-700' %>">
-                    <%= booking.status %>
-                </span>
+                <div class="flex flex-wrap gap-2">
+                    <span class="px-3.5 py-1.5 rounded-full text-xs font-bold <%= isCancelled ? 'bg-rose-100 text-rose-700' : 'bg-emerald-100 text-emerald-700' %>">
+                        <%= mbIsEn ? 'Booking:' : 'Rezervasyon:' %> <%= statusLabel %>
+                    </span>
+                    <span class="px-3.5 py-1.5 rounded-full text-xs font-bold bg-sky-100 text-sky-800">
+                        <%= mbIsEn ? 'Payment:' : 'Ödeme:' %> <%= payStatusText %>
+                    </span>
+                </div>
             </div>
 
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
                 <div class="bg-slate-50 p-4 rounded-xl">
-                    <span class="text-slate-400 block">Yat & Liman</span>
-                    <strong class="text-sm text-slate-900"><%= booking.yacht %> (<%= yacht.location %>)</strong>
+                    <span class="text-slate-400 block"><%= mbIsEn ? 'Yacht & Port' : 'Yat & Liman' %></span>
+                    <strong class="text-sm text-slate-900"><%= booking.yacht %> (<%= yacht ? yacht.location : '' %>)</strong>
                 </div>
                 <div class="bg-slate-50 p-4 rounded-xl">
-                    <span class="text-slate-400 block">Tarihler</span>
-                    <strong class="text-sm text-slate-900"><%= booking.checkIn %> → <%= booking.checkOut %> (<%= booking.days %> Gün)</strong>
+                    <span class="text-slate-400 block"><%= mbIsEn ? 'Dates' : 'Tarihler' %></span>
+                    <strong class="text-sm text-slate-900">
+                        <%= booking.checkIn %> → <%= booking.checkOut %> (<%= daysNum %> <%= mbIsEn ? (daysNum === 1 ? 'Day' : 'Days') : 'Gün' %>)
+                    </strong>
                 </div>
                 <div class="bg-slate-50 p-4 rounded-xl">
-                    <span class="text-slate-400 block">Misafir</span>
-                    <strong class="text-sm text-slate-900"><%= booking.customer %> (<%= booking.guests %> Kişi)</strong>
+                    <span class="text-slate-400 block"><%= mbIsEn ? 'Guest' : 'Misafir' %></span>
+                    <strong class="text-sm text-slate-900">
+                        <%= booking.customer %> (<%= guestsNum %> <%= mbIsEn ? (guestsNum === 1 ? 'Guest' : 'Guests') : 'Kişi' %>)
+                    </strong>
                 </div>
-                <div class="bg-slate-50 p-4 rounded-xl">
-                    <span class="text-slate-400 block">Ödeme Durumu (<%= booking.paymentMethod || 'Kart' %>)</span>
-                    <strong class="text-sm text-[#0B1F3A]">Ödenen: €<%= booking.paidAmount.toLocaleString() %> / Toplam: €<%= booking.totalAmount.toLocaleString() %></strong>
+                <div class="bg-slate-50 p-4 rounded-xl space-y-1">
+                    <span class="text-slate-400 block"><%= mbIsEn ? 'Payment & Balance' : 'Ödeme & Bakiye' %> (<%= methodLabel %>)</span>
+                    <strong class="text-sm text-[#0B1F3A] block">
+                        <%= mbIsEn
+                            ? ('Paid: €' + Number(booking.paidAmount || 0).toLocaleString() + ' / Total: €' + Number(booking.totalAmount || 0).toLocaleString())
+                            : ('Tahsil Edilen: €' + Number(booking.paidAmount || 0).toLocaleString() + ' / Toplam: €' + Number(booking.totalAmount || 0).toLocaleString()) %>
+                    </strong>
+                    <% if (refundedAmt > 0) { %>
+                        <span class="text-[11px] font-bold text-amber-700 block">
+                            <%= mbIsEn ? ('Refunded Amount: €' + refundedAmt.toLocaleString()) : ('İade Edilen Tutar: €' + refundedAmt.toLocaleString()) %>
+                        </span>
+                    <% } %>
                 </div>
             </div>
 
             <div class="flex flex-wrap justify-between items-center gap-3 pt-4 border-t border-slate-100">
                 <a href="/confirmation/<%= booking.id %>" class="px-5 py-2.5 bg-[#0B1F3A] text-white rounded-xl text-xs font-bold hover:bg-sky-900">
-                    Resmi Voucher Görüntüle
+                    <%= mbIsEn ? 'View Official Voucher' : 'Resmi Voucher Görüntüle' %>
                 </a>
 
-                <% if (booking.status !== 'İptal Edildi') { %>
-                    <form action="/my-booking/cancel" method="POST" onsubmit="return confirm('Rezervasyonu iptal etmek istediğinize emin misiniz?')">
+                <% if (!isCancelled) { %>
+                    <form id="cancelBookingForm" action="/my-booking/cancel" method="POST" class="flex items-center gap-2">
                         <input type="hidden" name="pnr" value="<%= booking.id %>">
-                        <button type="submit" class="px-5 py-2.5 bg-rose-50 hover:bg-rose-100 text-rose-700 rounded-xl text-xs font-bold transition">
-                            Rezervasyonu İptal Et
+                        <input type="hidden" name="email" value="<%= emailVal || booking.email || '' %>">
+                        <button type="submit" id="cancelBookingBtn" class="px-5 py-2.5 bg-rose-50 hover:bg-rose-100 text-rose-700 rounded-xl text-xs font-bold transition">
+                            <%= mbIsEn ? 'Cancel Booking' : 'Rezervasyonu İptal Et' %>
                         </button>
                     </form>
                 <% } %>
@@ -76,5 +131,19 @@
         </div>
     <% } %>
 </main>
+
+<script>
+    const isEnMb = document.documentElement.dataset.yvEn === '1';
+    const cancelForm = document.getElementById('cancelBookingForm');
+    if (cancelForm) {
+        cancelForm.addEventListener('submit', function(e) {
+            const confirmMsg = isEnMb
+                ? 'Are you sure you want to cancel this booking? After cancellation, the payment/refund process is handled by the operator.'
+                : 'Bu rezervasyonu iptal etmek istediğinize emin misiniz? İptal sonrası ödeme/iade süreci operatör tarafından işleme alınır.';
+            const ok = confirm(confirmMsg);
+            if (!ok) e.preventDefault();
+        });
+    }
+</script>
 
 <%- include('../partials/footer') %>

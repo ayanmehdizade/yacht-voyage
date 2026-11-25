@@ -1,14 +1,27 @@
 <%- include('../partials/header') %>
 
+<% const coIsEn = (typeof isEn !== 'undefined') ? Boolean(isEn) : (typeof lang !== 'undefined' && lang === 'en'); %>
 <% const planCfg = (typeof paymentPlanSettings !== 'undefined' && paymentPlanSettings) ? paymentPlanSettings : {
     installmentPercent: 50,
     installmentInterestPercent: 0,
     fullPaymentDiscountPercent: 10
 }; %>
 <% const contractCfg = (typeof rentalContract !== 'undefined' && rentalContract) ? rentalContract : {
-    title: 'YachtVoyage Tekne Kiralama ve İptal Sözleşmesi',
+    title: coIsEn ? 'YachtVoyage Yacht Charter & Cancellation Agreement' : 'YachtVoyage Tekne Kiralama ve İptal Sözleşmesi',
     body: ''
 }; %>
+<% const contractTitle = (coIsEn && contractCfg.titleEn) ? contractCfg.titleEn : contractCfg.title; %>
+<% const contractBody = (coIsEn && contractCfg.bodyEn) ? contractCfg.bodyEn : contractCfg.body; %>
+<% const catSingularEn = {
+    'Motor Yachts': 'Motor Yacht',
+    'Gulets': 'Gulet',
+    'Sailing Yachts': 'Sailing Yacht',
+    'Catamarans': 'Catamaran',
+    'Superyachts': 'Superyacht'
+}; %>
+<% const yCatLabel = coIsEn
+    ? (catSingularEn[yacht.category] || catSingularEn[yacht.categoryEn] || yacht.categoryEn || yacht.category || yacht.categoryTr)
+    : (yacht.categoryTr || yacht.category); %>
 
 <div id="paymentPlanConfig"
      data-installment-pct="<%= planCfg.installmentPercent %>"
@@ -20,17 +33,17 @@
     <div class="flex items-center justify-center space-x-3 md:space-x-8 mb-8 text-xs md:text-sm">
         <div id="stepIndicator1" class="flex items-center space-x-2 font-bold text-[#0B1F3A]">
             <span class="w-8 h-8 rounded-full bg-[#0B1F3A] text-white flex items-center justify-center text-xs">1</span>
-            <span>Tur &amp; Ekstralar</span>
+            <span><%= coIsEn ? 'Tour & Extras' : 'Tur & Ekstralar' %></span>
         </div>
         <div class="w-8 md:w-14 h-px bg-slate-300"></div>
         <div id="stepIndicator2" class="flex items-center space-x-2 font-semibold text-slate-400">
             <span id="stepCircle2" class="w-8 h-8 rounded-full bg-slate-200 text-slate-600 flex items-center justify-center text-xs">2</span>
-            <span>Ödeme Yöntemi</span>
+            <span><%= coIsEn ? 'Payment Method' : 'Ödeme Yöntemi' %></span>
         </div>
         <div class="w-8 md:w-14 h-px bg-slate-300"></div>
         <div class="flex items-center space-x-2 font-semibold text-slate-400">
             <span class="w-8 h-8 rounded-full bg-slate-200 text-slate-600 flex items-center justify-center text-xs">3</span>
-            <span>PNR &amp; Voucher</span>
+            <span><%= coIsEn ? 'PNR & Voucher' : 'PNR & Voucher' %></span>
         </div>
     </div>
 
@@ -43,7 +56,11 @@
 
     <div id="dateOrderWarning" class="hidden mb-6 bg-amber-50 border border-amber-200 text-amber-800 px-5 py-3.5 rounded-2xl text-xs font-bold flex items-center space-x-2.5">
         <i class="fa-solid fa-triangle-exclamation text-base text-amber-600"></i>
-        <span id="dateOrderWarningText">Devam etmek için geçerli bir çıkış tarihi seçmelisiniz (1 gün için ertesi günü seçin).</span>
+        <span id="dateOrderWarningText">
+            <%= coIsEn
+                ? 'Please select a valid check-out date to continue (select the next day for 1 day).'
+                : 'Devam etmek için geçerli bir çıkış tarihi seçmelisiniz (1 gün için ertesi günü seçin).' %>
+        </span>
     </div>
 
     <div id="bookedDatesData" class="hidden">
@@ -64,27 +81,27 @@
         <div class="lg:col-span-2 space-y-6">
             <div id="step1Box" class="bg-white p-6 md:p-8 rounded-2xl border border-slate-200 shadow-sm space-y-6">
                 <div class="flex flex-wrap justify-between items-center gap-2 border-b border-slate-100 pb-4">
-                    <h2 class="text-xl font-extrabold text-slate-900">1. Rezervasyon Detayları</h2>
+                    <h2 class="text-xl font-extrabold text-slate-900"><%= coIsEn ? '1. Booking Details' : '1. Rezervasyon Detayları' %></h2>
                     <span id="availBadge" class="text-xs font-bold px-3 py-1 rounded-full bg-amber-50 text-amber-800">
-                        <i class="fa-solid fa-calendar-day mr-1"></i>Giriş ve Çıkış Tarihi Seçin
+                        <i class="fa-solid fa-calendar-day mr-1"></i><%= coIsEn ? 'Select Check-in & Check-out Dates' : 'Giriş ve Çıkış Tarihi Seçin' %>
                     </span>
                 </div>
 
                 <div>
-                    <label class="block text-xs font-bold text-slate-500 uppercase mb-2">Kiralama / Tur Tipi</label>
+                    <label class="block text-xs font-bold text-slate-500 uppercase mb-2"><%= coIsEn ? 'CHARTER / TOUR TYPE' : 'Kiralama / Tur Tipi' %></label>
                     <div id="charterTypeGroup" class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         <label class="charter-card p-3.5 border-2 border-[#0B1F3A] bg-slate-50 rounded-xl cursor-pointer flex items-center space-x-3 transition">
                             <input type="radio" name="charterType" value="Özel Yat Kiralama (Konaklamalı)" checked class="charter-type-radio text-[#0B1F3A]">
                             <div>
-                                <div class="font-bold text-xs text-slate-900">Özel Yat Kiralama</div>
-                                <div class="text-[11px] text-slate-500">Tam gün ve çok günlük özel rota</div>
+                                <div class="font-bold text-xs text-slate-900"><%= coIsEn ? 'Private Yacht Charter' : 'Özel Yat Kiralama' %></div>
+                                <div class="text-[11px] text-slate-500"><%= coIsEn ? 'Full-day and multi-day private route' : 'Tam gün ve çok günlük özel rota' %></div>
                             </div>
                         </label>
                         <label class="charter-card p-3.5 border border-slate-200 bg-white rounded-xl cursor-pointer flex items-center space-x-3 hover:bg-slate-50 transition">
                             <input type="radio" name="charterType" value="Günlük VIP Koy Turu" class="charter-type-radio text-[#0B1F3A]">
                             <div>
-                                <div class="font-bold text-xs text-slate-900">Günlük VIP Koy Turu</div>
-                                <div class="text-[11px] text-slate-500">10:00 - 18:00 arası kaptanlı tur</div>
+                                <div class="font-bold text-xs text-slate-900"><%= coIsEn ? 'Daily VIP Cove Tour' : 'Günlük VIP Koy Turu' %></div>
+                                <div class="text-[11px] text-slate-500"><%= coIsEn ? 'Captained tour between 10:00 - 18:00' : '10:00 - 18:00 arası kaptanlı tur' %></div>
                             </div>
                         </label>
                     </div>
@@ -92,8 +109,8 @@
 
                 <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
                     <div class="relative">
-                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Giriş Tarihi *</label>
-                        <input type="text" id="cIn" name="checkIn" readonly data-no-flatpickr="true" value="" required placeholder="Tarih seçin" class="calc-trigger w-full p-3 text-sm font-semibold border border-slate-200 rounded-xl bg-white cursor-pointer">
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1"><%= coIsEn ? 'CHECK-IN DATE *' : 'Giriş Tarihi *' %></label>
+                        <input type="text" id="cIn" name="checkIn" readonly data-no-flatpickr="true" value="" required placeholder="<%= coIsEn ? 'Select date' : 'Tarih seçin' %>" class="calc-trigger w-full p-3 text-sm font-semibold border border-slate-200 rounded-xl bg-white cursor-pointer">
                         <div id="pickerIn" class="hidden absolute left-0 top-full mt-2 z-[60] w-[340px] max-w-[92vw] bg-white border border-slate-200 rounded-2xl shadow-2xl p-4 space-y-3 overflow-hidden">
                             <div class="flex items-center justify-between">
                                 <button type="button" data-picker="in" data-dir="-1" class="cal-nav-btn w-8 h-8 rounded-lg bg-slate-100 text-xs font-bold hover:bg-slate-200 flex items-center justify-center shrink-0">‹</button>
@@ -101,25 +118,31 @@
                                 <button type="button" data-picker="in" data-dir="1" class="cal-nav-btn w-8 h-8 rounded-lg bg-slate-100 text-xs font-bold hover:bg-slate-200 flex items-center justify-center shrink-0">›</button>
                             </div>
                             <div class="grid grid-cols-[repeat(7,minmax(0,1fr))] gap-1 text-center text-[10px] font-bold text-slate-400">
-                                <div>Pzt</div><div>Sal</div><div>Çar</div><div>Per</div><div>Cum</div><div>Cmt</div><div>Paz</div>
+                                <div><%= coIsEn ? 'Mon' : 'Pzt' %></div>
+                                <div><%= coIsEn ? 'Tue' : 'Sal' %></div>
+                                <div><%= coIsEn ? 'Wed' : 'Çar' %></div>
+                                <div><%= coIsEn ? 'Thu' : 'Per' %></div>
+                                <div><%= coIsEn ? 'Fri' : 'Cum' %></div>
+                                <div><%= coIsEn ? 'Sat' : 'Cmt' %></div>
+                                <div><%= coIsEn ? 'Sun' : 'Paz' %></div>
                             </div>
                             <div id="gridIn" class="grid grid-cols-[repeat(7,minmax(0,1fr))] gap-1 text-center text-xs"></div>
                             <div class="pt-2.5 border-t border-slate-100 flex items-center justify-between text-[11px] font-bold px-1">
                                 <span class="inline-flex items-center gap-1.5 text-emerald-700">
                                     <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 inline-block shrink-0"></span>
-                                    <span>Yeşil: Boş</span>
+                                    <span><%= coIsEn ? 'Green: Available' : 'Yeşil: Boş' %></span>
                                 </span>
                                 <span class="inline-flex items-center gap-1.5 text-rose-700">
                                     <span class="w-2.5 h-2.5 rounded-full bg-rose-500 inline-block shrink-0"></span>
-                                    <span>Kırmızı: Dolu</span>
+                                    <span><%= coIsEn ? 'Red: Booked' : 'Kırmızı: Dolu' %></span>
                                 </span>
                             </div>
                         </div>
                     </div>
 
                     <div class="relative">
-                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Çıkış Tarihi *</label>
-                        <input type="text" id="cOut" name="checkOut" readonly data-no-flatpickr="true" value="" required placeholder="Tarih seçin" class="calc-trigger w-full p-3 text-sm font-semibold border border-slate-200 rounded-xl bg-white cursor-pointer">
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1"><%= coIsEn ? 'CHECK-OUT DATE *' : 'Çıkış Tarihi *' %></label>
+                        <input type="text" id="cOut" name="checkOut" readonly data-no-flatpickr="true" value="" required placeholder="<%= coIsEn ? 'Select date' : 'Tarih seçin' %>" class="calc-trigger w-full p-3 text-sm font-semibold border border-slate-200 rounded-xl bg-white cursor-pointer">
                         <div id="pickerOut" class="hidden absolute left-0 sm:left-auto sm:right-0 top-full mt-2 z-[60] w-[340px] max-w-[92vw] bg-white border border-slate-200 rounded-2xl shadow-2xl p-4 space-y-3 overflow-hidden">
                             <div class="flex items-center justify-between">
                                 <button type="button" data-picker="out" data-dir="-1" class="cal-nav-btn w-8 h-8 rounded-lg bg-slate-100 text-xs font-bold hover:bg-slate-200 flex items-center justify-center shrink-0">‹</button>
@@ -127,51 +150,73 @@
                                 <button type="button" data-picker="out" data-dir="1" class="cal-nav-btn w-8 h-8 rounded-lg bg-slate-100 text-xs font-bold hover:bg-slate-200 flex items-center justify-center shrink-0">›</button>
                             </div>
                             <div class="grid grid-cols-[repeat(7,minmax(0,1fr))] gap-1 text-center text-[10px] font-bold text-slate-400">
-                                <div>Pzt</div><div>Sal</div><div>Çar</div><div>Per</div><div>Cum</div><div>Cmt</div><div>Paz</div>
+                                <div><%= coIsEn ? 'Mon' : 'Pzt' %></div>
+                                <div><%= coIsEn ? 'Tue' : 'Sal' %></div>
+                                <div><%= coIsEn ? 'Wed' : 'Çar' %></div>
+                                <div><%= coIsEn ? 'Thu' : 'Per' %></div>
+                                <div><%= coIsEn ? 'Fri' : 'Cum' %></div>
+                                <div><%= coIsEn ? 'Sat' : 'Cmt' %></div>
+                                <div><%= coIsEn ? 'Sun' : 'Paz' %></div>
                             </div>
                             <div id="gridOut" class="grid grid-cols-[repeat(7,minmax(0,1fr))] gap-1 text-center text-xs"></div>
                             <div class="pt-2.5 border-t border-slate-100 flex items-center justify-between text-[11px] font-bold px-1">
                                 <span class="inline-flex items-center gap-1.5 text-emerald-700">
                                     <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 inline-block shrink-0"></span>
-                                    <span>Yeşil: Boş</span>
+                                    <span><%= coIsEn ? 'Green: Available' : 'Yeşil: Boş' %></span>
                                 </span>
                                 <span class="inline-flex items-center gap-1.5 text-rose-700">
                                     <span class="w-2.5 h-2.5 rounded-full bg-rose-500 inline-block shrink-0"></span>
-                                    <span>Kırmızı: Dolu</span>
+                                    <span><%= coIsEn ? 'Red: Booked' : 'Kırmızı: Dolu' %></span>
                                 </span>
                             </div>
                         </div>
                     </div>
 
                     <div>
-                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Misafir (Maks. <%= yacht.guests %>)</label>
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1">
+                            <%= coIsEn ? ('GUESTS (MAX. ' + yacht.guests + ')') : ('Misafir (Maks. ' + yacht.guests + ')') %>
+                        </label>
                         <input type="number" id="guestsCountInput" name="guests" min="1" max="<%= yacht.guests %>" value="<%= guests || 1 %>" required class="calc-trigger w-full p-3 text-sm font-semibold border border-slate-200 rounded-xl">
                     </div>
                 </div>
 
                 <div class="space-y-2.5">
                     <div class="flex items-center justify-between">
-                        <label class="block text-xs font-bold text-slate-500 uppercase">Ekstra VIP Hizmetler (Kişi Başı)</label>
-                        <span class="text-[11px] font-bold text-teal-700">Seçili kişi sayısına göre hesaplanır</span>
+                        <label class="block text-xs font-bold text-slate-500 uppercase">
+                            <%= coIsEn ? 'EXTRA VIP SERVICES (PER GUEST)' : 'Ekstra VIP Hizmetler (Kişi Başı)' %>
+                        </label>
+                        <span class="text-[11px] font-bold text-teal-700">
+                            <%= coIsEn ? 'Calculated per selected guest' : 'Seçili kişi sayısına göre hesaplanır' %>
+                        </span>
                     </div>
 
+                    <% const extrasTrToEn = {
+                        'Özel Şef & Gurme Menü': 'Private Chef & Gourmet Menu',
+                        'VIP Havalimanı Transferi': 'VIP Airport Transfer',
+                        'Jet Ski & Seabob Paketi': 'Jet Ski & Seabob Package',
+                        'Seabob & Su Sporları Paketi': 'Seabob & Water Sports Package'
+                    }; %>
                     <% const activeExtras = (typeof extrasList !== 'undefined' && Array.isArray(extrasList) && extrasList.length) ? extrasList : [
-                        { name: 'Özel Şef & Gurme Menü', pricePerGuest: 120 },
-                        { name: 'VIP Havalimanı Transferi', pricePerGuest: 45 },
-                        { name: 'Jet Ski & Seabob Paketi', pricePerGuest: 85 }
+                        { name: 'Özel Şef & Gurme Menü', nameEn: 'Private Chef & Gourmet Menu', pricePerGuest: 120 },
+                        { name: 'VIP Havalimanı Transferi', nameEn: 'VIP Airport Transfer', pricePerGuest: 45 },
+                        { name: 'Jet Ski & Seabob Paketi', nameEn: 'Jet Ski & Seabob Package', pricePerGuest: 85 }
                     ]; %>
+                    <% const initGuests = Number(guests || 1); %>
 
                     <% activeExtras.forEach(function(ex) { %>
                         <% const perGuestPrice = Number(ex.pricePerGuest || 0); %>
+                        <% const exTitle = coIsEn ? (ex.nameEn || extrasTrToEn[ex.name] || ex.name) : ex.name; %>
                         <label class="flex items-center justify-between p-3.5 border border-slate-200 rounded-xl cursor-pointer hover:bg-slate-50 transition">
                             <div class="flex items-center space-x-3">
                                 <input type="checkbox" name="extras" value="<%= ex.name %>" data-per-guest="<%= perGuestPrice %>" class="calc-trigger extra-cb rounded text-[#0B1F3A]">
                                 <div>
-                                    <div class="font-bold text-sm text-slate-900"><%= ex.name %></div>
-                                    <div class="text-xs text-slate-500">€<%= perGuestPrice.toLocaleString() %> / kişi</div>
+                                    <div class="font-bold text-sm text-slate-900"><%= exTitle %></div>
+                                    <div class="text-xs text-slate-500">€<%= perGuestPrice.toLocaleString() %> <%= coIsEn ? '/ guest' : '/ kişi' %></div>
                                 </div>
                             </div>
-                            <span class="extra-calc-badge font-bold text-sm text-[#0B1F3A]">+€<%= (perGuestPrice * Number(guests || 1)).toLocaleString() %></span>
+                            <span class="extra-calc-badge font-bold text-sm text-[#0B1F3A]">
+                                +€<%= (perGuestPrice * initGuests).toLocaleString() %> (<%= initGuests %> <%= coIsEn ? (initGuests === 1 ? 'guest' : 'guests') : 'kişi' %>)
+                            </span>
                         </label>
                     <% }) %>
                 </div>
@@ -179,58 +224,78 @@
                 <div class="space-y-4 pt-2 border-t border-slate-100">
                     <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
                         <div>
-                            <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Ad Soyad *</label>
-                            <input type="text" id="custName" name="customerName" placeholder="Adınız Soyadınız" required class="w-full p-3 text-sm border border-slate-200 rounded-xl">
+                            <label class="block text-xs font-bold text-slate-500 uppercase mb-1"><%= coIsEn ? 'FULL NAME *' : 'Ad Soyad *' %></label>
+                            <input type="text" id="custName" name="customerName" placeholder="<%= coIsEn ? 'Your Full Name' : 'Adınız Soyadınız' %>" required class="w-full p-3 text-sm border border-slate-200 rounded-xl">
                         </div>
                         <div>
-                            <label class="block text-xs font-bold text-slate-500 uppercase mb-1">E-posta *</label>
-                            <input type="email" id="custEmail" name="email" placeholder="ornek@mail.com" required class="w-full p-3 text-sm border border-slate-200 rounded-xl">
+                            <label class="block text-xs font-bold text-slate-500 uppercase mb-1"><%= coIsEn ? 'EMAIL *' : 'E-posta *' %></label>
+                            <input type="email" id="custEmail" name="email" placeholder="<%= coIsEn ? 'example@mail.com' : 'ornek@mail.com' %>" required class="w-full p-3 text-sm border border-slate-200 rounded-xl">
                         </div>
                         <div>
-                            <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Telefon *</label>
+                            <label class="block text-xs font-bold text-slate-500 uppercase mb-1"><%= coIsEn ? 'PHONE *' : 'Telefon *' %></label>
                             <input type="text" id="custPhone" name="phone" placeholder="+90 5XX XXX XX XX" required class="w-full p-3 text-sm border border-slate-200 rounded-xl">
                         </div>
                     </div>
                     <div>
-                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Özel İstek / Notunuz</label>
-                        <textarea name="notes" rows="2" placeholder="Doğum günü organizasyonu, menü tercihi veya kalkış saati notu..." class="w-full p-3 text-sm border border-slate-200 rounded-xl"></textarea>
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1"><%= coIsEn ? 'SPECIAL REQUESTS / NOTES' : 'Özel İstek / Notunuz' %></label>
+                        <textarea name="notes" rows="2" placeholder="<%= coIsEn ? 'Birthday celebration, menu preference or departure time note...' : 'Doğum günü organizasyonu, menü tercihi veya kalkış saati notu...' %>" class="w-full p-3 text-sm border border-slate-200 rounded-xl"></textarea>
                     </div>
                 </div>
 
                 <button type="button" id="nextStepBtn" class="w-full bg-[#0B1F3A] hover:bg-sky-900 text-white py-4 rounded-xl font-bold text-sm transition shadow-lg">
-                    Ödeme Adımına Geç →
+                    <%= coIsEn ? 'Proceed to Payment →' : 'Ödeme Adımına Geç →' %>
                 </button>
             </div>
 
             <div id="step2Box" class="hidden bg-white p-6 md:p-8 rounded-2xl border border-slate-200 shadow-sm space-y-6">
                 <div class="flex justify-between items-center border-b border-slate-100 pb-4">
-                    <h2 class="text-xl font-extrabold text-slate-900">2. Ödeme Planı ve Güvenli Ödeme</h2>
-                    <button type="button" id="backStepBtn" class="text-xs font-bold text-sky-700 hover:underline">← Bilgileri Düzenle</button>
+                    <h2 class="text-xl font-extrabold text-slate-900"><%= coIsEn ? '2. Payment Plan & Secure Checkout' : '2. Ödeme Planı ve Güvenli Ödeme' %></h2>
+                    <button type="button" id="backStepBtn" class="text-xs font-bold text-sky-700 hover:underline"><%= coIsEn ? '← Edit Details' : '← Bilgileri Düzenle' %></button>
                 </div>
 
                 <div>
-                    <label class="block text-xs font-bold text-slate-500 uppercase mb-2">Ödeme Planı Seçin</label>
+                    <label class="block text-xs font-bold text-slate-500 uppercase mb-2"><%= coIsEn ? 'SELECT PAYMENT PLAN' : 'Ödeme Planı Seçin' %></label>
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <label class="pay-plan-card p-4 border-2 border-[#0B1F3A] bg-slate-50 rounded-xl cursor-pointer transition">
                             <div class="flex items-center space-x-2">
                                 <input type="radio" name="paymentType" value="Hisseli Ödeme" checked class="calc-trigger pay-plan text-[#0B1F3A]">
-                                <span class="font-bold text-sm text-slate-900">Hisseli Ödeme (%<%= planCfg.installmentPercent %> Şimdi)</span>
+                                <span class="font-bold text-sm text-slate-900">
+                                    <%= coIsEn ? ('Installment Plan (' + planCfg.installmentPercent + '% Now)') : ('Hisseli Ödeme (%' + planCfg.installmentPercent + ' Şimdi)') %>
+                                </span>
                             </div>
                             <p class="text-xs text-slate-500 mt-1.5">
-                                %<%= planCfg.installmentPercent %> tutar şimdi ödenir<% if (Number(planCfg.installmentInterestPercent) > 0) { %>, +%<%= planCfg.installmentInterestPercent %> faiz/fark uygulanır<% } %>; kalan bakiye biniş günü marinada tahsil edilir.
+                                <% if (coIsEn) { %>
+                                    <%= planCfg.installmentPercent %>% is paid now<% if (Number(planCfg.installmentInterestPercent) > 0) { %>, +<%= planCfg.installmentInterestPercent %>% surcharge applies<% } %>; remaining balance is collected at the marina on boarding day.
+                                <% } else { %>
+                                    %<%= planCfg.installmentPercent %> tutar şimdi ödenir<% if (Number(planCfg.installmentInterestPercent) > 0) { %>, +%<%= planCfg.installmentInterestPercent %> faiz/fark uygulanır<% } %>; kalan bakiye biniş günü marinada tahsil edilir.
+                                <% } %>
                             </p>
                         </label>
 
                         <label class="pay-plan-card p-4 border border-slate-200 bg-white rounded-xl cursor-pointer hover:bg-slate-50 transition">
                             <div class="flex items-center space-x-2">
                                 <input type="radio" name="paymentType" value="Tam Ödeme (İndirimli)" class="calc-trigger pay-plan text-[#0B1F3A]">
-                                <span class="font-bold text-sm text-slate-900">Tam Ödeme (<% if (Number(planCfg.fullPaymentDiscountPercent) > 0) { %>%<%= planCfg.fullPaymentDiscountPercent %> İndirimli<% } else { %>%100 Peşin<% } %>)</span>
+                                <span class="font-bold text-sm text-slate-900">
+                                    <% if (coIsEn) { %>
+                                        Full Payment (<% if (Number(planCfg.fullPaymentDiscountPercent) > 0) { %><%= planCfg.fullPaymentDiscountPercent %>% Off<% } else { %>100% Upfront<% } %>)
+                                    <% } else { %>
+                                        Tam Ödeme (<% if (Number(planCfg.fullPaymentDiscountPercent) > 0) { %>%<%= planCfg.fullPaymentDiscountPercent %> İndirimli<% } else { %>%100 Peşin<% } %>)
+                                    <% } %>
+                                </span>
                             </div>
                             <p class="text-xs text-slate-500 mt-1.5">
-                                <% if (Number(planCfg.fullPaymentDiscountPercent) > 0) { %>
-                                    Toplam tutarda %<%= planCfg.fullPaymentDiscountPercent %> indirim avantajıyla tamamı şimdi ödenir.
+                                <% if (coIsEn) { %>
+                                    <% if (Number(planCfg.fullPaymentDiscountPercent) > 0) { %>
+                                        Paid in full now with a <%= planCfg.fullPaymentDiscountPercent %>% discount on the total amount.
+                                    <% } else { %>
+                                        Paid in full now with no additional payment at the marina.
+                                    <% } %>
                                 <% } else { %>
-                                    Marinada ek ödeme olmadan tamamı şimdi ödenir.
+                                    <% if (Number(planCfg.fullPaymentDiscountPercent) > 0) { %>
+                                        Toplam tutarda %<%= planCfg.fullPaymentDiscountPercent %> indirim avantajıyla tamamı şimdi ödenir.
+                                    <% } else { %>
+                                        Marinada ek ödeme olmadan tamamı şimdi ödenir.
+                                    <% } %>
                                 <% } %>
                             </p>
                         </label>
@@ -238,18 +303,25 @@
                 </div>
 
                 <div>
-                    <label class="block text-xs font-bold text-slate-500 uppercase mb-2">Ödeme Yöntemi</label>
+                    <label class="block text-xs font-bold text-slate-500 uppercase mb-2"><%= coIsEn ? 'PAYMENT METHOD' : 'Ödeme Yöntemi' %></label>
+                    <% const payTrToEn = {
+                        'Kredi / Banka Kartı': 'Credit / Debit Card',
+                        'Havale / EFT': 'Bank Transfer / EFT',
+                        'Marinada Ödeme': 'Marina Payment',
+                        'Nakit / Marina Ödemesi': 'Cash / Marina Payment'
+                    }; %>
                     <% const activePayments = (typeof paymentOptions !== 'undefined' && Array.isArray(paymentOptions) && paymentOptions.length) ? paymentOptions : [
-                        { name: 'Kredi / Banka Kartı' },
-                        { name: 'Havale / EFT' },
-                        { name: 'Marinada Ödeme' }
+                        { name: 'Kredi / Banka Kartı', nameEn: 'Credit / Debit Card' },
+                        { name: 'Havale / EFT', nameEn: 'Bank Transfer / EFT' },
+                        { name: 'Marinada Ödeme', nameEn: 'Marina Payment' }
                     ]; %>
                     <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5 text-xs font-bold">
                         <% activePayments.forEach(function(po, idx) { %>
+                            <% const poLabel = coIsEn ? (po.nameEn || payTrToEn[po.name] || po.name) : po.name; %>
                             <label class="p-3 border-2 <%= idx === 0 ? 'border-[#0B1F3A] bg-slate-50' : 'border-slate-200' %> rounded-xl text-center cursor-pointer hover:bg-slate-50">
                                 <input type="radio" name="paymentMethod" value="<%= po.name %>" <%= idx === 0 ? 'checked' : '' %> class="pay-method-radio hidden">
                                 <i class="fa-regular fa-credit-card block text-base mb-1 text-[#0B1F3A]"></i>
-                                <span><%= po.name %></span>
+                                <span><%= poLabel %></span>
                             </label>
                         <% }) %>
                     </div>
@@ -264,12 +336,12 @@
                         <div id="previewCardNum" class="font-mono text-lg tracking-widest">•••• •••• •••• ••••</div>
                         <div class="flex justify-between text-xs">
                             <div>
-                                <span class="text-[10px] text-sky-300 block">KART SAHİBİ</span>
-                                <span id="previewCardName" class="uppercase font-semibold">AD SOYAD</span>
+                                <span class="text-[10px] text-sky-300 block"><%= coIsEn ? 'CARDHOLDER' : 'KART SAHİBİ' %></span>
+                                <span id="previewCardName" class="uppercase font-semibold"><%= coIsEn ? 'FULL NAME' : 'AD SOYAD' %></span>
                             </div>
                             <div>
-                                <span class="text-[10px] text-sky-300 block">SKT</span>
-                                <span id="previewCardExp" class="font-semibold">AA/YY</span>
+                                <span class="text-[10px] text-sky-300 block"><%= coIsEn ? 'EXP' : 'SKT' %></span>
+                                <span id="previewCardExp" class="font-semibold"><%= coIsEn ? 'MM/YY' : 'AA/YY' %></span>
                             </div>
                         </div>
                     </div>
@@ -278,47 +350,62 @@
 
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div class="sm:col-span-2">
-                            <label class="block text-[11px] font-bold text-slate-500 uppercase mb-1">Kart Üzerindeki İsim *</label>
-                            <input type="text" id="cardHolderInput" name="cardHolder" placeholder="Ad Soyad" class="card-required-field w-full p-3 text-sm bg-white border border-slate-200 rounded-xl">
+                            <label class="block text-[11px] font-bold text-slate-500 uppercase mb-1"><%= coIsEn ? 'CARDHOLDER NAME *' : 'Kart Üzerindeki İsim *' %></label>
+                            <input type="text" id="cardHolderInput" name="cardHolder" placeholder="<%= coIsEn ? 'Full Name' : 'Ad Soyad' %>" class="card-required-field w-full p-3 text-sm bg-white border border-slate-200 rounded-xl">
                         </div>
                         <div class="sm:col-span-2">
-                            <label class="block text-[11px] font-bold text-slate-500 uppercase mb-1">Kart Numarası *</label>
+                            <label class="block text-[11px] font-bold text-slate-500 uppercase mb-1"><%= coIsEn ? 'CARD NUMBER *' : 'Kart Numarası *' %></label>
                             <input type="text" id="cardNumberInput" name="cardNumber" maxlength="19" placeholder="4543 •••• •••• 1234" class="card-required-field w-full p-3 text-sm font-mono bg-white border border-slate-200 rounded-xl">
                         </div>
                         <div>
-                            <label class="block text-[11px] font-bold text-slate-500 uppercase mb-1">Son Kullanma (AA/YY) *</label>
+                            <label class="block text-[11px] font-bold text-slate-500 uppercase mb-1"><%= coIsEn ? 'EXPIRY DATE (MM/YY) *' : 'Son Kullanma (AA/YY) *' %></label>
                             <input type="text" id="cardExpInput" name="cardExpiry" maxlength="5" placeholder="08/29" class="card-required-field w-full p-3 text-sm bg-white border border-slate-200 rounded-xl">
                         </div>
                         <div>
-                            <label class="block text-[11px] font-bold text-slate-500 uppercase mb-1">CVV Güvenlik Kodu *</label>
+                            <label class="block text-[11px] font-bold text-slate-500 uppercase mb-1"><%= coIsEn ? 'CVV SECURITY CODE *' : 'CVV Güvenlik Kodu *' %></label>
                             <input type="password" id="cardCvvInput" name="cardCvv" maxlength="4" placeholder="•••" class="card-required-field w-full p-3 text-sm bg-white border border-slate-200 rounded-xl">
                         </div>
                     </div>
                 </div>
 
                 <div id="ibanSection" class="hidden bg-teal-50/70 border border-teal-200 rounded-2xl p-5 space-y-2 text-xs text-slate-700">
-                    <div class="font-bold text-teal-900 text-sm">YachtVoyage Turizm Yatçılık A.Ş. — Euro (EUR) Hesabı</div>
-                    <div><strong>Banka:</strong> Garanti BBVA — Göcek Şubesi</div>
+                    <div class="font-bold text-teal-900 text-sm">
+                        <%= coIsEn ? 'YachtVoyage Tourism & Yachting Inc. — Euro (EUR) Account' : 'YachtVoyage Turizm Yatçılık A.Ş. — Euro (EUR) Hesabı' %>
+                    </div>
+                    <div><strong><%= coIsEn ? 'Bank:' : 'Banka:' %></strong> Garanti BBVA — Göcek <%= coIsEn ? 'Branch' : 'Şubesi' %></div>
                     <div class="font-mono bg-white p-2.5 rounded-lg border border-teal-200 select-all">TR48 0006 2000 4120 0009 0845 12</div>
-                    <p class="text-slate-500">Açıklama kısmına <strong>Ad Soyad</strong> yazmanız yeterlidir. Rezervasyonunuz 24 saat boyunca sizin için bloke edilir.</p>
+                    <p class="text-slate-500">
+                        <%= coIsEn
+                            ? 'Writing your Full Name in the transfer reference is sufficient. Your reservation is held for 24 hours.'
+                            : 'Açıklama kısmına Ad Soyad yazmanız yeterlidir. Rezervasyonunuz 24 saat boyunca sizin için bloke edilir.' %>
+                    </p>
                 </div>
 
                 <div id="marinaSection" class="hidden bg-amber-50/70 border border-amber-200 rounded-2xl p-5 space-y-1.5 text-xs text-slate-700">
-                    <div class="font-bold text-amber-900 text-sm">Biniş Günü Marinada Ödeme</div>
-                    <p>Operasyon ekibimiz telefon numaranız üzerinden sizinle iletişime geçerek ön onayınızı tamamlayacaktır.</p>
+                    <div class="font-bold text-amber-900 text-sm"><%= coIsEn ? 'Payment at Marina on Boarding Day' : 'Biniş Günü Marinada Ödeme' %></div>
+                    <p>
+                        <%= coIsEn
+                            ? 'Our operations team will contact you via your phone number to complete pre-confirmation.'
+                            : 'Operasyon ekibimiz telefon numaranız üzerinden sizinle iletişime geçerek ön onayınızı tamamlayacaktır.' %>
+                    </p>
                 </div>
 
                 <div class="flex items-start space-x-2.5 text-xs text-slate-600">
                     <input type="checkbox" id="contractAgreeCb" required class="mt-0.5 rounded text-[#0B1F3A] cursor-pointer">
                     <label for="contractAgreeCb" class="cursor-pointer select-none">
-                        <strong>Ücretsiz iptal politikasını</strong> (tura 7 gün kalaya kadar %100 iade) ve
-                        <button type="button" id="openContractModalBtn" class="font-extrabold text-[#0B1F3A] underline hover:text-teal-700">kiralama sözleşmesini</button>
-                        okudum, onaylıyorum.
+                        <% if (coIsEn) { %>
+                            I have read and agree to the <strong>free cancellation policy</strong> (100% refund up to 7 days before the tour) and the
+                            <button type="button" id="openContractModalBtn" class="font-extrabold text-[#0B1F3A] underline hover:text-teal-700">charter agreement</button>.
+                        <% } else { %>
+                            <strong>Ücretsiz iptal politikasını</strong> (tura 7 gün kalaya kadar %100 iade) ve
+                            <button type="button" id="openContractModalBtn" class="font-extrabold text-[#0B1F3A] underline hover:text-teal-700">kiralama sözleşmesini</button>
+                            okudum, onaylıyorum.
+                        <% } %>
                     </label>
                 </div>
 
                 <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white py-4 rounded-xl font-bold text-sm transition shadow-lg">
-                    <i class="fa-solid fa-lock mr-2"></i>Rezervasyonu Onayla (<span id="payBtnAmount">€0</span>)
+                    <i class="fa-solid fa-lock mr-2"></i><%= coIsEn ? 'Confirm Booking' : 'Rezervasyonu Onayla' %> (<span id="payBtnAmount">€0</span>)
                 </button>
             </div>
         </div>
@@ -327,49 +414,55 @@
             <img src="<%= yacht.images[0] %>" alt="<%= yacht.name %>" class="checkout-img w-full h-44 object-cover rounded-xl">
             <div>
                 <h3 class="text-lg font-extrabold text-slate-900"><%= yacht.name %></h3>
-                <p class="text-xs text-slate-500"><%= yacht.categoryTr %> • <%= yacht.location %> • <%= yacht.length %> • <%= yacht.guests %> Misafir</p>
+                <p class="text-xs text-slate-500">
+                    <%= yCatLabel %> • <%= yacht.location %> • <%= yacht.length %> • <%= yacht.guests %> <%= coIsEn ? (Number(yacht.guests) === 1 ? 'Guest' : 'Guests') : 'Misafir' %>
+                </p>
             </div>
 
             <div class="pt-2 border-t border-slate-100">
-                <label class="block text-[11px] font-bold text-slate-400 uppercase mb-1.5">İndirim Kodu (Örn: YACHT10)</label>
+                <label class="block text-[11px] font-bold text-slate-400 uppercase mb-1.5">
+                    <%= coIsEn ? 'PROMO CODE (E.G. YACHT10)' : 'İndirim Kodu (Örn: YACHT10)' %>
+                </label>
                 <div class="flex space-x-2">
-                    <input type="text" id="promoCode" placeholder="Kodu girin" class="flex-1 p-2.5 text-xs uppercase font-semibold border border-slate-200 rounded-xl">
-                    <button type="button" id="applyPromoBtn" class="px-4 py-2.5 bg-slate-900 text-white rounded-xl text-xs font-bold hover:bg-slate-800">Uygula</button>
+                    <input type="text" id="promoCode" placeholder="<%= coIsEn ? 'Enter code' : 'Kodu girin' %>" class="flex-1 p-2.5 text-xs uppercase font-semibold border border-slate-200 rounded-xl">
+                    <button type="button" id="applyPromoBtn" class="px-4 py-2.5 bg-slate-900 text-white rounded-xl text-xs font-bold hover:bg-slate-800">
+                        <%= coIsEn ? 'Apply' : 'Uygula' %>
+                    </button>
                 </div>
                 <p id="promoMsg" class="text-[11px] mt-1 hidden"></p>
             </div>
 
             <div class="border-t border-slate-100 pt-4 space-y-2.5 text-xs">
                 <div class="flex justify-between text-slate-600">
-                    <span>Yat Kirası (<span id="sumDays">0</span> gün)</span>
+                    <span><%= coIsEn ? 'Yacht Charter' : 'Yat Kirası' %> (<span id="sumDays">0</span> <%= coIsEn ? 'days' : 'gün' %>)</span>
                     <span id="sumBase" class="font-bold text-slate-900">€0</span>
                 </div>
                 <div class="flex justify-between text-slate-600">
-                    <span>Ekstra Hizmetler (<span id="sumGuests"><%= guests || 1 %></span> kişi)</span>
+                    <span><%= coIsEn ? 'Extra Services' : 'Ekstra Hizmetler' %> (<span id="sumGuests"><%= guests || 1 %></span> <%= coIsEn ? 'guests' : 'kişi' %>)</span>
                     <span id="sumExtras" class="font-bold text-slate-900">€0</span>
                 </div>
                 <div id="autoDiscountRow" class="hidden flex justify-between text-teal-700 font-bold">
-                    <span>Çok Günlük İndirim (5+ Gün %5)</span>
+                    <span><%= coIsEn ? 'Multi-Day Discount (5+ Days 5%)' : 'Çok Günlük İndirim (5+ Gün %5)' %></span>
                     <span id="sumAutoDiscount">-€0</span>
                 </div>
                 <div id="discountRow" class="hidden flex justify-between text-emerald-600 font-bold">
-                    <span>Promo İndirimi (%10)</span>
+                    <span><%= coIsEn ? 'Promo Discount (10%)' : 'Promo İndirimi (%10)' %></span>
                     <span id="sumDiscount">-€0</span>
                 </div>
                 <div id="planAdjustmentRow" class="hidden flex justify-between font-bold">
-                    <span id="planAdjustmentLabel">Plan Farkı / İndirimi</span>
+                    <span id="planAdjustmentLabel"><%= coIsEn ? 'Plan Adjustment' : 'Plan Farkı / İndirimi' %></span>
                     <span id="sumPlanAdjustment">€0</span>
                 </div>
                 <div class="flex justify-between text-sm font-extrabold text-slate-900 pt-2 border-t border-slate-100">
-                    <span>Toplam Tutar</span>
+                    <span><%= coIsEn ? 'Total Amount' : 'Toplam Tutar' %></span>
                     <span id="sumTotal">€0</span>
                 </div>
                 <div class="flex justify-between text-sky-800 font-bold bg-sky-50 p-3 rounded-xl">
-                    <span>Şimdi Ödenecek</span>
+                    <span><%= coIsEn ? 'Pay Now' : 'Şimdi Ödenecek' %></span>
                     <span id="sumPayNow">€0</span>
                 </div>
                 <div class="flex justify-between text-slate-400 text-[11px]">
-                    <span>Marinada Kalan Bakiye</span>
+                    <span><%= coIsEn ? 'Remaining Balance at Marina' : 'Marinada Kalan Bakiye' %></span>
                     <span id="sumRemaining">€0</span>
                 </div>
             </div>
@@ -382,8 +475,10 @@
     <div class="bg-white w-full max-w-2xl rounded-3xl border border-slate-200 shadow-2xl overflow-hidden flex flex-col max-h-[88vh]">
         <div class="px-6 py-4 bg-[#0B1F3A] text-white flex items-center justify-between">
             <div>
-                <h3 class="font-extrabold text-base"><%= contractCfg.title %></h3>
-                <p class="text-[11px] text-sky-200">Onaylamak için metni inceleyip alttaki butona tıklayın</p>
+                <h3 class="font-extrabold text-base"><%= contractTitle %></h3>
+                <p class="text-[11px] text-sky-200">
+                    <%= coIsEn ? 'Review the terms below and click the button to confirm' : 'Onaylamak için metni inceleyip alttaki butona tıklayın' %>
+                </p>
             </div>
             <button type="button" id="closeContractModalBtn" class="w-8 h-8 rounded-lg bg-white/10 hover:bg-white/20 flex items-center justify-center text-sm">
                 <i class="fa-solid fa-xmark"></i>
@@ -391,21 +486,22 @@
         </div>
 
         <div class="p-6 overflow-y-auto space-y-4 text-xs text-slate-600 leading-relaxed whitespace-pre-line">
-            <%= contractCfg.body %>
+            <%= contractBody %>
         </div>
 
         <div class="px-6 py-4 bg-slate-50 border-t border-slate-200 flex flex-wrap items-center justify-end gap-2.5">
             <button type="button" id="cancelContractModalBtn" class="px-4 py-2.5 rounded-xl border border-slate-300 text-xs font-bold text-slate-700 hover:bg-slate-100">
-                Vazgeç
+                <%= coIsEn ? 'Cancel' : 'Vazgeç' %>
             </button>
             <button type="button" id="acceptContractPushBtn" class="px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold shadow">
-                <i class="fa-solid fa-check mr-1.5"></i>Okudum, Sözleşmeyi Onaylıyorum
+                <i class="fa-solid fa-check mr-1.5"></i><%= coIsEn ? 'I Have Read & Agree to the Terms' : 'Okudum, Sözleşmeyi Onaylıyorum' %>
             </button>
         </div>
     </div>
 </div>
 
 <script>
+    const isEnCo = document.documentElement.dataset.yvEn === '1';
     const summaryCard = document.getElementById('checkoutSummaryCard');
     const rate = Number(summaryCard.dataset.rate) || 2000;
     const maxGuests = Number(summaryCard.dataset.maxGuests) || 12;
@@ -426,8 +522,26 @@
     const dateWarnBox = document.getElementById('dateOrderWarning');
     const dateWarnText = document.getElementById('dateOrderWarningText');
 
-    cInEl.value = '';
-    cOutEl.value = '';
+    function toYMD(dateObj) {
+        const y = dateObj.getFullYear();
+        const m = String(dateObj.getMonth() + 1).padStart(2, '0');
+        const d = String(dateObj.getDate()).padStart(2, '0');
+        return `${y}-${m}-${d}`;
+    }
+
+    const nowRef = new Date();
+    const todayYmd = toYMD(nowRef);
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const paramIn = urlParams.get('checkIn') || '';
+    const paramOut = urlParams.get('checkOut') || '';
+    if (paramIn && paramOut && paramIn >= todayYmd && paramOut > paramIn) {
+        cInEl.value = paramIn;
+        cOutEl.value = paramOut;
+    } else {
+        cInEl.value = '';
+        cOutEl.value = '';
+    }
 
     const contractModal = document.getElementById('contractModal');
     const contractAgreeCb = document.getElementById('contractAgreeCb');
@@ -496,17 +610,20 @@
         });
     });
 
-    function toYMD(dateObj) {
-        const y = dateObj.getFullYear();
-        const m = String(dateObj.getMonth() + 1).padStart(2, '0');
-        const d = String(dateObj.getDate()).padStart(2, '0');
-        return `${y}-${m}-${d}`;
-    }
-
     function isDateSelectionValid(notifyUser) {
         if (!cInEl.value) {
             if (notifyUser && dateWarnBox) {
-                dateWarnText.innerText = 'Lütfen önce giriş tarihini seçin.';
+                dateWarnText.innerText = isEnCo ? 'Please select a check-in date first.' : 'Lütfen önce giriş tarihini seçin.';
+                dateWarnBox.classList.remove('hidden');
+            }
+            return false;
+        }
+
+        if (cInEl.value < todayYmd) {
+            if (notifyUser && dateWarnBox) {
+                dateWarnText.innerText = isEnCo
+                    ? 'You cannot select a past date. Please choose today or a future date.'
+                    : 'Geçmiş bir tarih seçemezsiniz. Lütfen bugün veya ileri bir tarih seçin.';
                 dateWarnBox.classList.remove('hidden');
             }
             return false;
@@ -520,7 +637,9 @@
 
         if (!cOutEl.value) {
             if (notifyUser && dateWarnBox) {
-                dateWarnText.innerText = 'Çıkış tarihini seçmeden devam edemezsiniz. 1 gün için ertesi günü seçin.';
+                dateWarnText.innerText = isEnCo
+                    ? 'You cannot proceed without selecting a check-out date. Select the next day for 1 day.'
+                    : 'Çıkış tarihini seçmeden devam edemezsiniz. 1 gün için ertesi günü seçin.';
                 dateWarnBox.classList.remove('hidden');
             }
             return false;
@@ -528,7 +647,9 @@
 
         if (cOutEl.value <= cInEl.value) {
             if (notifyUser && dateWarnBox) {
-                dateWarnText.innerText = 'Çıkış tarihi giriş tarihinden en az 1 gün sonra olmalıdır.';
+                dateWarnText.innerText = isEnCo
+                    ? 'Check-out date must be at least 1 day after check-in date.'
+                    : 'Çıkış tarihi giriş tarihinden en az 1 gün sonra olmalıdır.';
                 dateWarnBox.classList.remove('hidden');
             }
             return false;
@@ -569,8 +690,8 @@
 
     function isCardMethodSelected() {
         const checkedMethod = document.querySelector('.pay-method-radio:checked');
-        const methodVal = checkedMethod ? checkedMethod.value : '';
-        return methodVal.toLowerCase().indexOf('kart') !== -1;
+        const methodVal = (checkedMethod ? checkedMethod.value : '').toLowerCase();
+        return methodVal.indexOf('kart') !== -1 || methodVal.indexOf('card') !== -1;
     }
 
     function syncCardFieldsRequired() {
@@ -590,22 +711,22 @@
         const cvvDigits = cardCvvInput ? cardCvvInput.value.replace(/\D/g, '') : '';
 
         if (!holderVal) {
-            showCardError('Lütfen kart üzerindeki adı soyadı girin.');
+            showCardError(isEnCo ? 'Please enter the cardholder name.' : 'Lütfen kart üzerindeki adı soyadı girin.');
             if (cardHolderInput) cardHolderInput.focus();
             return false;
         }
         if (numDigits.length < 13 || numDigits.length > 19) {
-            showCardError('Lütfen geçerli bir kart numarası (13-19 hane) girin.');
+            showCardError(isEnCo ? 'Please enter a valid card number (13-19 digits).' : 'Lütfen geçerli bir kart numarası (13-19 hane) girin.');
             if (cardNumberInput) cardNumberInput.focus();
             return false;
         }
         if (!/^(0[1-9]|1[0-2])\/\d{2}$/.test(expVal)) {
-            showCardError('Lütfen son kullanma tarihini AA/YY formatında (ör. 08/29) girin.');
+            showCardError(isEnCo ? 'Please enter the expiry date in MM/YY format (e.g. 08/29).' : 'Lütfen son kullanma tarihini AA/YY formatında (ör. 08/29) girin.');
             if (cardExpInput) cardExpInput.focus();
             return false;
         }
         if (cvvDigits.length < 3 || cvvDigits.length > 4) {
-            showCardError('Lütfen 3 veya 4 haneli CVV güvenlik kodunu girin.');
+            showCardError(isEnCo ? 'Please enter a 3 or 4 digit CVV security code.' : 'Lütfen 3 veya 4 haneli CVV güvenlik kodunu girin.');
             if (cardCvvInput) cardCvvInput.focus();
             return false;
         }
@@ -617,7 +738,7 @@
     if (cardHolderInput) {
         cardHolderInput.addEventListener('input', function() {
             hideCardError();
-            document.getElementById('previewCardName').innerText = this.value || 'AD SOYAD';
+            document.getElementById('previewCardName').innerText = this.value || (isEnCo ? 'FULL NAME' : 'AD SOYAD');
         });
     }
 
@@ -638,7 +759,7 @@
                 digits = digits.slice(0, 2) + '/' + digits.slice(2);
             }
             this.value = digits;
-            document.getElementById('previewCardExp').innerText = this.value || 'AA/YY';
+            document.getElementById('previewCardExp').innerText = this.value || (isEnCo ? 'MM/YY' : 'AA/YY');
         });
     }
 
@@ -662,10 +783,14 @@
                 box.classList.toggle('border-slate-200', !active);
             });
 
-            const method = this.value;
-            document.getElementById('cardSection').classList.toggle('hidden', method.indexOf('Kart') === -1);
-            document.getElementById('ibanSection').classList.toggle('hidden', method.indexOf('Havale') === -1 && method.indexOf('EFT') === -1);
-            document.getElementById('marinaSection').classList.toggle('hidden', method.indexOf('Marina') === -1 && method.indexOf('Nakit') === -1);
+            const method = this.value.toLowerCase();
+            const isCard = method.indexOf('kart') !== -1 || method.indexOf('card') !== -1;
+            const isTransfer = method.indexOf('havale') !== -1 || method.indexOf('eft') !== -1 || method.indexOf('transfer') !== -1;
+            const isMarina = method.indexOf('marina') !== -1 || method.indexOf('nakit') !== -1 || method.indexOf('cash') !== -1;
+
+            document.getElementById('cardSection').classList.toggle('hidden', !isCard);
+            document.getElementById('ibanSection').classList.toggle('hidden', !isTransfer);
+            document.getElementById('marinaSection').classList.toggle('hidden', !isMarina);
             syncCardFieldsRequired();
         });
     });
@@ -677,11 +802,11 @@
         if (code === 'YACHT10') {
             discountPercent = 10;
             msg.className = 'text-[11px] mt-1 text-emerald-600 font-semibold';
-            msg.innerText = '✓ %10 promo indirimi uygulandı!';
+            msg.innerText = isEnCo ? '✓ 10% promo discount applied!' : '✓ %10 promo indirimi uygulandı!';
         } else {
             discountPercent = 0;
             msg.className = 'text-[11px] mt-1 text-rose-600 font-semibold';
-            msg.innerText = 'Geçersiz kod. Denemek için: YACHT10';
+            msg.innerText = isEnCo ? 'Invalid code. Try: YACHT10' : 'Geçersiz kod. Denemek için: YACHT10';
         }
         recalculate();
     });
@@ -694,15 +819,15 @@
 
         if (!cIn || !cOut) {
             badge.className = 'text-xs font-bold px-3 py-1 rounded-full bg-amber-50 text-amber-800';
-            badge.innerHTML = '<i class="fa-solid fa-calendar-day mr-1"></i>Giriş ve Çıkış Tarihi Seçin';
+            badge.innerHTML = '<i class="fa-solid fa-calendar-day mr-1"></i>' + (isEnCo ? 'Select Check-in & Check-out Dates' : 'Giriş ve Çıkış Tarihi Seçin');
             btn.disabled = true;
             btn.classList.add('opacity-50', 'cursor-not-allowed');
             return;
         }
 
-        if (cOut <= cIn) {
+        if (cIn < todayYmd || cOut <= cIn) {
             badge.className = 'text-xs font-bold px-3 py-1 rounded-full bg-amber-50 text-amber-800';
-            badge.innerHTML = '<i class="fa-solid fa-triangle-exclamation mr-1"></i>Çıkış tarihi girişten sonra olmalı';
+            badge.innerHTML = '<i class="fa-solid fa-triangle-exclamation mr-1"></i>' + (isEnCo ? 'Select valid future dates' : 'Geçerli ileri tarih seçin');
             btn.disabled = true;
             btn.classList.add('opacity-50', 'cursor-not-allowed');
             return;
@@ -714,12 +839,12 @@
 
         if (conflict) {
             badge.className = 'text-xs font-bold px-3 py-1 rounded-full bg-rose-50 text-rose-700';
-            badge.innerHTML = '<i class="fa-solid fa-circle-xmark mr-1"></i>Dolu (' + conflict.checkIn + ' - ' + conflict.checkOut + ')';
+            badge.innerHTML = '<i class="fa-solid fa-circle-xmark mr-1"></i>' + (isEnCo ? 'Booked' : 'Dolu') + ' (' + conflict.checkIn + ' - ' + conflict.checkOut + ')';
             btn.disabled = true;
             btn.classList.add('opacity-50', 'cursor-not-allowed');
         } else {
             badge.className = 'text-xs font-bold px-3 py-1 rounded-full bg-emerald-50 text-emerald-700';
-            badge.innerHTML = '<i class="fa-solid fa-circle-check mr-1"></i>Seçilen Tarihler Müsait';
+            badge.innerHTML = '<i class="fa-solid fa-circle-check mr-1"></i>' + (isEnCo ? 'Selected Dates Available' : 'Seçilen Tarihler Müsait');
             btn.disabled = false;
             btn.classList.remove('opacity-50', 'cursor-not-allowed');
         }
@@ -735,20 +860,21 @@
         }
 
         let days = 0;
-        if (cInEl.value && cOutEl.value && cOutEl.value > cInEl.value) {
+        if (cInEl.value && cOutEl.value && cInEl.value >= todayYmd && cOutEl.value > cInEl.value) {
             const d1 = new Date(cInEl.value + 'T00:00:00');
             const d2 = new Date(cOutEl.value + 'T00:00:00');
             const diff = Math.round((d2 - d1) / (1000 * 60 * 60 * 24));
             if (!isNaN(diff) && diff >= 1) days = diff;
         }
 
+        const guestUnit = isEnCo ? (guestsVal === 1 ? 'guest' : 'guests') : 'kişi';
         let extrasTotal = 0;
         document.querySelectorAll('.extra-cb').forEach(function(cb) {
             const perGuest = Number(cb.dataset.perGuest || 0);
             const itemSum = perGuest * guestsVal;
             const badge = cb.closest('label') ? cb.closest('label').querySelector('.extra-calc-badge') : null;
             if (badge) {
-                badge.innerText = '+€' + itemSum.toLocaleString() + ' (' + guestsVal + ' kişi)';
+                badge.innerText = '+€' + itemSum.toLocaleString() + ' (' + guestsVal + ' ' + guestUnit + ')';
             }
             if (cb.checked) {
                 extrasTotal += itemSum;
@@ -775,13 +901,13 @@
             planDelta = -Math.round(subTotal * (fullPaymentDiscountPct / 100));
             grandTotal = Math.max(0, subTotal + planDelta);
             adjRow.className = 'flex justify-between text-emerald-700 font-bold';
-            adjLabel.innerText = 'Tam Ödeme İndirimi (%' + fullPaymentDiscountPct + ')';
+            adjLabel.innerText = isEnCo ? ('Full Payment Discount (' + fullPaymentDiscountPct + '%)') : ('Tam Ödeme İndirimi (%' + fullPaymentDiscountPct + ')');
             adjVal.innerText = '-€' + Math.abs(planDelta).toLocaleString();
         } else if (!isFullPayment && installmentInterestPct > 0) {
             planDelta = Math.round(subTotal * (installmentInterestPct / 100));
             grandTotal = Math.max(0, subTotal + planDelta);
             adjRow.className = 'flex justify-between text-amber-700 font-bold';
-            adjLabel.innerText = 'Hisseli Ödeme Farkı (%' + installmentInterestPct + ')';
+            adjLabel.innerText = isEnCo ? ('Installment Surcharge (' + installmentInterestPct + '%)') : ('Hisseli Ödeme Farkı (%' + installmentInterestPct + ')');
             adjVal.innerText = '+€' + planDelta.toLocaleString();
         } else {
             adjRow.classList.add('hidden');
@@ -824,8 +950,9 @@
         document.getElementById('payBtnAmount').innerText = '€' + payNow.toLocaleString();
     }
 
-    const monthNamesTr = ['Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran', 'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık'];
-    const nowRef = new Date();
+    const monthNames = isEnCo
+        ? ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
+        : ['Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran', 'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık'];
     const pickerState = {
         in: { year: nowRef.getFullYear(), month: nowRef.getMonth() },
         out: { year: nowRef.getFullYear(), month: nowRef.getMonth() }
@@ -843,7 +970,7 @@
         const labelEl = document.getElementById(target === 'in' ? 'labelIn' : 'labelOut');
         if (!gridEl || !labelEl) return;
 
-        labelEl.innerText = monthNamesTr[state.month] + ' ' + state.year;
+        labelEl.innerText = monthNames[state.month] + ' ' + state.year;
         gridEl.innerHTML = '';
 
         const firstDay = new Date(state.year, state.month, 1);
@@ -859,16 +986,17 @@
 
         for (let d = 1; d <= totalDays; d++) {
             const ymd = state.year + '-' + String(state.month + 1).padStart(2, '0') + '-' + String(d).padStart(2, '0');
-            const booked = isDayBooked(ymd);
-            const beforeOrSameCheckIn = (target === 'out' && cInEl.value && ymd <= cInEl.value);
+            const isPast = ymd < todayYmd;
+            const booked = !isPast && isDayBooked(ymd);
+            const beforeOrSameCheckIn = (!isPast && target === 'out' && cInEl.value && ymd <= cInEl.value);
             const btn = document.createElement('button');
             btn.type = 'button';
             btn.innerText = d;
 
-            if (booked) {
-                btn.className = 'w-full h-7 rounded-md font-extrabold bg-rose-500 text-white cursor-not-allowed flex items-center justify-center';
-            } else if (beforeOrSameCheckIn) {
+            if (isPast || beforeOrSameCheckIn) {
                 btn.className = 'w-full h-7 rounded-md font-semibold bg-slate-100 text-slate-300 cursor-not-allowed flex items-center justify-center';
+            } else if (booked) {
+                btn.className = 'w-full h-7 rounded-md font-extrabold bg-rose-500 text-white cursor-not-allowed flex items-center justify-center';
             } else {
                 btn.className = 'w-full h-7 rounded-md font-bold bg-emerald-100 text-emerald-800 hover:bg-emerald-500 hover:text-white transition flex items-center justify-center';
                 btn.addEventListener('click', function() {
@@ -895,7 +1023,7 @@
         document.getElementById(otherId).classList.add('hidden');
         const pEl = document.getElementById(targetId);
         const refStr = inputEl.value || cInEl.value;
-        const curVal = refStr ? new Date(refStr + 'T00:00:00') : null;
+        const curVal = refStr ? new Date(refStr + 'T00:00:00') : nowRef;
         if (curVal && !isNaN(curVal.getTime())) {
             pickerState[target].year = curVal.getFullYear();
             pickerState[target].month = curVal.getMonth();
@@ -969,7 +1097,7 @@
         const email = document.getElementById('custEmail').value.trim();
         const phone = document.getElementById('custPhone').value.trim();
         if (!name || !email || !phone) {
-            alert('Lütfen Ad Soyad, E-posta ve Telefon alanlarını doldurun.');
+            alert(isEnCo ? 'Please fill in Full Name, Email and Phone fields.' : 'Lütfen Ad Soyad, E-posta ve Telefon alanlarını doldurun.');
             return;
         }
         document.getElementById('step1Box').classList.add('hidden');

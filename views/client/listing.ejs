@@ -1,17 +1,45 @@
 <%- include('../partials/header') %>
 
+<% const listIsEn = (typeof isEn !== 'undefined') ? Boolean(isEn) : (typeof lang !== 'undefined' && lang === 'en'); %>
+<% const todayIso = new Date().toISOString().slice(0, 10); %>
+<% const planCfg = (typeof paymentPlanSettings !== 'undefined' && paymentPlanSettings) ? paymentPlanSettings : {
+    installmentPercent: 50,
+    installmentInterestPercent: 0,
+    fullPaymentDiscountPercent: 10
+}; %>
+<% const hasDateRange = Boolean(filters.checkIn && filters.checkOut && filters.checkOut > filters.checkIn && filters.checkIn >= todayIso); %>
+<% const activeDays = hasDateRange ? Math.max(1, Number(selectedDays) || 1) : 1; %>
+<% const depPoints = (typeof departurePoints !== 'undefined' && Array.isArray(departurePoints) && departurePoints.length) ? departurePoints : [
+    { name: 'Göcek', desc: listIsEn ? 'Coves & D-Marin departure' : 'Koylar & D-Marin kalkış' },
+    { name: 'Marmaris', desc: listIsEn ? 'Netsel Marina & Hisarönü' : 'Netsel Marina & Hisarönü' },
+    { name: 'Fethiye', desc: listIsEn ? 'Ece Marina & Ölüdeniz' : 'Ece Marina & Ölüdeniz' },
+    { name: 'Bodrum', desc: listIsEn ? 'Yalıkavak & Türkbükü' : 'Yalıkavak & Türkbükü' }
+]; %>
+
 <div class="bg-[#0B1F3A] text-white py-10 px-4 sm:px-6">
     <div class="max-w-7xl mx-auto flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
-            <h1 class="text-3xl md:text-4xl font-extrabold">Yat Filomuz</h1>
-            <p class="text-slate-300 text-sm mt-1">Seçili tarihler (<%= filters.checkIn %> → <%= filters.checkOut %> • <%= selectedDays %> gün) için anında müsaitlik ve şeffaf fiyat</p>
+            <h1 class="text-3xl md:text-4xl font-extrabold"><%= listIsEn ? 'Our Yacht Fleet' : 'Yat Filomuz' %></h1>
+            <% if (hasDateRange) { %>
+                <p class="text-slate-300 text-sm mt-1">
+                    <%= listIsEn
+                        ? ('Transparent total prices for selected dates (' + filters.checkIn + ' → ' + filters.checkOut + ' • ' + activeDays + (activeDays === 1 ? ' day)' : ' days)'))
+                        : ('Seçili tarihler (' + filters.checkIn + ' → ' + filters.checkOut + ' • ' + activeDays + ' gün) için şeffaf toplam fiyatlar') %>
+                </p>
+            <% } else { %>
+                <p class="text-slate-300 text-sm mt-1">
+                    <%= listIsEn
+                        ? 'Daily charter rates shown • Select dates to calculate multi-day total price'
+                        : 'Günlük kiralama fiyatları gösteriliyor • Tarih seçerek çok günlük toplam tutarı hesaplayabilirsiniz' %>
+                </p>
+            <% } %>
         </div>
         <div class="flex flex-wrap gap-2 text-xs">
             <span class="bg-white/10 border border-white/15 px-3 py-1.5 rounded-full text-emerald-300 font-semibold">
-                <i class="fa-solid fa-shield-halved mr-1"></i>7 Gün Kalaya Kadar Ücretsiz İptal
+                <i class="fa-solid fa-shield-halved mr-1"></i><%= listIsEn ? 'Free Cancellation Up to 7 Days Prior' : '7 Gün Kalaya Kadar Ücretsiz İptal' %>
             </span>
             <span class="bg-white/10 border border-white/15 px-3 py-1.5 rounded-full text-sky-300 font-semibold">
-                <i class="fa-solid fa-percent mr-1"></i>3+ Günde Otomatik %5 İndirim
+                <i class="fa-solid fa-percent mr-1"></i><%= listIsEn ? 'Automatic 5% Discount on 5+ Days' : '5+ Günde Otomatik %5 İndirim' %>
             </span>
         </div>
     </div>
@@ -20,13 +48,14 @@
 <main class="max-w-7xl mx-auto px-4 sm:px-6 py-8 space-y-8">
     <!-- HIZLI FİLTRE CHIP'LERİ -->
     <div class="flex flex-wrap items-center gap-2 text-xs">
-        <span class="text-slate-400 font-bold uppercase mr-1">Hızlı Filtre:</span>
-        <a href="/yachts" class="px-3.5 py-2 rounded-full font-bold border transition <%= filters.category === 'all' && filters.features.length === 0 ? 'bg-[#0B1F3A] text-white border-[#0B1F3A]' : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-100' %>">Tümü</a>
-        <a href="/yachts?feature=Jakuzi" class="px-3.5 py-2 rounded-full font-bold border transition <%= filters.features.includes('Jakuzi') ? 'bg-[#0B1F3A] text-white border-[#0B1F3A]' : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-100' %>">Jakuzili Yatlar</a>
-        <a href="/yachts?feature=Su+Oyuncakları" class="px-3.5 py-2 rounded-full font-bold border transition <%= filters.features.includes('Su Oyuncakları') ? 'bg-[#0B1F3A] text-white border-[#0B1F3A]' : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-100' %>">Su Oyuncakları</a>
-        <a href="/yachts?guests=7-12" class="px-3.5 py-2 rounded-full font-bold border transition <%= filters.guests === '7-12' ? 'bg-[#0B1F3A] text-white border-[#0B1F3A]' : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-100' %>">7-12 Misafir</a>
+        <span class="text-slate-400 font-bold uppercase mr-1"><%= listIsEn ? 'Quick Filter:' : 'Hızlı Filtre:' %></span>
+        <a href="/yachts" class="px-3.5 py-2 rounded-full font-bold border transition <%= filters.category === 'all' && filters.features.length === 0 && filters.location === 'all' ? 'bg-[#0B1F3A] text-white border-[#0B1F3A]' : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-100' %>"><%= listIsEn ? 'All' : 'Tümü' %></a>
+        <a href="/yachts?location=Marmaris" class="px-3.5 py-2 rounded-full font-bold border transition <%= filters.location === 'Marmaris' ? 'bg-[#0B1F3A] text-white border-[#0B1F3A]' : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-100' %>"><%= listIsEn ? 'Marmaris Yachts' : 'Marmaris Yatları' %></a>
+        <a href="/yachts?feature=Jakuzi" class="px-3.5 py-2 rounded-full font-bold border transition <%= filters.features.includes('Jakuzi') ? 'bg-[#0B1F3A] text-white border-[#0B1F3A]' : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-100' %>"><%= listIsEn ? 'With Jacuzzi' : 'Jakuzili Yatlar' %></a>
+        <a href="/yachts?feature=Su+Oyuncakları" class="px-3.5 py-2 rounded-full font-bold border transition <%= filters.features.includes('Su Oyuncakları') ? 'bg-[#0B1F3A] text-white border-[#0B1F3A]' : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-100' %>"><%= listIsEn ? 'Water Toys' : 'Su Oyuncakları' %></a>
+        <a href="/yachts?guests=7-12" class="px-3.5 py-2 rounded-full font-bold border transition <%= filters.guests === '7-12' ? 'bg-[#0B1F3A] text-white border-[#0B1F3A]' : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-100' %>"><%= listIsEn ? '7-12 Guests' : '7-12 Misafir' %></a>
         <button type="button" id="onlyFavsBtn" class="px-3.5 py-2 rounded-full font-bold border bg-white text-rose-600 border-rose-200 hover:bg-rose-50 transition">
-            <i class="fa-solid fa-heart mr-1"></i>Favorilerim (<span id="favCountBadge">0</span>)
+            <i class="fa-solid fa-heart mr-1"></i><%= listIsEn ? 'Favorites' : 'Favorilerim' %> (<span id="favCountBadge">0</span>)
         </button>
     </div>
 
@@ -34,9 +63,9 @@
     <div id="compareBar" class="hidden bg-white border-2 border-[#0B1F3A] rounded-2xl p-5 shadow-lg space-y-4">
         <div class="flex justify-between items-center">
             <div class="font-extrabold text-sm text-[#0B1F3A]">
-                <i class="fa-solid fa-scale-balanced text-teal-600 mr-2"></i>Seçili Yatları Karşılaştır (<span id="compareCount">0</span>)
+                <i class="fa-solid fa-scale-balanced text-teal-600 mr-2"></i><%= listIsEn ? 'Compare Selected Yachts' : 'Seçili Yatları Karşılaştır' %> (<span id="compareCount">0</span>)
             </div>
-            <button type="button" id="clearCompareBtn" class="text-xs font-bold text-rose-600 hover:underline">Seçimi Temizle</button>
+            <button type="button" id="clearCompareBtn" class="text-xs font-bold text-rose-600 hover:underline"><%= listIsEn ? 'Clear Selection' : 'Seçimi Temizle' %></button>
         </div>
         <div id="compareGrid" class="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs"></div>
     </div>
@@ -45,48 +74,45 @@
         <!-- SOL FİLTRE PANELİ -->
         <aside class="bg-white p-6 rounded-2xl border border-slate-200 h-fit space-y-6 shadow-sm">
             <div class="flex justify-between items-center pb-4 border-b border-slate-100">
-                <h2 class="font-bold text-slate-900 text-base">Sonuçları Filtrele</h2>
-                <a href="/yachts" class="text-xs font-semibold text-sky-700 hover:underline">Temizle</a>
+                <h2 class="font-bold text-slate-900 text-base"><%= listIsEn ? 'Filter Results' : 'Sonuçları Filtrele' %></h2>
+                <a href="/yachts" class="text-xs font-semibold text-sky-700 hover:underline"><%= listIsEn ? 'Clear' : 'Temizle' %></a>
             </div>
 
             <% const locOptions = [
-                { val: 'all', label: 'Tüm Limanlar', sub: 'Tüm Ege & Akdeniz rotaları' },
-                { val: 'Göcek', label: 'Göcek', sub: 'Koylar & D-Marin kalkış' },
-                { val: 'Marmaris', label: 'Marmaris', sub: 'Netsel Marina & Hisarönü' },
-                { val: 'Fethiye', label: 'Fethiye', sub: 'Ece Marina & Ölüdeniz' },
-                { val: 'Bodrum', label: 'Bodrum', sub: 'Yalıkavak & Türkbükü' }
+                { val: 'all', label: listIsEn ? 'All Ports' : 'Tüm Limanlar', sub: listIsEn ? 'All Aegean & Mediterranean routes' : 'Tüm Ege & Akdeniz rotaları' },
+                ...depPoints.map(dp => ({ val: dp.name, label: dp.name, sub: dp.desc || (listIsEn ? 'Private marina departure point' : 'Özel marina kalkış noktası') }))
             ]; %>
-            <% const activeLocObj = locOptions.find(function(o) { return o.val === filters.location; }) || locOptions[0]; %>
+            <% const activeLocObj = locOptions.find(function(o) { return o.val.toLowerCase() === String(filters.location || '').toLowerCase(); }) || locOptions[0]; %>
 
             <% const guestOptions = [
-                { val: '', label: 'Fark Etmez' },
-                { val: '1-6', label: '1 - 6 Misafir' },
-                { val: '7-12', label: '7 - 12 Misafir' },
-                { val: '13+', label: '13+ Misafir' }
+                { val: '', label: listIsEn ? 'Any' : 'Fark Etmez' },
+                { val: '1-6', label: listIsEn ? '1 - 6 Guests' : '1 - 6 Misafir' },
+                { val: '7-12', label: listIsEn ? '7 - 12 Guests' : '7 - 12 Misafir' },
+                { val: '13+', label: listIsEn ? '13+ Guests' : '13+ Misafir' }
             ]; %>
             <% const activeGuestObj = guestOptions.find(function(o) { return o.val === filters.guests; }) || guestOptions[0]; %>
 
             <form action="/yachts" method="GET" class="space-y-5">
                 <div class="grid grid-cols-2 gap-2">
                     <div>
-                        <label class="block text-[11px] font-bold text-slate-600 uppercase mb-1">Giriş</label>
-                        <input type="date" name="checkIn" value="<%= filters.checkIn %>" class="w-full p-2 text-xs border border-slate-200 rounded-xl bg-slate-50">
+                        <label class="block text-[11px] font-bold text-slate-600 uppercase mb-1"><%= listIsEn ? 'Check-in' : 'Giriş' %></label>
+                        <input type="date" id="listInDate" name="checkIn" min="<%= todayIso %>" value="<%= (filters.checkIn && filters.checkIn >= todayIso) ? filters.checkIn : '' %>" class="w-full p-2 text-xs border border-slate-200 rounded-xl bg-slate-50">
                     </div>
                     <div>
-                        <label class="block text-[11px] font-bold text-slate-600 uppercase mb-1">Çıkış</label>
-                        <input type="date" name="checkOut" value="<%= filters.checkOut %>" class="w-full p-2 text-xs border border-slate-200 rounded-xl bg-slate-50">
+                        <label class="block text-[11px] font-bold text-slate-600 uppercase mb-1"><%= listIsEn ? 'Check-out' : 'Çıkış' %></label>
+                        <input type="date" id="listOutDate" name="checkOut" min="<%= todayIso %>" value="<%= hasDateRange ? filters.checkOut : '' %>" class="w-full p-2 text-xs border border-slate-200 rounded-xl bg-slate-50">
                     </div>
                 </div>
 
                 <!-- KALKIŞ LİMANI ÖZEL DROPDOWN -->
                 <div class="yv-dropdown relative">
-                    <label class="block text-xs font-bold text-slate-700 uppercase mb-2">Kalkış Limanı</label>
+                    <label class="block text-xs font-bold text-slate-700 uppercase mb-2"><%= listIsEn ? 'Departure Port' : 'Kalkış Limanı' %></label>
                     <input type="hidden" name="location" value="<%= activeLocObj.val %>">
                     <button type="button" class="yv-dd-trigger w-full px-3.5 py-2.5 text-sm border border-slate-200 rounded-xl bg-slate-50 hover:bg-slate-100/70 flex items-center justify-between text-left transition focus:outline-none">
                         <span class="yv-dd-label font-semibold text-slate-800"><%= activeLocObj.label %></span>
                         <i class="yv-dd-chevron fa-solid fa-chevron-down text-xs text-slate-400 transition-transform duration-200"></i>
                     </button>
-                    <div class="yv-dd-menu hidden left-0 right-0 top-[calc(100%+6px)] absolute bg-white rounded-2xl shadow-2xl border border-slate-100 p-1.5 z-40">
+                    <div class="yv-dd-menu hidden max-h-60 overflow-y-auto left-0 right-0 top-[calc(100%+6px)] absolute bg-white rounded-2xl shadow-2xl border border-slate-100 p-1.5 z-40">
                         <% for (let i = 0; i < locOptions.length; i++) { %>
                             <% const isSel = locOptions[i].val === activeLocObj.val; %>
                             <button type="button" data-value="<%= locOptions[i].val %>" data-label="<%= locOptions[i].label %>" class="yv-dd-option w-full px-3 py-2 rounded-xl flex items-center justify-between text-left text-xs transition <%= isSel ? 'bg-slate-100 font-bold text-[#0B1F3A]' : 'text-slate-700 hover:bg-slate-50' %>">
@@ -101,15 +127,15 @@
                 </div>
 
                 <div>
-                    <label class="block text-xs font-bold text-slate-700 uppercase mb-2">Yat Tipi</label>
+                    <label class="block text-xs font-bold text-slate-700 uppercase mb-2"><%= listIsEn ? 'Yacht Type' : 'Yat Tipi' %></label>
                     <div class="space-y-2 text-sm text-slate-600">
                         <% const typeList = [
-                            { val: 'all', label: 'Tümü' },
-                            { val: 'Motor Yachts', label: 'Motor Yat' },
+                            { val: 'all', label: listIsEn ? 'All' : 'Tümü' },
+                            { val: 'Motor Yachts', label: listIsEn ? 'Motor Yacht' : 'Motor Yat' },
                             { val: 'Gulets', label: 'Gulet' },
-                            { val: 'Sailing Yachts', label: 'Yelkenli Yat' },
-                            { val: 'Catamarans', label: 'Katamaran' },
-                            { val: 'Superyachts', label: 'Süperyat' }
+                            { val: 'Sailing Yachts', label: listIsEn ? 'Sailing Yacht' : 'Yelkenli Yat' },
+                            { val: 'Catamarans', label: listIsEn ? 'Catamaran' : 'Katamaran' },
+                            { val: 'Superyachts', label: listIsEn ? 'Superyacht' : 'Süperyat' }
                         ]; %>
                         <% for (let i = 0; i < typeList.length; i++) { %>
                             <label class="flex items-center space-x-2 cursor-pointer">
@@ -122,7 +148,7 @@
 
                 <!-- MİSAFİR KAPASİTESİ ÖZEL DROPDOWN -->
                 <div class="yv-dropdown relative">
-                    <label class="block text-xs font-bold text-slate-700 uppercase mb-2">Misafir Kapasitesi</label>
+                    <label class="block text-xs font-bold text-slate-700 uppercase mb-2"><%= listIsEn ? 'Guest Capacity' : 'Misafir Kapasitesi' %></label>
                     <input type="hidden" name="guests" value="<%= activeGuestObj.val %>">
                     <button type="button" class="yv-dd-trigger w-full px-3.5 py-2.5 text-sm border border-slate-200 rounded-xl bg-slate-50 hover:bg-slate-100/70 flex items-center justify-between text-left transition focus:outline-none">
                         <span class="yv-dd-label font-semibold text-slate-800"><%= activeGuestObj.label %></span>
@@ -141,27 +167,32 @@
 
                 <div>
                     <div class="flex justify-between text-xs font-bold text-slate-700 uppercase mb-2">
-                        <span>Maks. Günlük Fiyat</span>
+                        <span><%= listIsEn ? 'Max. Daily Rate' : 'Maks. Günlük Fiyat' %></span>
                         <span id="priceLabel" class="text-sky-700">€<%= Number(filters.maxPrice).toLocaleString() %></span>
                     </div>
                     <input type="range" id="maxPriceRange" name="maxPrice" min="1500" max="10000" step="500" value="<%= filters.maxPrice %>" class="w-full accent-[#0B1F3A]">
                 </div>
 
                 <div>
-                    <label class="block text-xs font-bold text-slate-700 uppercase mb-2">Özellikler</label>
+                    <label class="block text-xs font-bold text-slate-700 uppercase mb-2"><%= listIsEn ? 'Features' : 'Özellikler' %></label>
                     <div class="space-y-2 text-sm text-slate-600">
-                        <% const featList = ['Jakuzi', 'Su Oyuncakları', 'Klima', 'Mürettebat Dahil']; %>
+                        <% const featList = [
+                            { val: 'Jakuzi', label: listIsEn ? 'Jacuzzi' : 'Jakuzi' },
+                            { val: 'Su Oyuncakları', label: listIsEn ? 'Water Toys' : 'Su Oyuncakları' },
+                            { val: 'Klima', label: listIsEn ? 'Air Conditioning' : 'Klima' },
+                            { val: 'Mürettebat Dahil', label: listIsEn ? 'Crew Included' : 'Mürettebat Dahil' }
+                        ]; %>
                         <% for (let i = 0; i < featList.length; i++) { %>
                             <label class="flex items-center space-x-2 cursor-pointer">
-                                <input type="checkbox" name="feature" value="<%= featList[i] %>" <%= filters.features.includes(featList[i]) ? 'checked' : '' %> class="rounded text-[#0B1F3A]">
-                                <span><%= featList[i] %></span>
+                                <input type="checkbox" name="feature" value="<%= featList[i].val %>" <%= filters.features.includes(featList[i].val) ? 'checked' : '' %> class="rounded text-[#0B1F3A]">
+                                <span><%= featList[i].label %></span>
                             </label>
                         <% } %>
                     </div>
                 </div>
 
                 <button type="submit" class="w-full bg-[#0B1F3A] hover:bg-sky-900 text-white py-3 rounded-xl text-sm font-bold transition">
-                    Filtreleri Uygula
+                    <%= listIsEn ? 'Apply Filters' : 'Filtreleri Uygula' %>
                 </button>
             </form>
         </aside>
@@ -169,21 +200,32 @@
         <!-- SAĞ YAT LİSTESİ -->
         <div class="lg:col-span-3 space-y-6">
             <% const sortOptions = [
-                { val: 'recommended', label: 'Önerilen' },
-                { val: 'price_asc', label: 'Fiyat: Düşükten Yükseğe' },
-                { val: 'price_desc', label: 'Fiyat: Yüksekten Düşüğe' },
-                { val: 'rating', label: 'En Yüksek Puan' }
+                { val: 'recommended', label: listIsEn ? 'Recommended' : 'Önerilen' },
+                { val: 'price_asc', label: listIsEn ? 'Price: Low to High' : 'Fiyat: Düşükten Yükseğe' },
+                { val: 'price_desc', label: listIsEn ? 'Price: High to Low' : 'Fiyat: Yüksekten Düşüğe' },
+                { val: 'rating', label: listIsEn ? 'Highest Rated' : 'En Yüksek Puan' }
             ]; %>
             <% const activeSortObj = sortOptions.find(function(o) { return o.val === filters.sort; }) || sortOptions[0]; %>
 
             <div class="bg-white px-5 py-3.5 rounded-xl border border-slate-200 flex flex-wrap justify-between items-center gap-3">
-                <span class="text-sm font-semibold text-slate-700"><strong><%= yachts.length %></strong> yat bulundu • <span class="text-slate-400 text-xs"><%= selectedDays %> günlük fiyatlar gösteriliyor</span></span>
+                <span class="text-sm font-semibold text-slate-700">
+                    <strong><%= yachts.length %></strong> <%= listIsEn ? (yachts.length === 1 ? 'yacht found' : 'yachts found') : 'yat bulundu' %> •
+                    <span class="text-slate-400 text-xs">
+                        <%= hasDateRange
+                            ? (activeDays + (listIsEn ? (activeDays === 1 ? ' day total prices' : ' days total prices') : ' günlük toplam fiyatlar'))
+                            : (listIsEn ? 'daily starting rates' : 'günlük başlangıç fiyatları') %>
+                    </span>
+                </span>
                 <form id="sortForm" action="/yachts" method="GET" class="flex items-center space-x-2.5 text-xs">
                     <input type="hidden" name="location" value="<%= filters.location %>">
                     <input type="hidden" name="category" value="<%= filters.category %>">
-                    <input type="hidden" name="checkIn" value="<%= filters.checkIn %>">
-                    <input type="hidden" name="checkOut" value="<%= filters.checkOut %>">
-                    <span class="text-slate-400 font-semibold">Sırala:</span>
+                    <input type="hidden" name="guests" value="<%= filters.guests %>">
+                    <input type="hidden" name="maxPrice" value="<%= filters.maxPrice %>">
+                    <% if (hasDateRange) { %>
+                        <input type="hidden" name="checkIn" value="<%= filters.checkIn %>">
+                        <input type="hidden" name="checkOut" value="<%= filters.checkOut %>">
+                    <% } %>
+                    <span class="text-slate-400 font-semibold"><%= listIsEn ? 'Sort By:' : 'Sırala:' %></span>
                     <div id="sortDropdown" class="yv-dropdown relative">
                         <input type="hidden" id="sortHiddenInput" name="sort" value="<%= activeSortObj.val %>">
                         <button type="button" class="yv-dd-trigger border border-slate-200 rounded-xl px-3.5 py-2 font-bold text-slate-700 bg-slate-50 hover:bg-slate-100 flex items-center space-x-2.5 transition focus:outline-none">
@@ -206,8 +248,8 @@
             <% if (yachts.length === 0) { %>
                 <div class="bg-white p-12 rounded-2xl border border-slate-200 text-center space-y-3">
                     <i class="fa-solid fa-anchor text-3xl text-slate-300"></i>
-                    <h3 class="font-bold text-lg text-slate-800">Kriterlerinize uygun yat bulunamadı</h3>
-                    <a href="/yachts" class="inline-block bg-[#0B1F3A] text-white px-5 py-2.5 rounded-xl text-xs font-bold">Tüm Yatları Göster</a>
+                    <h3 class="font-bold text-lg text-slate-800"><%= listIsEn ? 'No yachts found matching your criteria' : 'Kriterlerinize uygun yat bulunamadı' %></h3>
+                    <a href="/yachts" class="inline-block bg-[#0B1F3A] text-white px-5 py-2.5 rounded-xl text-xs font-bold"><%= listIsEn ? 'Show All Yachts' : 'Tüm Yatları Göster' %></a>
                 </div>
             <% } %>
 
@@ -218,31 +260,57 @@
                 'https://images.unsplash.com/photo-1544551763-46a013bb70d5?auto=format&fit=crop&w=1000&q=80'
             ]; %>
 
+            <% const featTrToEn = {
+                'Jakuzi': 'Jacuzzi',
+                'Su Oyuncakları': 'Water Toys',
+                'Klima': 'Air Conditioning',
+                'Mürettebat Dahil': 'Crew Included'
+            }; %>
+
+            <% const catSingularEn = {
+                'Motor Yachts': 'Motor Yacht',
+                'Gulets': 'Gulet',
+                'Sailing Yachts': 'Sailing Yacht',
+                'Catamarans': 'Catamaran',
+                'Superyachts': 'Superyacht'
+            }; %>
+
+            <% const badgeTrToEn = {
+                'Fiyat / Performans': 'Value / Performance',
+                'Yeni Model': 'New Model',
+                'En Popüler': 'Most Popular',
+                'Öne Çıkan': 'Featured'
+            }; %>
+
+            <% const dateQuery = hasDateRange ? `&checkIn=${encodeURIComponent(filters.checkIn)}&checkOut=${encodeURIComponent(filters.checkOut)}` : ''; %>
+
             <% for (let idx = 0; idx < yachts.length; idx++) { %>
                 <% const yacht = yachts[idx]; %>
                 <% const cardImg = (yacht.images && yacht.images[0] && !yacht.images[0].includes('1569263979104')) ? yacht.images[0] : workingImgs[idx % workingImgs.length]; %>
-                <% const rawStay = yacht.price * selectedDays; %>
-                <% const stayTotal = selectedDays >= 3 ? Math.round(rawStay * 0.95) : rawStay; %>
+                <% const rawStay = yacht.price * activeDays; %>
+                <% const stayTotal = (hasDateRange && activeDays >= 5) ? Math.round(rawStay * 0.95) : rawStay; %>
+                <% const yCatLabel = listIsEn ? (catSingularEn[yacht.category] || catSingularEn[yacht.categoryEn] || yacht.categoryEn || yacht.category || yacht.categoryTr) : (yacht.categoryTr || yacht.category); %>
+                <% const yBadgeLabel = listIsEn ? (yacht.badgeEn || badgeTrToEn[yacht.badge] || yacht.badge) : yacht.badge; %>
                 <div class="yacht-card bg-white rounded-2xl overflow-hidden border border-slate-200 shadow-sm hover:shadow-lg transition grid grid-cols-1 md:grid-cols-3 items-stretch"
                      data-id="<%= yacht.id %>"
                      data-name="<%= yacht.name %>"
                      data-price="<%= yacht.price %>"
                      data-location="<%= yacht.location %>"
-                     data-category="<%= yacht.categoryTr %>"
+                     data-category="<%= yCatLabel %>"
                      data-guests="<%= yacht.guests %>"
                      data-cabins="<%= yacht.cabins %>"
                      data-crew="<%= yacht.crew %>"
                      data-length="<%= yacht.length %>"
                      data-speed="<%= yacht.speed %>"
                      data-img="<%= cardImg %>">
-                    <div class="relative h-56 md:h-64 w-full overflow-hidden bg-slate-100">
-                        <img src="<%= cardImg %>" alt="<%= yacht.name %>" class="yacht-img w-full h-full object-cover">
+                    <div class="relative h-56 md:h-72 w-full overflow-hidden bg-slate-100">
+                        <img src="<%= cardImg %>" alt="<%= yacht.name %>" class="yacht-img w-full h-full object-cover block">
                         <span class="absolute top-3 left-3 bg-[#0B1F3A]/90 text-white text-[11px] font-bold px-3 py-1 rounded-full">
                             <%= yacht.location %>
                         </span>
-                        <% if (yacht.badge) { %>
+                        <% if (yBadgeLabel) { %>
                             <span class="absolute bottom-3 left-3 bg-amber-400 text-[#0B1F3A] text-[10px] font-extrabold px-2.5 py-1 rounded-md shadow">
-                                <%= yacht.badge %>
+                                <%= yBadgeLabel %>
                             </span>
                         <% } %>
                         <button type="button" data-fav-id="<%= yacht.id %>" class="fav-btn absolute top-3 right-3 w-8 h-8 rounded-full bg-white/90 text-slate-600 hover:text-rose-600 flex items-center justify-center shadow transition">
@@ -258,43 +326,61 @@
                                         <h3 class="text-xl font-extrabold text-slate-900"><%= yacht.name %></h3>
                                         <span class="bg-[#0B1F3A] text-white text-xs font-extrabold px-2 py-0.5 rounded-md"><%= yacht.rating.toFixed(1) %></span>
                                     </div>
-                                    <p class="text-xs text-slate-500 mt-0.5"><%= yacht.categoryTr %> • <%= yacht.length %> • <%= yacht.year %> • <%= yacht.reviews %> doğrulanmış yorum</p>
+                                    <p class="text-xs text-slate-500 mt-0.5">
+                                        <%= yCatLabel %> • <%= yacht.length %> • <%= yacht.year %> • <%= yacht.reviews %> <%= listIsEn ? 'verified reviews' : 'doğrulanmış yorum' %>
+                                    </p>
                                 </div>
                                 <div class="text-right shrink-0">
-                                    <span class="text-[11px] text-slate-400 block">Günlük €<%= yacht.price.toLocaleString() %></span>
-                                    <span class="text-2xl font-extrabold text-[#0B1F3A]">€<%= stayTotal.toLocaleString() %></span>
-                                    <span class="text-[11px] text-emerald-600 font-bold block"><%= selectedDays %> gün toplam <%= selectedDays >= 3 ? '(%5 indirimli)' : '' %></span>
+                                    <% if (hasDateRange) { %>
+                                        <span class="text-[11px] text-slate-400 block">
+                                            <%= listIsEn ? ('€' + yacht.price.toLocaleString() + ' per day') : ('Günlük €' + yacht.price.toLocaleString()) %>
+                                        </span>
+                                        <span class="text-2xl font-extrabold text-[#0B1F3A]">€<%= stayTotal.toLocaleString() %></span>
+                                        <span class="text-[11px] text-emerald-600 font-bold block">
+                                            <%= activeDays %> <%= listIsEn ? ((activeDays === 1 ? 'day in total' : 'days in total') + (activeDays >= 5 ? ' (5% off)' : '')) : ('gün toplam ' + (activeDays >= 5 ? '(%5 indirimli)' : '')) %>
+                                        </span>
+                                    <% } else { %>
+                                        <span class="text-[11px] text-slate-400 block"><%= listIsEn ? 'Daily Charter' : 'Günlük Kiralama' %></span>
+                                        <span class="text-2xl font-extrabold text-[#0B1F3A]">€<%= yacht.price.toLocaleString() %></span>
+                                        <span class="text-[11px] text-slate-500 font-semibold block"><%= listIsEn ? '/ day (crew included)' : '/ gün (mürettebat dahil)' %></span>
+                                    <% } %>
                                 </div>
                             </div>
 
                             <div class="flex flex-wrap items-center gap-4 text-xs text-slate-600 mt-3">
-                                <span><i class="fa-solid fa-users text-sky-700 mr-1"></i><%= yacht.guests %> Misafir</span>
-                                <span><i class="fa-solid fa-bed text-sky-700 mr-1"></i><%= yacht.cabins %> Kabin</span>
-                                <span><i class="fa-solid fa-user-tie text-sky-700 mr-1"></i><%= yacht.crew %> Mürettebat</span>
+                                <span><i class="fa-solid fa-users text-sky-700 mr-1"></i><%= yacht.guests %> <%= listIsEn ? (Number(yacht.guests) === 1 ? 'Guest' : 'Guests') : 'Misafir' %></span>
+                                <span><i class="fa-solid fa-bed text-sky-700 mr-1"></i><%= yacht.cabins %> <%= listIsEn ? (Number(yacht.cabins) === 1 ? 'Cabin' : 'Cabins') : 'Kabin' %></span>
+                                <span><i class="fa-solid fa-user-tie text-sky-700 mr-1"></i><%= yacht.crew %> <%= listIsEn ? (Number(yacht.crew) === 1 ? 'Crew Member' : 'Crew Members') : 'Mürettebat' %></span>
                                 <span><i class="fa-solid fa-gauge-high text-sky-700 mr-1"></i><%= yacht.speed %></span>
                             </div>
 
                             <div class="flex flex-wrap gap-1.5 mt-3">
                                 <% for (let fIdx = 0; fIdx < yacht.features.length; fIdx++) { %>
-                                    <span class="bg-slate-100 text-slate-600 text-[11px] font-medium px-2.5 py-1 rounded-md"><%= yacht.features[fIdx] %></span>
+                                    <% const rawFeat = yacht.features[fIdx]; %>
+                                    <% const featLabel = listIsEn ? (featTrToEn[rawFeat] || rawFeat) : rawFeat; %>
+                                    <span class="bg-slate-100 text-slate-600 text-[11px] font-medium px-2.5 py-1 rounded-md"><%= featLabel %></span>
                                 <% } %>
-                                <span class="bg-emerald-50 text-emerald-700 text-[11px] font-semibold px-2.5 py-1 rounded-md">✓ Ücretsiz İptal</span>
-                                <span class="bg-sky-50 text-sky-700 text-[11px] font-semibold px-2.5 py-1 rounded-md">✓ %30 Kapora</span>
+                                <span class="bg-emerald-50 text-emerald-700 text-[11px] font-semibold px-2.5 py-1 rounded-md">
+                                    <%= listIsEn ? '✓ Free cancellation.' : '✓ Ücretsiz İptal' %>
+                                </span>
+                                <span class="bg-sky-50 text-sky-700 text-[11px] font-semibold px-2.5 py-1 rounded-md">
+                                    <%= listIsEn ? ('✓ ' + planCfg.installmentPercent + '% Down Payment') : ('✓ %' + planCfg.installmentPercent + ' Ön Ödeme') %>
+                                </span>
                             </div>
                         </div>
 
                         <div class="flex flex-wrap justify-between items-center gap-3 mt-5 pt-4 border-t border-slate-100">
                             <label class="flex items-center space-x-2 text-xs font-semibold text-slate-600 cursor-pointer">
                                 <input type="checkbox" data-compare-id="<%= yacht.id %>" class="compare-cb rounded text-[#0B1F3A]">
-                                <span>Karşılaştır</span>
+                                <span><%= listIsEn ? 'Compare' : 'Karşılaştır' %></span>
                             </label>
 
                             <div class="flex items-center space-x-3">
-                                <a href="/yachts/<%= yacht.id %>?checkIn=<%= filters.checkIn %>&checkOut=<%= filters.checkOut %>" class="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-xl text-xs font-bold transition">
-                                    Detayları İncele
+                                <a href="/yachts/<%= yacht.id %><%= dateQuery ? ('?' + dateQuery.slice(1)) : '' %>" class="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-xl text-xs font-bold transition">
+                                    <%= listIsEn ? 'View Details' : 'Detayları İncele' %>
                                 </a>
-                                <a href="/checkout?yachtId=<%= yacht.id %>&checkIn=<%= filters.checkIn %>&checkOut=<%= filters.checkOut %>" class="px-5 py-2.5 bg-[#0B1F3A] hover:bg-sky-900 text-white rounded-xl text-xs font-bold transition">
-                                    Hemen Kirala →
+                                <a href="/checkout?yachtId=<%= yacht.id %><%= dateQuery %>" class="px-5 py-2.5 bg-[#0B1F3A] hover:bg-sky-900 text-white rounded-xl text-xs font-bold transition">
+                                    <%= listIsEn ? 'Instant Booking' : 'Hemen Kirala →' %>
                                 </a>
                             </div>
                         </div>
@@ -306,12 +392,29 @@
 
     <!-- SON İNCELENEN YATLAR ŞERİDİ -->
     <section id="recentSection" class="hidden pt-6 border-t border-slate-200 space-y-4">
-        <h2 class="text-lg font-extrabold text-[#0B1F3A]">Son İncelediğiniz Yatlar</h2>
+        <h2 class="text-lg font-extrabold text-[#0B1F3A]"><%= listIsEn ? 'Recently Viewed Yachts' : 'Son İncelediğiniz Yatlar' %></h2>
         <div id="recentGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4"></div>
     </section>
 </main>
 
 <script>
+    const isEnList = document.documentElement.dataset.yvEn === '1';
+    const listInInput = document.getElementById('listInDate');
+    const listOutInput = document.getElementById('listOutDate');
+    if (listInInput && listOutInput) {
+        listInInput.addEventListener('change', function() {
+            if (this.value) {
+                const d = new Date(this.value + 'T00:00:00');
+                d.setDate(d.getDate() + 1);
+                const minOut = d.toISOString().slice(0, 10);
+                listOutInput.min = minOut;
+                if (listOutInput.value && listOutInput.value <= this.value) {
+                    listOutInput.value = '';
+                }
+            }
+        });
+    }
+
     const priceRange = document.getElementById('maxPriceRange');
     const priceLabel = document.getElementById('priceLabel');
     if (priceRange && priceLabel) {
@@ -405,15 +508,29 @@
         bar.classList.remove('hidden');
         const items = allYachts.filter(function(y) { return selectedCompareIds.includes(y.id); });
         grid.innerHTML = items.map(function(y) {
+            const gCount = Number(y.guests);
+            const cCount = Number(y.cabins);
+            const crCount = Number(y.crew);
+            const rateSuffix = isEnList ? '/day' : '/gün';
+            const portLabel = isEnList ? 'Port: ' : 'Liman: ';
+            const typeLabel = isEnList ? 'Type: ' : 'Tip: ';
+            const capLabel = isEnList ? 'Capacity: ' : 'Kapasite: ';
+            const guestWord = isEnList ? (gCount === 1 ? 'Guest' : 'Guests') : 'Kişi';
+            const cabinWord = isEnList ? (cCount === 1 ? 'Cabin' : 'Cabins') : 'Kabin';
+            const crewWord = isEnList ? 'Crew: ' : 'Mürettebat: ';
+            const lenLabel = isEnList ? 'Length: ' : 'Uzunluk: ';
+            const spdLabel = isEnList ? 'Speed: ' : 'Hız: ';
+            const ctaLabel = isEnList ? 'Book Now →' : 'Kirala →';
+
             return '<div class="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-2">' +
                 '<div class="flex justify-between items-center">' +
                     '<strong class="text-sm text-slate-900">' + y.name + '</strong>' +
-                    '<span class="font-extrabold text-[#0B1F3A]">€' + y.price.toLocaleString() + '/gün</span>' +
+                    '<span class="font-extrabold text-[#0B1F3A]">€' + y.price.toLocaleString() + rateSuffix + '</span>' +
                 '</div>' +
-                '<div class="text-slate-600">Liman: <strong>' + y.location + '</strong> • Tip: <strong>' + y.categoryTr + '</strong></div>' +
-                '<div class="text-slate-600">Kapasite: <strong>' + y.guests + ' Kişi</strong> • Kabin: <strong>' + y.cabins + '</strong> • Mürettebat: <strong>' + y.crew + '</strong></div>' +
-                '<div class="text-slate-600">Uzunluk: <strong>' + y.length + '</strong> • Hız: <strong>' + y.speed + '</strong></div>' +
-                '<a href="/checkout?yachtId=' + y.id + '" class="inline-block mt-2 bg-[#0B1F3A] text-white px-3.5 py-1.5 rounded-lg font-bold">Kirala →</a>' +
+                '<div class="text-slate-600">' + portLabel + '<strong>' + y.location + '</strong> • ' + typeLabel + '<strong>' + y.categoryTr + '</strong></div>' +
+                '<div class="text-slate-600">' + capLabel + '<strong>' + y.guests + ' ' + guestWord + '</strong> • ' + cabinWord + ': <strong>' + y.cabins + '</strong> • ' + crewWord + '<strong>' + y.crew + '</strong></div>' +
+                '<div class="text-slate-600">' + lenLabel + '<strong>' + y.length + '</strong> • ' + spdLabel + '<strong>' + y.speed + '</strong></div>' +
+                '<a href="/checkout?yachtId=' + y.id + '" class="inline-block mt-2 bg-[#0B1F3A] text-white px-3.5 py-1.5 rounded-lg font-bold">' + ctaLabel + '</a>' +
             '</div>';
         }).join('');
     }
@@ -447,12 +564,13 @@
     const recentItems = allYachts.filter(function(y) { return recentIds.includes(y.id); });
     if (recentItems.length > 0) {
         document.getElementById('recentSection').classList.remove('hidden');
+        const rateSuffix = isEnList ? '/day' : '/gün';
         document.getElementById('recentGrid').innerHTML = recentItems.map(function(y) {
             return '<a href="/yachts/' + y.id + '" class="bg-white p-3 rounded-xl border border-slate-200 flex items-center space-x-3 hover:shadow transition">' +
                 '<img src="' + y.img + '" class="w-16 h-16 rounded-lg object-cover shrink-0">' +
                 '<div>' +
                     '<div class="font-bold text-xs text-slate-900">' + y.name + '</div>' +
-                    '<div class="text-[11px] text-slate-500">' + y.location + ' • €' + y.price.toLocaleString() + '/gün</div>' +
+                    '<div class="text-[11px] text-slate-500">' + y.location + ' • €' + y.price.toLocaleString() + rateSuffix + '</div>' +
                 '</div>' +
             '</a>';
         }).join('');

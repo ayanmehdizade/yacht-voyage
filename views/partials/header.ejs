@@ -1,16 +1,23 @@
 <!DOCTYPE html>
-<html lang="tr">
+<%
+const curLang = (typeof lang !== 'undefined' && lang === 'en') ? 'en' : 'tr';
+const en = (typeof isEn !== 'undefined') ? Boolean(isEn) : (curLang === 'en');
+const sCfg = (typeof siteSettings !== 'undefined' && siteSettings) ? siteSettings : {
+    brandName: 'YachtVoyage',
+    brandSubtext: 'Yacht Charter',
+    phone: '+90 252 123 45 67',
+    whatsappNumber: '902521234567',
+    email: 'hello@yachtvoyage.com'
+};
+const pageTitle = sCfg.brandName + ' — ' + (en ? 'Yacht Charter & Tour Packages' : 'Yat Kiralama & Tur Paketleri');
+const activeTabClass = 'bg-white text-[#0B1F3A] shadow-xs';
+const idleTabClass = 'text-slate-200 hover:text-white';
+%>
+<html lang="<%= curLang %>" data-yv-en="<%= en ? '1' : '0' %>">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <% const sCfg = (typeof siteSettings !== 'undefined' && siteSettings) ? siteSettings : {
-        brandName: 'YachtVoyage',
-        brandSubtext: 'Yacht Charter',
-        phone: '+90 252 123 45 67',
-        whatsappNumber: '902521234567',
-        email: 'hello@yachtvoyage.com'
-    }; %>
-    <title><%= sCfg.brandName %> — Yat Kiralama &amp; Tur Paketleri</title>
+    <title><%= pageTitle %></title>
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%230B1F3A'/%3E%3Cpath d='M16 42h32l-4 7H20l-4-7z' fill='%2338BDF8'/%3E%3Cpath d='M33 14v24H19l14-24zm2 4l11 20H35V18z' fill='%23FFFFFF'/%3E%3C/svg%3E">
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
@@ -84,14 +91,14 @@
             border-radius: 8px !important;
             font-weight: 700 !important;
             font-size: 12px !important;
-            background: #dcfce7 !important;
-            border-color: #bbf7d0 !important;
-            color: #166534 !important;
+            background: #f8fafc !important;
+            border-color: #e2e8f0 !important;
+            color: #0f172a !important;
             box-sizing: border-box !important;
         }
-        .flatpickr-day:hover:not(.yv-booked-day):not(.prevMonthDay):not(.nextMonthDay) {
-            background: #10b981 !important;
-            border-color: #10b981 !important;
+        .flatpickr-day:hover:not(.prevMonthDay):not(.nextMonthDay):not(.flatpickr-disabled) {
+            background: #0ea5e9 !important;
+            border-color: #0ea5e9 !important;
             color: #ffffff !important;
         }
         .flatpickr-day.prevMonthDay,
@@ -101,52 +108,30 @@
             color: #cbd5e1 !important;
             font-weight: 500 !important;
         }
-        .flatpickr-day.yv-booked-day,
-        .flatpickr-day.yv-booked-day:hover,
         .flatpickr-day.flatpickr-disabled,
         .flatpickr-day.flatpickr-disabled:hover {
-            background: #f43f5e !important;
-            border-color: #f43f5e !important;
-            color: #ffffff !important;
-            font-weight: 800 !important;
-            opacity: 1 !important;
+            background: #f1f5f9 !important;
+            border-color: #e2e8f0 !important;
+            color: #cbd5e1 !important;
+            font-weight: 500 !important;
+            opacity: 0.75 !important;
             cursor: not-allowed !important;
         }
-        .flatpickr-day.selected:not(.yv-booked-day),
-        .flatpickr-day.selected:hover:not(.yv-booked-day) {
+        .flatpickr-day.selected,
+        .flatpickr-day.selected:hover {
             background: #0B1F3A !important;
             border-color: #0B1F3A !important;
             color: #ffffff !important;
         }
-        .yv-cal-legend {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-top: 10px;
-            padding-top: 10px;
-            border-top: 1px solid #f1f5f9;
-            font-size: 11px;
-            font-weight: 700;
-        }
-        .yv-legend-item {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-        }
-        .yv-legend-dot {
-            width: 10px;
-            height: 10px;
-            border-radius: 9999px;
-            display: inline-block;
-            flex-shrink: 0;
-        }
     </style>
     <script>
+        const YV_IS_EN = document.documentElement.dataset.yvEn === '1';
+
         function fallbackYachtImg(imgEl) {
             if (imgEl.dataset.fallbackApplied) return;
             imgEl.dataset.fallbackApplied = '1';
-            const svg = encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="800" height="500" viewBox="0 0 800 500"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#0B1F3A"/><stop offset="100%" stop-color="#0F766E"/></linearGradient></defs><rect width="800" height="500" fill="url(#g)"/></svg>`);
-            imgEl.src = `data:image/svg+xml;charset=utf-8,${svg}`;
+            const svg = encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="800" height="500" viewBox="0 0 800 500"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#0B1F3A"/><stop offset="100%" stop-color="#0F766E"/></linearGradient></defs><rect width="800" height="500" fill="url(#g)"/></svg>');
+            imgEl.src = 'data:image/svg+xml;charset=utf-8,' + svg;
         }
 
         function getBookedRangesFromDom() {
@@ -154,11 +139,14 @@
             const ranges = [];
 
             function addRange(checkIn, checkOut) {
-                if (!checkIn || !checkOut) return;
-                const key = `${checkIn}__${checkOut}`;
+                const sIn = String(checkIn || '').trim();
+                const sOut = String(checkOut || '').trim();
+                if (!/^\d{4}-\d{2}-\d{2}$/.test(sIn) || !/^\d{4}-\d{2}-\d{2}$/.test(sOut)) return;
+                if (sOut <= sIn) return;
+                const key = sIn + '__' + sOut;
                 if (seen.has(key)) return;
                 seen.add(key);
-                ranges.push({ checkIn: checkIn, checkOut: checkOut });
+                ranges.push({ checkIn: sIn, checkOut: sOut });
             }
 
             document.querySelectorAll('.booked-range').forEach(function (el) {
@@ -181,7 +169,7 @@
             const y = dateObj.getFullYear();
             const m = String(dateObj.getMonth() + 1).padStart(2, '0');
             const d = String(dateObj.getDate()).padStart(2, '0');
-            return `${y}-${m}-${d}`;
+            return y + '-' + m + '-' + d;
         }
 
         function detectInputRole(inputEl) {
@@ -193,6 +181,7 @@
         }
 
         function isYmdBookedForRole(ymd, ranges, role) {
+            if (!Array.isArray(ranges) || ranges.length === 0) return false;
             return ranges.some(function (r) {
                 if (role === 'checkout') {
                     return ymd > r.checkIn && ymd <= r.checkOut;
@@ -201,40 +190,360 @@
             });
         }
 
-        function attachLegendToCalendar(instance) {
-            const cal = instance && instance.calendarContainer;
-            if (!cal || cal.querySelector('.yv-cal-legend')) return;
+        (function () {
+            if (!YV_IS_EN) return;
 
-            const legend = document.createElement('div');
-            legend.className = 'yv-cal-legend';
-            legend.innerHTML = `
-                <span class="yv-legend-item text-emerald-700">
-                    <span class="yv-legend-dot bg-emerald-500"></span>
-                    <span>Yeşil: Boş</span>
-                </span>
-                <span class="yv-legend-item text-rose-700">
-                    <span class="yv-legend-dot bg-rose-500"></span>
-                    <span>Kırmızı: Dolu</span>
-                </span>
-            `;
-            cal.appendChild(legend);
-        }
+            const CACHE_PREFIX = 'yv_ai_en_v9:';
+            const GLOSSARY = {
+                'Yatlar': 'Yachts',
+                'Yat Kiralama': 'Yacht Charter',
+                'Tur Paketleri': 'Tour Packages',
+                'Rotalar': 'Routes',
+                'Kategoriler': 'Categories',
+                'Rezervasyonum': 'My Booking',
+                'Rezervasyon Yap': 'Book Now',
+                'Hemen Rezervasyon Yap': 'Book Now',
+                'Motor Yat': 'Motor Yacht',
+                'Motor Yatlar': 'Motor Yachts',
+                'Gulet': 'Gulet',
+                'Guletler': 'Gulets',
+                'Yelkenli Yat': 'Sailing Yacht',
+                'Yelkenli Yatlar': 'Sailing Yachts',
+                'Katamaran': 'Catamaran',
+                'Katamaranlar': 'Catamarans',
+                'Süperyat': 'Superyacht',
+                'Süperyatlar': 'Superyachts',
+                'Mürettebat Dahil': 'Crew Included',
+                'Klima': 'Air Conditioning',
+                'Jakuzi': 'Jacuzzi',
+                'Su Oyuncakları': 'Water Toys',
+                'Hisseli Ödeme': 'Split Payment',
+                'Tam Ödeme (İndirimli)': 'Full Payment (Discounted)',
+                'Onaylandı': 'Confirmed',
+                'Beklemede': 'Pending',
+                'İptal Edildi': 'Cancelled',
+                'İptal': 'Cancelled',
+                'En Popüler Plan': 'Most Popular Plan',
+                'En popüler plan': 'Most Popular Plan',
+                'Most popular plan': 'Most Popular Plan',
+                '7 Gün Öncesine Kadar Ücretsiz İptal': 'Free Cancellation Up to 7 Days Prior',
+                'Karşılaştır': 'Compare',
+                'Detayları İncele': 'View Details',
+                'Tekne:': 'Yacht:',
+                'Yat Detayı': 'Yacht Details',
+                'Paket Ücreti': 'Package Price',
+                'Tüm Tur Paketlerini Gör': 'View All Tour Packages',
+                'Bölge:': 'Region:',
+                'Yat:': 'Yacht:',
+                'İncele': 'Explore',
+                'Bu Kategorideki Yatları Gör': 'View Yachts in Category',
+                'Rezervasyon Sorgulama': 'Booking Lookup',
+                'Güvenliğiniz için rezervasyon detaylarını görüntülemek ve yönetmek adına PNR kodunuzu ve rezervasyon e-posta adresinizi birlikte girin.': 'For your security, please enter your PNR code and booking email address together to view and manage your reservation details.',
+                'PNR KODU *': 'PNR CODE *',
+                'E-POSTA ADRESİ *': 'EMAIL ADDRESS *',
+                'Sorgula': 'Search',
+                '1. Rezervasyon Detayları': '1. Booking Details',
+                'Seçilen Tarihler Müsait': 'Selected Dates Available',
+                'Müsait': 'Available',
+                '/ gün': '/ day',
+                '/ kişi': '/ guest',
+                'KİRALAMA / TUR TİPİ': 'CHARTER / TOUR TYPE',
+                'Özel Yat Kiralama': 'Private Yacht Charter',
+                'Tam gün ve çok günlük özel rota': 'Full-day and multi-day private route',
+                'Günlük VIP Koy Turu': 'Daily VIP Cove Tour',
+                '10:00 - 18:00 arası kaptanlı tur': 'Captained tour between 10:00 - 18:00',
+                'GİRİŞ *': 'CHECK-IN *',
+                'ÇIKIŞ *': 'CHECK-OUT *',
+                'GİRİŞ TARİHİ *': 'CHECK-IN DATE *',
+                'ÇIKIŞ TARİHİ *': 'CHECK-OUT DATE *',
+                'Tekne Günlük Fiyatı': 'Daily Yacht Rate',
+                'EKSTRA HİZMETLER (KİŞİ BAŞI)': 'EXTRA SERVICES (PER GUEST)',
+                'EKSTRA VIP HİZMETLER (KİŞİ BAŞI)': 'EXTRA VIP SERVICES (PER GUEST)',
+                'EXTRA SERVICES (KİŞİ BAŞI)': 'EXTRA SERVICES (PER GUEST)',
+                "Checkout'a aktarılır": 'Transferred to checkout',
+                'Seçili kişi sayısına göre hesaplanır': 'Calculated per selected guest',
+                'İNDİRİM KODU (ÖRN: YACHT10)': 'PROMO CODE (E.G. YACHT10)',
+                'KODU GİRİN': 'ENTER CODE',
+                'Uygula': 'Apply',
+                'Toplam Tutar': 'Total Amount',
+                'Şimdi Ödenecek': 'Pay Now',
+                'Şimdi Ödenecek (%50)': 'Pay Now (50%)',
+                'Marinada Kalan Bakiye': 'Remaining Balance at Marina',
+                'Rezervasyona Devam Et →': 'Continue to Booking →',
+                'Rezervasyona Devam Et': 'Continue to Booking',
+                'AD SOYAD *': 'FULL NAME *',
+                'E-POSTA *': 'EMAIL *',
+                'TELEFON *': 'PHONE *',
+                'Tur & Ekstralar': 'Tour & Extras',
+                'Ödeme Yöntemi': 'Payment Method',
+                'PNR & Voucher': 'PNR & Voucher',
+                'Sadece Grubunuza Özel Tekne': 'Private Yacht Exclusively for Your Group',
+                'Paylaşımsız kiralama; tüm tekne kapasitesi (12 kişi) size ayrılır.': 'Private charter; full yacht capacity (12 guests) is reserved for you.',
+                'Kaptan, Mürettebat & Rota Yakıtı Dahil': 'Captain, Crew & Route Fuel Included',
+                'Standart koy rotası yakıtı ve liman çıkış işlemleri fiyata dahildir.': 'Standard cove route fuel and port clearance fees are included.',
+                'Yemek & İkram Bilgisi': 'Dining & Refreshments Info',
+                'Hoş geldiniz ikramları dahildir; özel gurme menü ekstra olarak seçilebilir.': 'Welcome refreshments included; custom gourmet menu can be selected as an extra.',
+                'Olumsuz Hava Garantisi': 'Bad Weather Guarantee',
+                'Seyir engeli durumunda ücretsiz tarih değişikliği veya %100 iade sağlanır.': 'Free date change or 100% refund is provided in case of navigation restrictions.',
+                'Açıklama': 'Overview',
+                'Teknik Özellikler': 'Specifications',
+                'Dahil Olanlar': "What's Included",
+                'Müsaitlik': 'Availability',
+                'Konum & Buluşma': 'Location & Meeting',
+                'Örnek Günlük Tur Rotası & Saat Akışı': 'Sample Daily Tour Route & Schedule',
+                '10:00 — Göcek Marina Hareket': '10:00 — Departure from Göcek Marina',
+                'Hoş geldiniz ikramı ve rota bilgilendirmesi': 'Welcome refreshments and route briefing',
+                '11:30 — Yassıca Adaları': '11:30 — Yassıca Islands',
+                'Turkuaz sularda yüzme ve su oyuncakları molası': 'Swimming and water toys break in turquoise waters',
+                '14:00 — Bedri Rahmi Koyu': '14:00 — Bedri Rahmi Cove',
+                'Öğle yemeği servisi ve koy keşfi': 'Lunch service and cove exploration',
+                '17:30 — Göcek Marina Dönüş': '17:30 — Return to Göcek Marina',
+                'Gün batımı eşliğinde marinaya varış': 'Arrival at the marina at sunset'
+            };
 
-        function decorateCalendarDays(instance, role) {
-            const cal = instance && instance.calendarContainer;
-            if (!cal) return;
-            const ranges = getBookedRangesFromDom();
+            const SKIP_TAGS = new Set(['SCRIPT', 'STYLE', 'NOSCRIPT', 'TEXTAREA', 'CODE', 'PRE', 'INPUT', 'SELECT', 'OPTION']);
 
-            cal.querySelectorAll('.flatpickr-day').forEach(function (dayEl) {
-                dayEl.classList.remove('yv-booked-day');
-                if (!dayEl.dateObj) return;
-                if (dayEl.classList.contains('prevMonthDay') || dayEl.classList.contains('nextMonthDay')) return;
-                const ymd = formatLocalYMD(dayEl.dateObj);
-                if (isYmdBookedForRole(ymd, ranges, role)) {
-                    dayEl.classList.add('yv-booked-day');
+            function sanitizeTranslatedText(str) {
+                return String(str || '')
+                    .replace(/<[^>]+>/g, '')
+                    .replace(/\s+/g, ' ')
+                    .trim();
+            }
+
+            function shouldSkipNode(node) {
+                const el = node.nodeType === 1 ? node : node.parentElement;
+                if (!el) return true;
+                if (SKIP_TAGS.has(el.tagName)) return true;
+                if (el.closest('[data-no-auto-translate="true"]')) return true;
+                return false;
+            }
+
+            function normalizeText(raw) {
+                return sanitizeTranslatedText(raw);
+            }
+
+            function isTranslatableText(clean) {
+                if (!clean || clean.length < 2) return false;
+                if (/^[\d\s€$₺.,:/+-]+$/.test(clean)) return false;
+                if (/^[A-Z0-9_-]{4,}$/.test(clean)) return false;
+                return /[çğıöşüÇĞİÖŞÜa-zA-Z]{2,}/.test(clean);
+            }
+
+            function getCached(text) {
+                try {
+                    const val = localStorage.getItem(CACHE_PREFIX + text);
+                    return val ? sanitizeTranslatedText(val) : null;
+                } catch {
+                    return null;
                 }
+            }
+
+            function setCached(text, val) {
+                try {
+                    localStorage.setItem(CACHE_PREFIX + text, sanitizeTranslatedText(val));
+                } catch {
+                    // ignore storage quota errors
+                }
+            }
+
+            function applyGlossaryPrefix(clean) {
+                if (GLOSSARY[clean]) return GLOSSARY[clean];
+
+                const dailyPriceMatch = clean.match(/^Günlük\s+([€$₺]\s*[\d.,]+)$/i);
+                if (dailyPriceMatch) {
+                    return dailyPriceMatch[1] + ' per day';
+                }
+
+                const cabinMatch = clean.match(/^(\d+)\s*Kabin$/i);
+                if (cabinMatch) {
+                    const n = Number(cabinMatch[1]);
+                    return n + ' ' + (n === 1 ? 'Cabin' : 'Cabins');
+                }
+
+                const crewMatch = clean.match(/^(\d+)\s*Mürettebat$/i);
+                if (crewMatch) {
+                    const n = Number(crewMatch[1]);
+                    return n + ' ' + (n === 1 ? 'Crew Member' : 'Crew Members');
+                }
+
+                const photoCountMatch = clean.match(/^(\d+)\s*\/\s*(\d+)\s*Fotoğraf$/i);
+                if (photoCountMatch) {
+                    const count = Number(photoCountMatch[2]);
+                    return photoCountMatch[1] + ' / ' + photoCountMatch[2] + ' ' + (count === 1 ? 'Photo' : 'Photos');
+                }
+
+                const yachtCountMatch = clean.match(/^(\d+)\s*Yat$/i);
+                if (yachtCountMatch) {
+                    const n = Number(yachtCountMatch[1]);
+                    return n + ' ' + (n === 1 ? 'Yacht' : 'Yachts');
+                }
+
+                if (clean.startsWith('Yat Kirası (')) {
+                    return clean.replace('Yat Kirası (', 'Yacht Charter (').replace('gün)', 'days)');
+                }
+                if (clean.startsWith('Ekstralar (')) {
+                    return clean.replace('Ekstralar (', 'Extras (').replace('kişi)', 'guests)');
+                }
+                if (clean.startsWith('Ekstra Hizmetler (')) {
+                    return clean.replace('Ekstra Hizmetler (', 'Extra Services (').replace('kişi)', 'guests)');
+                }
+                const maxGuestsMatch = clean.match(/^MİSAFİR SAYISI \(MAKS\.\s*(\d+)\)$/i);
+                if (maxGuestsMatch) {
+                    return 'GUESTS (MAX. ' + maxGuestsMatch[1] + ')';
+                }
+                const maxMatch = clean.match(/^MİSAFİR \(MAKS\.\s*(\d+)\)$/i);
+                if (maxMatch) {
+                    return 'GUESTS (MAX. ' + maxMatch[1] + ')';
+                }
+                return null;
+            }
+
+            async function requestBatchTranslation(stringsToTranslate) {
+                const dict = {};
+                const uncached = [];
+
+                for (const s of stringsToTranslate) {
+                    const mapped = applyGlossaryPrefix(s);
+                    if (mapped) {
+                        dict[s] = sanitizeTranslatedText(mapped);
+                    } else {
+                        const c = getCached(s);
+                        if (c && c.toLowerCase() !== s.toLowerCase()) {
+                            dict[s] = c;
+                        } else {
+                            uncached.push(s);
+                        }
+                    }
+                }
+
+                for (let i = 0; i < uncached.length; i += 20) {
+                    const chunk = uncached.slice(i, i + 20);
+                    try {
+                        const resp = await fetch('/api/translate', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ texts: chunk })
+                        });
+                        if (resp.ok) {
+                            const data = await resp.json();
+                            const remoteMap = (data && data.translations) ? data.translations : {};
+                            for (const s of chunk) {
+                                const rawOut = (typeof remoteMap[s] === 'string') ? remoteMap[s] : s;
+                                const out = sanitizeTranslatedText(rawOut) || s;
+                                dict[s] = out;
+                                if (out && out.toLowerCase() !== s.toLowerCase()) {
+                                    setCached(s, out);
+                                }
+                            }
+                        }
+                    } catch {
+                        // keep original text on network error
+                    }
+                }
+
+                return dict;
+            }
+
+            const pendingTargets = [];
+            let timer = null;
+
+            function collectTarget(node) {
+                if (!node || shouldSkipNode(node)) return;
+
+                if (node.nodeType === 3) {
+                    const clean = normalizeText(node.nodeValue);
+                    if (isTranslatableText(clean)) {
+                        pendingTargets.push({ kind: 'text', node: node, raw: node.nodeValue, clean: clean });
+                    }
+                } else if (node.nodeType === 1) {
+                    if (node.placeholder && isTranslatableText(normalizeText(node.placeholder))) {
+                        const cleanPh = normalizeText(node.placeholder);
+                        pendingTargets.push({ kind: 'attr', attr: 'placeholder', node: node, raw: node.placeholder, clean: cleanPh });
+                    }
+                    if (node.title && isTranslatableText(normalizeText(node.title))) {
+                        const cleanTitle = normalizeText(node.title);
+                        pendingTargets.push({ kind: 'attr', attr: 'title', node: node, raw: node.title, clean: cleanTitle });
+                    }
+                }
+            }
+
+            function scanTree(root) {
+                if (!root || shouldSkipNode(root)) return;
+                const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT | NodeFilter.SHOW_ELEMENT);
+                let cur = walker.currentNode;
+                while (cur) {
+                    collectTarget(cur);
+                    cur = walker.nextNode();
+                }
+            }
+
+            async function runBatch() {
+                if (!pendingTargets.length) return;
+                const batch = pendingTargets.splice(0, pendingTargets.length);
+                const uniqueClean = [...new Set(batch.map(item => item.clean))];
+                const dict = await requestBatchTranslation(uniqueClean);
+
+                for (const item of batch) {
+                    const translatedClean = dict[item.clean];
+                    if (!translatedClean || translatedClean === item.clean) continue;
+
+                    if (item.kind === 'text' && item.node.isConnected) {
+                        const replaced = item.raw.replace(item.clean, translatedClean);
+                        if (replaced !== item.node.nodeValue) {
+                            item.node.nodeValue = replaced;
+                        }
+                    } else if (item.kind === 'attr' && item.node.isConnected) {
+                        const currentAttr = item.node.getAttribute(item.attr) || '';
+                        const replacedAttr = currentAttr.replace(item.clean, translatedClean);
+                        if (replacedAttr !== currentAttr) {
+                            item.node.setAttribute(item.attr, replacedAttr);
+                        }
+                    }
+                }
+            }
+
+            function scheduleBatch(delayMs) {
+                clearTimeout(timer);
+                timer = setTimeout(runBatch, typeof delayMs === 'number' ? delayMs : 60);
+            }
+
+            function triggerFullScan(delayMs) {
+                scanTree(document.body);
+                scheduleBatch(delayMs);
+            }
+
+            document.addEventListener('DOMContentLoaded', function () {
+                triggerFullScan(30);
+                setTimeout(function () {
+                    triggerFullScan(30);
+                }, 400);
+
+                document.addEventListener('click', function () {
+                    setTimeout(function () {
+                        triggerFullScan(30);
+                    }, 80);
+                });
+
+                const observer = new MutationObserver(function (mutations) {
+                    for (const m of mutations) {
+                        if (m.type === 'characterData') {
+                            collectTarget(m.target);
+                        } else if (m.type === 'childList') {
+                            m.addedNodes.forEach(function (n) {
+                                scanTree(n);
+                            });
+                        }
+                    }
+                    scheduleBatch(60);
+                });
+
+                observer.observe(document.body, {
+                    childList: true,
+                    characterData: true,
+                    subtree: true
+                });
             });
-        }
+        })();
 
         document.addEventListener('DOMContentLoaded', function () {
             const mobileBtn = document.getElementById('mobileMenuBtn');
@@ -246,45 +555,25 @@
             }
 
             if (typeof flatpickr !== 'undefined') {
-                const instances = [];
-
                 document.querySelectorAll('input[type="date"]:not([data-no-flatpickr="true"])').forEach(function (inp) {
                     const role = detectInputRole(inp);
 
-                    const fp = flatpickr(inp, {
-                        locale: 'tr',
+                    flatpickr(inp, {
+                        locale: YV_IS_EN ? 'default' : 'tr',
                         dateFormat: 'Y-m-d',
                         altInput: true,
                         altFormat: 'd M Y',
+                        minDate: inp.min || 'today',
                         disableMobile: true,
                         disable: [
                             function (dateObj) {
                                 return isYmdBookedForRole(formatLocalYMD(dateObj), getBookedRangesFromDom(), role);
                             }
                         ],
-                        onReady: function (_, __, instance) {
-                            attachLegendToCalendar(instance);
-                            decorateCalendarDays(instance, role);
-                        },
-                        onOpen: function (_, __, instance) {
-                            attachLegendToCalendar(instance);
-                            decorateCalendarDays(instance, role);
-                        },
-                        onMonthChange: function (_, __, instance) {
-                            decorateCalendarDays(instance, role);
-                        },
-                        onYearChange: function (_, __, instance) {
-                            decorateCalendarDays(instance, role);
-                        },
-                        onChange: function (_, __, instance) {
-                            instances.forEach(function (item) {
-                                decorateCalendarDays(item.fp, item.role);
-                            });
+                        onChange: function () {
                             inp.dispatchEvent(new Event('change', { bubbles: true }));
                         }
                     });
-
-                    instances.push({ fp: fp, role: role });
                 });
             }
 
@@ -396,15 +685,22 @@
                 <span class="hidden sm:inline"><i class="fa-solid fa-envelope text-amber-400 mr-1.5"></i><%= sCfg.email %></span>
             </div>
             <div class="flex items-center space-x-4">
-                <a href="/my-booking" class="hover:text-white transition"><i class="fa-solid fa-ticket text-sky-400 mr-1"></i>PNR Sorgula</a>
-                <a href="/admin" class="text-amber-400 hover:text-amber-300 font-semibold transition">Admin Panel →</a>
+                <a href="https://wa.me/<%= sCfg.whatsappNumber %>" target="_blank" rel="noopener noreferrer" class="hover:text-emerald-300 transition">
+                    <i class="fa-brands fa-whatsapp text-emerald-400 mr-1"></i><%= en ? 'WhatsApp Support' : 'WhatsApp Destek' %>
+                </a>
+                <a href="/my-booking" class="hover:text-white transition">
+                    <i class="fa-solid fa-ticket text-sky-400 mr-1"></i><%= en ? 'PNR Lookup' : 'PNR Sorgula' %>
+                </a>
+                <a href="/admin" class="text-teal-300 hover:text-white font-semibold transition">
+                    <i class="fa-solid fa-user-shield mr-1"></i>Admin
+                </a>
             </div>
         </div>
     </div>
 
     <header class="no-print bg-[#0B1F3A] text-white sticky top-0 z-40 shadow-lg">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 h-20 flex items-center justify-between">
-            <a href="/" class="flex items-center space-x-3">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 h-20 flex items-center justify-between gap-3">
+            <a href="/" class="flex items-center space-x-3 shrink-0">
                 <div class="w-10 h-10 rounded-xl bg-white/10 border border-white/15 flex items-center justify-center">
                     <i class="fa-solid fa-sailboat text-sky-400 text-lg"></i>
                 </div>
@@ -414,32 +710,47 @@
                 </div>
             </a>
 
-            <nav class="hidden md:flex items-center space-x-7 text-sm font-medium text-slate-200">
-                <a href="/yachts" class="hover:text-white transition">Yatlar</a>
-                <a href="/tur-paketleri" class="hover:text-white transition">Tur Paketleri</a>
-                <a href="/rotalar" class="hover:text-white transition">Rotalar</a>
-                <a href="/kategoriler" class="hover:text-white transition">Kategoriler</a>
-                <a href="/my-booking" class="hover:text-white transition">Rezervasyonum</a>
+            <nav class="hidden md:flex items-center space-x-6 text-sm font-medium text-slate-200">
+                <a href="/yachts" class="hover:text-white transition"><%= en ? 'Yachts' : 'Yatlar' %></a>
+                <a href="/tur-paketleri" class="hover:text-white transition"><%= en ? 'Tour Packages' : 'Tur Paketleri' %></a>
+                <a href="/rotalar" class="hover:text-white transition"><%= en ? 'Routes' : 'Rotalar' %></a>
+                <a href="/kategoriler" class="hover:text-white transition"><%= en ? 'Categories' : 'Kategoriler' %></a>
+                <a href="/my-booking" class="hover:text-white transition"><%= en ? 'My Booking' : 'Rezervasyonum' %></a>
             </nav>
 
-            <div class="hidden md:flex items-center space-x-3">
-                <a href="/yachts" class="bg-white text-[#0B1F3A] hover:bg-sky-50 px-5 py-2.5 rounded-lg text-sm font-bold transition shadow">
-                    Hemen Rezervasyon Yap
+            <div class="hidden md:flex items-center space-x-2.5 shrink-0">
+                <div class="inline-flex items-center bg-white/10 p-0.5 rounded-lg border border-white/15 text-[11px] font-extrabold">
+                    <a href="/lang/tr" class="px-2 py-1 rounded-md transition <%= !en ? activeTabClass : idleTabClass %>">TR</a>
+                    <a href="/lang/en" class="px-2 py-1 rounded-md transition <%= en ? activeTabClass : idleTabClass %>">ENG</a>
+                </div>
+                <a href="/admin" class="px-3.5 py-2.5 rounded-lg bg-white/10 hover:bg-white/20 border border-white/15 text-xs font-bold text-white transition">
+                    <i class="fa-solid fa-lock mr-1.5 text-teal-300"></i>Admin
+                </a>
+                <a href="/yachts" class="bg-white text-[#0B1F3A] hover:bg-sky-50 px-4 py-2.5 rounded-lg text-sm font-bold transition shadow">
+                    <%= en ? 'Book Now' : 'Hemen Rezervasyon Yap' %>
                 </a>
             </div>
 
-            <button id="mobileMenuBtn" type="button" class="md:hidden w-10 h-10 rounded-lg bg-white/10 flex items-center justify-center text-white">
-                <i class="fa-solid fa-bars text-lg"></i>
-            </button>
+            <div class="flex md:hidden items-center space-x-2">
+                <div class="inline-flex items-center bg-white/10 p-0.5 rounded-lg border border-white/15 text-[11px] font-extrabold">
+                    <a href="/lang/tr" class="px-2 py-1 rounded-md <%= !en ? activeTabClass : idleTabClass %>">TR</a>
+                    <a href="/lang/en" class="px-2 py-1 rounded-md <%= en ? activeTabClass : idleTabClass %>">ENG</a>
+                </div>
+                <button id="mobileMenuBtn" type="button" class="w-10 h-10 rounded-lg bg-white/10 flex items-center justify-center text-white">
+                    <i class="fa-solid fa-bars text-lg"></i>
+                </button>
+            </div>
         </div>
 
         <div id="mobileMenu" class="hidden md:hidden bg-[#08172E] border-t border-white/10 px-4 py-4 space-y-3 text-sm">
-            <a href="/yachts" class="block py-1.5 text-slate-200 hover:text-white">Yatlar</a>
-            <a href="/tur-paketleri" class="block py-1.5 text-slate-200 hover:text-white">Tur Paketleri</a>
-            <a href="/rotalar" class="block py-1.5 text-slate-200 hover:text-white">Rotalar</a>
-            <a href="/kategoriler" class="block py-1.5 text-slate-200 hover:text-white">Kategoriler</a>
-            <a href="/my-booking" class="block py-1.5 text-slate-200 hover:text-white">Rezervasyonum (PNR)</a>
-            <a href="/admin" class="block py-1.5 text-amber-400 font-semibold">Admin Panel →</a>
-            <a href="/yachts" class="block text-center bg-white text-[#0B1F3A] py-2.5 rounded-lg font-bold">Hemen Rezervasyon Yap</a>
+            <a href="/yachts" class="block py-1.5 text-slate-200 hover:text-white"><%= en ? 'Yachts' : 'Yatlar' %></a>
+            <a href="/tur-paketleri" class="block py-1.5 text-slate-200 hover:text-white"><%= en ? 'Tour Packages' : 'Tur Paketleri' %></a>
+            <a href="/rotalar" class="block py-1.5 text-slate-200 hover:text-white"><%= en ? 'Routes' : 'Rotalar' %></a>
+            <a href="/kategoriler" class="block py-1.5 text-slate-200 hover:text-white"><%= en ? 'Categories' : 'Kategoriler' %></a>
+            <a href="/my-booking" class="block py-1.5 text-slate-200 hover:text-white"><%= en ? 'My Booking (PNR)' : 'Rezervasyonum (PNR)' %></a>
+            <a href="/admin" class="block py-1.5 text-teal-300 hover:text-white font-semibold"><i class="fa-solid fa-user-shield mr-1.5"></i>Admin Panel</a>
+            <a href="/yachts" class="block text-center bg-white text-[#0B1F3A] py-2.5 rounded-lg font-bold">
+                <%= en ? 'Book Now' : 'Hemen Rezervasyon Yap' %>
+            </a>
         </div>
     </header>
