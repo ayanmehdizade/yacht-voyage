@@ -1,7 +1,8 @@
 <%- include('../partials/header') %>
 
 <% const listIsEn = (typeof isEn !== 'undefined') ? Boolean(isEn) : (typeof lang !== 'undefined' && lang === 'en'); %>
-<% const todayIso = new Date().toISOString().slice(0, 10); %>
+<% const nowLocal = new Date(); %>
+<% const todayIso = nowLocal.getFullYear() + '-' + String(nowLocal.getMonth() + 1).padStart(2, '0') + '-' + String(nowLocal.getDate()).padStart(2, '0'); %>
 <% const planCfg = (typeof paymentPlanSettings !== 'undefined' && paymentPlanSettings) ? paymentPlanSettings : {
     installmentPercent: 50,
     installmentInterestPercent: 0,
@@ -45,21 +46,25 @@
     </div>
 </div>
 
-<main class="max-w-7xl mx-auto px-4 sm:px-6 py-8 space-y-8">
-    <!-- HIZLI FİLTRE CHIP'LERİ -->
+<main id="listingRoot"
+      data-has-dates="<%= hasDateRange ? '1' : '0' %>"
+      data-check-in="<%= hasDateRange ? filters.checkIn : '' %>"
+      data-check-out="<%= hasDateRange ? filters.checkOut : '' %>"
+      class="max-w-7xl mx-auto px-4 sm:px-6 py-8 space-y-8">
+
     <div class="flex flex-wrap items-center gap-2 text-xs">
         <span class="text-slate-400 font-bold uppercase mr-1"><%= listIsEn ? 'Quick Filter:' : 'Hızlı Filtre:' %></span>
-        <a href="/yachts" class="px-3.5 py-2 rounded-full font-bold border transition <%= filters.category === 'all' && filters.features.length === 0 && filters.location === 'all' ? 'bg-[#0B1F3A] text-white border-[#0B1F3A]' : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-100' %>"><%= listIsEn ? 'All' : 'Tümü' %></a>
+        <% const isAllActive = (!filters.category || filters.category === 'all') && (!filters.features || filters.features.length === 0) && (!filters.location || filters.location === 'all') && !filters.guests; %>
+        <a href="/yachts" class="px-3.5 py-2 rounded-full font-bold border transition <%= isAllActive ? 'bg-[#0B1F3A] text-white border-[#0B1F3A]' : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-100' %>"><%= listIsEn ? 'All' : 'Tümü' %></a>
         <a href="/yachts?location=Marmaris" class="px-3.5 py-2 rounded-full font-bold border transition <%= filters.location === 'Marmaris' ? 'bg-[#0B1F3A] text-white border-[#0B1F3A]' : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-100' %>"><%= listIsEn ? 'Marmaris Yachts' : 'Marmaris Yatları' %></a>
-        <a href="/yachts?feature=Jakuzi" class="px-3.5 py-2 rounded-full font-bold border transition <%= filters.features.includes('Jakuzi') ? 'bg-[#0B1F3A] text-white border-[#0B1F3A]' : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-100' %>"><%= listIsEn ? 'With Jacuzzi' : 'Jakuzili Yatlar' %></a>
-        <a href="/yachts?feature=Su+Oyuncakları" class="px-3.5 py-2 rounded-full font-bold border transition <%= filters.features.includes('Su Oyuncakları') ? 'bg-[#0B1F3A] text-white border-[#0B1F3A]' : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-100' %>"><%= listIsEn ? 'Water Toys' : 'Su Oyuncakları' %></a>
+        <a href="/yachts?feature=Jakuzi" class="px-3.5 py-2 rounded-full font-bold border transition <%= (filters.features || []).includes('Jakuzi') ? 'bg-[#0B1F3A] text-white border-[#0B1F3A]' : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-100' %>"><%= listIsEn ? 'With Jacuzzi' : 'Jakuzili Yatlar' %></a>
+        <a href="/yachts?feature=Su+Oyuncakları" class="px-3.5 py-2 rounded-full font-bold border transition <%= (filters.features || []).includes('Su Oyuncakları') ? 'bg-[#0B1F3A] text-white border-[#0B1F3A]' : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-100' %>"><%= listIsEn ? 'Water Toys' : 'Su Oyuncakları' %></a>
         <a href="/yachts?guests=7-12" class="px-3.5 py-2 rounded-full font-bold border transition <%= filters.guests === '7-12' ? 'bg-[#0B1F3A] text-white border-[#0B1F3A]' : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-100' %>"><%= listIsEn ? '7-12 Guests' : '7-12 Misafir' %></a>
         <button type="button" id="onlyFavsBtn" class="px-3.5 py-2 rounded-full font-bold border bg-white text-rose-600 border-rose-200 hover:bg-rose-50 transition">
             <i class="fa-solid fa-heart mr-1"></i><%= listIsEn ? 'Favorites' : 'Favorilerim' %> (<span id="favCountBadge">0</span>)
         </button>
     </div>
 
-    <!-- KARŞILAŞTIRMA ÇUBUĞU -->
     <div id="compareBar" class="hidden bg-white border-2 border-[#0B1F3A] rounded-2xl p-5 shadow-lg space-y-4">
         <div class="flex justify-between items-center">
             <div class="font-extrabold text-sm text-[#0B1F3A]">
@@ -71,7 +76,6 @@
     </div>
 
     <div class="grid grid-cols-1 lg:grid-cols-4 gap-8">
-        <!-- SOL FİLTRE PANELİ -->
         <aside class="bg-white p-6 rounded-2xl border border-slate-200 h-fit space-y-6 shadow-sm">
             <div class="flex justify-between items-center pb-4 border-b border-slate-100">
                 <h2 class="font-bold text-slate-900 text-base"><%= listIsEn ? 'Filter Results' : 'Sonuçları Filtrele' %></h2>
@@ -104,7 +108,6 @@
                     </div>
                 </div>
 
-                <!-- KALKIŞ LİMANI ÖZEL DROPDOWN -->
                 <div class="yv-dropdown relative">
                     <label class="block text-xs font-bold text-slate-700 uppercase mb-2"><%= listIsEn ? 'Departure Port' : 'Kalkış Limanı' %></label>
                     <input type="hidden" name="location" value="<%= activeLocObj.val %>">
@@ -146,7 +149,6 @@
                     </div>
                 </div>
 
-                <!-- MİSAFİR KAPASİTESİ ÖZEL DROPDOWN -->
                 <div class="yv-dropdown relative">
                     <label class="block text-xs font-bold text-slate-700 uppercase mb-2"><%= listIsEn ? 'Guest Capacity' : 'Misafir Kapasitesi' %></label>
                     <input type="hidden" name="guests" value="<%= activeGuestObj.val %>">
@@ -168,9 +170,9 @@
                 <div>
                     <div class="flex justify-between text-xs font-bold text-slate-700 uppercase mb-2">
                         <span><%= listIsEn ? 'Max. Daily Rate' : 'Maks. Günlük Fiyat' %></span>
-                        <span id="priceLabel" class="text-sky-700">€<%= Number(filters.maxPrice).toLocaleString() %></span>
+                        <span id="priceLabel" class="text-sky-700">€<%= Number(filters.maxPrice || 10000).toLocaleString() %></span>
                     </div>
-                    <input type="range" id="maxPriceRange" name="maxPrice" min="1500" max="10000" step="500" value="<%= filters.maxPrice %>" class="w-full accent-[#0B1F3A]">
+                    <input type="range" id="maxPriceRange" name="maxPrice" min="1500" max="10000" step="500" value="<%= filters.maxPrice || 10000 %>" class="w-full accent-[#0B1F3A]">
                 </div>
 
                 <div>
@@ -184,7 +186,7 @@
                         ]; %>
                         <% for (let i = 0; i < featList.length; i++) { %>
                             <label class="flex items-center space-x-2 cursor-pointer">
-                                <input type="checkbox" name="feature" value="<%= featList[i].val %>" <%= filters.features.includes(featList[i].val) ? 'checked' : '' %> class="rounded text-[#0B1F3A]">
+                                <input type="checkbox" name="feature" value="<%= featList[i].val %>" <%= (filters.features || []).includes(featList[i].val) ? 'checked' : '' %> class="rounded text-[#0B1F3A]">
                                 <span><%= featList[i].label %></span>
                             </label>
                         <% } %>
@@ -197,7 +199,6 @@
             </form>
         </aside>
 
-        <!-- SAĞ YAT LİSTESİ -->
         <div class="lg:col-span-3 space-y-6">
             <% const sortOptions = [
                 { val: 'recommended', label: listIsEn ? 'Recommended' : 'Önerilen' },
@@ -225,6 +226,9 @@
                         <input type="hidden" name="checkIn" value="<%= filters.checkIn %>">
                         <input type="hidden" name="checkOut" value="<%= filters.checkOut %>">
                     <% } %>
+                    <% (filters.features || []).forEach(function(feat) { %>
+                        <input type="hidden" name="feature" value="<%= feat %>">
+                    <% }) %>
                     <span class="text-slate-400 font-semibold"><%= listIsEn ? 'Sort By:' : 'Sırala:' %></span>
                     <div id="sortDropdown" class="yv-dropdown relative">
                         <input type="hidden" id="sortHiddenInput" name="sort" value="<%= activeSortObj.val %>">
@@ -287,7 +291,7 @@
             <% for (let idx = 0; idx < yachts.length; idx++) { %>
                 <% const yacht = yachts[idx]; %>
                 <% const cardImg = (yacht.images && yacht.images[0] && !yacht.images[0].includes('1569263979104')) ? yacht.images[0] : workingImgs[idx % workingImgs.length]; %>
-                <% const rawStay = yacht.price * activeDays; %>
+                <% const rawStay = Number(yacht.price || 0) * activeDays; %>
                 <% const stayTotal = (hasDateRange && activeDays >= 5) ? Math.round(rawStay * 0.95) : rawStay; %>
                 <% const yCatLabel = listIsEn ? (catSingularEn[yacht.category] || catSingularEn[yacht.categoryEn] || yacht.categoryEn || yacht.category || yacht.categoryTr) : (yacht.categoryTr || yacht.category); %>
                 <% const yBadgeLabel = listIsEn ? (yacht.badgeEn || badgeTrToEn[yacht.badge] || yacht.badge) : yacht.badge; %>
@@ -324,7 +328,7 @@
                                 <div>
                                     <div class="flex items-center space-x-2">
                                         <h3 class="text-xl font-extrabold text-slate-900"><%= yacht.name %></h3>
-                                        <span class="bg-[#0B1F3A] text-white text-xs font-extrabold px-2 py-0.5 rounded-md"><%= yacht.rating.toFixed(1) %></span>
+                                        <span class="bg-[#0B1F3A] text-white text-xs font-extrabold px-2 py-0.5 rounded-md"><%= Number(yacht.rating || 5).toFixed(1) %></span>
                                     </div>
                                     <p class="text-xs text-slate-500 mt-0.5">
                                         <%= yCatLabel %> • <%= yacht.length %> • <%= yacht.year %> • <%= yacht.reviews %> <%= listIsEn ? 'verified reviews' : 'doğrulanmış yorum' %>
@@ -333,7 +337,7 @@
                                 <div class="text-right shrink-0">
                                     <% if (hasDateRange) { %>
                                         <span class="text-[11px] text-slate-400 block">
-                                            <%= listIsEn ? ('€' + yacht.price.toLocaleString() + ' per day') : ('Günlük €' + yacht.price.toLocaleString()) %>
+                                            <%= listIsEn ? ('€' + Number(yacht.price || 0).toLocaleString() + ' per day') : ('Günlük €' + Number(yacht.price || 0).toLocaleString()) %>
                                         </span>
                                         <span class="text-2xl font-extrabold text-[#0B1F3A]">€<%= stayTotal.toLocaleString() %></span>
                                         <span class="text-[11px] text-emerald-600 font-bold block">
@@ -341,7 +345,7 @@
                                         </span>
                                     <% } else { %>
                                         <span class="text-[11px] text-slate-400 block"><%= listIsEn ? 'Daily Charter' : 'Günlük Kiralama' %></span>
-                                        <span class="text-2xl font-extrabold text-[#0B1F3A]">€<%= yacht.price.toLocaleString() %></span>
+                                        <span class="text-2xl font-extrabold text-[#0B1F3A]">€<%= Number(yacht.price || 0).toLocaleString() %></span>
                                         <span class="text-[11px] text-slate-500 font-semibold block"><%= listIsEn ? '/ day (crew included)' : '/ gün (mürettebat dahil)' %></span>
                                     <% } %>
                                 </div>
@@ -355,13 +359,13 @@
                             </div>
 
                             <div class="flex flex-wrap gap-1.5 mt-3">
-                                <% for (let fIdx = 0; fIdx < yacht.features.length; fIdx++) { %>
+                                <% for (let fIdx = 0; fIdx < (yacht.features || []).length; fIdx++) { %>
                                     <% const rawFeat = yacht.features[fIdx]; %>
                                     <% const featLabel = listIsEn ? (featTrToEn[rawFeat] || rawFeat) : rawFeat; %>
                                     <span class="bg-slate-100 text-slate-600 text-[11px] font-medium px-2.5 py-1 rounded-md"><%= featLabel %></span>
                                 <% } %>
                                 <span class="bg-emerald-50 text-emerald-700 text-[11px] font-semibold px-2.5 py-1 rounded-md">
-                                    <%= listIsEn ? '✓ Free cancellation.' : '✓ Ücretsiz İptal' %>
+                                    <%= listIsEn ? '✓ Free cancellation' : '✓ Ücretsiz İptal' %>
                                 </span>
                                 <span class="bg-sky-50 text-sky-700 text-[11px] font-semibold px-2.5 py-1 rounded-md">
                                     <%= listIsEn ? ('✓ ' + planCfg.installmentPercent + '% Down Payment') : ('✓ %' + planCfg.installmentPercent + ' Ön Ödeme') %>
@@ -376,10 +380,10 @@
                             </label>
 
                             <div class="flex items-center space-x-3">
-                                <a href="/yachts/<%= yacht.id %><%= dateQuery ? ('?' + dateQuery.slice(1)) : '' %>" class="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-xl text-xs font-bold transition">
+                                <a href="/yachts/<%= encodeURIComponent(yacht.id) %><%= dateQuery ? ('?' + dateQuery.slice(1)) : '' %>" class="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-xl text-xs font-bold transition">
                                     <%= listIsEn ? 'View Details' : 'Detayları İncele' %>
                                 </a>
-                                <a href="/checkout?yachtId=<%= yacht.id %><%= dateQuery %>" class="px-5 py-2.5 bg-[#0B1F3A] hover:bg-sky-900 text-white rounded-xl text-xs font-bold transition">
+                                <a href="/checkout?yachtId=<%= encodeURIComponent(yacht.id) %><%= dateQuery %>" class="px-5 py-2.5 bg-[#0B1F3A] hover:bg-sky-900 text-white rounded-xl text-xs font-bold transition">
                                     <%= listIsEn ? 'Instant Booking' : 'Hemen Kirala →' %>
                                 </a>
                             </div>
@@ -390,7 +394,6 @@
         </div>
     </div>
 
-    <!-- SON İNCELENEN YATLAR ŞERİDİ -->
     <section id="recentSection" class="hidden pt-6 border-t border-slate-200 space-y-4">
         <h2 class="text-lg font-extrabold text-[#0B1F3A]"><%= listIsEn ? 'Recently Viewed Yachts' : 'Son İncelediğiniz Yatlar' %></h2>
         <div id="recentGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4"></div>
@@ -399,15 +402,30 @@
 
 <script>
     const isEnList = document.documentElement.dataset.yvEn === '1';
+    const listRoot = document.getElementById('listingRoot');
+    const activeDateQuery = (listRoot && listRoot.dataset.hasDates === '1' && listRoot.dataset.checkIn && listRoot.dataset.checkOut)
+        ? ('&checkIn=' + encodeURIComponent(listRoot.dataset.checkIn) + '&checkOut=' + encodeURIComponent(listRoot.dataset.checkOut))
+        : '';
+
+    function toYMD(dateObj) {
+        const y = dateObj.getFullYear();
+        const m = String(dateObj.getMonth() + 1).padStart(2, '0');
+        const d = String(dateObj.getDate()).padStart(2, '0');
+        return `${y}-${m}-${d}`;
+    }
+
+    function addDaysYMD(ymdStr, deltaDays) {
+        const parts = ymdStr.split('-').map(Number);
+        const dt = new Date(parts[0], (parts[1] || 1) - 1, (parts[2] || 1) + deltaDays);
+        return toYMD(dt);
+    }
+
     const listInInput = document.getElementById('listInDate');
     const listOutInput = document.getElementById('listOutDate');
     if (listInInput && listOutInput) {
         listInInput.addEventListener('change', function() {
-            if (this.value) {
-                const d = new Date(this.value + 'T00:00:00');
-                d.setDate(d.getDate() + 1);
-                const minOut = d.toISOString().slice(0, 10);
-                listOutInput.min = minOut;
+            if (this.value && /^\d{4}-\d{2}-\d{2}$/.test(this.value)) {
+                listOutInput.min = addDaysYMD(this.value, 1);
                 if (listOutInput.value && listOutInput.value <= this.value) {
                     listOutInput.value = '';
                 }
@@ -435,7 +453,12 @@
 
     document.querySelectorAll('.yacht-img').forEach(function(img) {
         img.addEventListener('error', function() {
-            if (typeof fallbackYachtImg === 'function') fallbackYachtImg(this);
+            if (typeof fallbackYachtImg === 'function') {
+                fallbackYachtImg(this);
+            } else if (!this.dataset.fallbackApplied) {
+                this.dataset.fallbackApplied = '1';
+                this.src = 'https://images.unsplash.com/photo-1567899378494-47b22a2ae96a?auto=format&fit=crop&w=1000&q=80';
+            }
         });
     });
 
@@ -530,7 +553,7 @@
                 '<div class="text-slate-600">' + portLabel + '<strong>' + y.location + '</strong> • ' + typeLabel + '<strong>' + y.categoryTr + '</strong></div>' +
                 '<div class="text-slate-600">' + capLabel + '<strong>' + y.guests + ' ' + guestWord + '</strong> • ' + cabinWord + ': <strong>' + y.cabins + '</strong> • ' + crewWord + '<strong>' + y.crew + '</strong></div>' +
                 '<div class="text-slate-600">' + lenLabel + '<strong>' + y.length + '</strong> • ' + spdLabel + '<strong>' + y.speed + '</strong></div>' +
-                '<a href="/checkout?yachtId=' + y.id + '" class="inline-block mt-2 bg-[#0B1F3A] text-white px-3.5 py-1.5 rounded-lg font-bold">' + ctaLabel + '</a>' +
+                '<a href="/checkout?yachtId=' + encodeURIComponent(y.id) + activeDateQuery + '" class="inline-block mt-2 bg-[#0B1F3A] text-white px-3.5 py-1.5 rounded-lg font-bold">' + ctaLabel + '</a>' +
             '</div>';
         }).join('');
     }
@@ -565,8 +588,9 @@
     if (recentItems.length > 0) {
         document.getElementById('recentSection').classList.remove('hidden');
         const rateSuffix = isEnList ? '/day' : '/gün';
+        const recentQuerySuffix = activeDateQuery ? ('?' + activeDateQuery.slice(1)) : '';
         document.getElementById('recentGrid').innerHTML = recentItems.map(function(y) {
-            return '<a href="/yachts/' + y.id + '" class="bg-white p-3 rounded-xl border border-slate-200 flex items-center space-x-3 hover:shadow transition">' +
+            return '<a href="/yachts/' + encodeURIComponent(y.id) + recentQuerySuffix + '" class="bg-white p-3 rounded-xl border border-slate-200 flex items-center space-x-3 hover:shadow transition">' +
                 '<img src="' + y.img + '" class="w-16 h-16 rounded-lg object-cover shrink-0">' +
                 '<div>' +
                     '<div class="font-bold text-xs text-slate-900">' + y.name + '</div>' +

@@ -52,7 +52,8 @@
     <% } else { %>
         <div class="grid grid-cols-1 md:grid-cols-3 gap-7">
             <% dynTours.forEach((pkg, idx) => { %>
-                <% const linkedYacht = yachtList.find(y => Number(y.id) === Number(pkg.yachtId)) || yachtList[0]; %>
+                <% const linkedYacht = yachtList.find(y => Number(y.id) === Number(pkg.yachtId)) || yachtList[0] || null; %>
+                <% const targetYachtId = linkedYacht ? linkedYacht.id : (Number(pkg.yachtId) || 1); %>
                 <% const pkgImg = pkg.img || fallbackImgs[idx % fallbackImgs.length]; %>
                 <% const pkgTitle = (tpIsEn && pkg.titleEn) ? pkg.titleEn : pkg.title; %>
                 <% const pkgRegion = (tpIsEn && pkg.regionEn) ? pkg.regionEn : pkg.region; %>
@@ -60,7 +61,7 @@
                     ? (pkg.summaryEn || summaryTrToEn[pkg.summary] || pkg.summary)
                     : pkg.summary; %>
                 <% const pkgBadge = (tpIsEn && pkg.badgeEn) ? pkg.badgeEn : (pkg.badge || (tpIsEn ? 'TOUR PACKAGE' : 'TUR PAKETİ')); %>
-                <% const daysNum = Number(pkg.durationDays || 1); %>
+                <% const daysNum = Math.max(1, Number(pkg.durationDays || 1)); %>
                 <% const pkgDuration = (tpIsEn && pkg.durationLabelEn)
                     ? pkg.durationLabelEn
                     : (pkg.durationLabel || (tpIsEn ? (daysNum + (daysNum === 1 ? ' Day' : ' Days')) : (daysNum + ' Gün'))); %>
@@ -130,11 +131,11 @@
                         </div>
                         <div class="flex items-center gap-2">
                             <% if (linkedYacht) { %>
-                                <a href="/yachts/<%= linkedYacht.id %>" class="text-xs font-bold text-slate-700 hover:text-[#0B1F3A] px-3 py-2.5 rounded-xl border border-slate-200 bg-white transition">
+                                <a href="/yachts/<%= encodeURIComponent(linkedYacht.id) %>" class="text-xs font-bold text-slate-700 hover:text-[#0B1F3A] px-3 py-2.5 rounded-xl border border-slate-200 bg-white transition">
                                     <%= tpIsEn ? 'Yacht Details' : 'Yat Detayı' %>
                                 </a>
                             <% } %>
-                            <a href="/checkout?yachtId=<%= linkedYacht ? linkedYacht.id : 1 %>&tourId=<%= pkg.id %>" class="bg-[#0B1F3A] hover:bg-sky-900 text-white text-xs font-bold px-4 py-2.5 rounded-xl transition">
+                            <a href="/checkout?yachtId=<%= encodeURIComponent(targetYachtId) %>&tourId=<%= encodeURIComponent(pkg.id) %>&packageDays=<%= encodeURIComponent(daysNum) %>" class="bg-[#0B1F3A] hover:bg-sky-900 text-white text-xs font-bold px-4 py-2.5 rounded-xl transition">
                                 <%= tpIsEn ? 'Select Package →' : 'Paketi Seç →' %>
                             </a>
                         </div>

@@ -30,14 +30,14 @@ const fDeps = (typeof departurePoints !== 'undefined' && Array.isArray(departure
     { name: 'Bodrum', desc: 'Bodrum' }
 ];
 const presetRouteMsg = fEn
-    ? 'Hello, I would like information about Gocek and Marmaris routes.'
-    : 'Merhaba, Göcek / Marmaris rotaları hakkında bilgi almak istiyorum.';
+    ? 'Hello, I would like information about Marmaris, Gocek, Fethiye and Bodrum routes.'
+    : 'Merhaba, Marmaris, Göcek, Fethiye ve Bodrum rotaları hakkında bilgi almak istiyorum.';
 const presetToursMsg = fEn
-    ? 'Hello, could I get details on daily tour packages and pricing?'
-    : 'Merhaba, günlük tur paketleri ve fiyatlar hakkında bilgi alabilir miyim?';
+    ? 'Hello, could I get details on daily tour packages, times, meeting points and pricing?'
+    : 'Merhaba, günlük tur paketleri, saatler, görüş yerleri ve fiyatlar hakkında bilgi alabilir miyim?';
 const presetServicesMsg = fEn
-    ? 'Hello, I would like to ask about private chef and VIP transfer options.'
-    : 'Merhaba, özel şef ve VIP transfer seçeneklerini sormak istiyorum.';
+    ? 'Hello, I would like to ask about what is included and special services.'
+    : 'Merhaba, fiyata dahil olanlar ve özel hizmet seçeneklerini sormak istiyorum.';
 const defaultWaUrl = 'https://wa.me/' + fCfg.whatsappNumber + '?text=' + encodeURIComponent(
     fEn ? 'Hello, I would like information about yacht charter.' : 'Merhaba, yat kiralama hakkında bilgi almak istiyorum.'
 );
@@ -125,7 +125,7 @@ const defaultWaUrl = 'https://wa.me/' + fCfg.whatsappNumber + '?text=' + encodeU
             </button>
         </div>
         <div class="p-4 space-y-3 text-xs">
-            <p class="text-slate-600 bg-slate-50 p-3 rounded-2xl leading-relaxed">
+            <p id="conciergePreviewText" class="text-slate-600 bg-slate-50 p-3 rounded-2xl leading-relaxed">
                 <%= fCfg.conciergeWelcome %>
             </p>
             <div class="flex flex-wrap gap-1.5">
@@ -161,6 +161,7 @@ const defaultWaUrl = 'https://wa.me/' + fCfg.whatsappNumber + '?text=' + encodeU
         const closeBtn = document.getElementById('conciergeCloseBtn');
         const box = document.getElementById('conciergeBox');
         const waLink = document.getElementById('conciergeWaLink');
+        const previewEl = document.getElementById('conciergePreviewText');
 
         if (toggleBtn && box) {
             toggleBtn.addEventListener('click', function (e) {
@@ -181,6 +182,9 @@ const defaultWaUrl = 'https://wa.me/' + fCfg.whatsappNumber + '?text=' + encodeU
                 const msg = this.dataset.waMsg || 'Merhaba, bilgi almak istiyorum.';
                 if (waLink) {
                     waLink.href = 'https://wa.me/' + waNum + '?text=' + encodeURIComponent(msg);
+                }
+                if (previewEl) {
+                    previewEl.textContent = msg;
                 }
                 document.querySelectorAll('.wa-preset').forEach(function (b) {
                     b.classList.remove('bg-teal-600', 'text-white');

@@ -1,5 +1,6 @@
 <%- include('../partials/header') %>
 
+<% const homeIsEn = (typeof isEn !== 'undefined') ? Boolean(isEn) : (typeof lang !== 'undefined' && lang === 'en'); %>
 <% const hCfg = (typeof siteSettings !== 'undefined' && siteSettings) ? siteSettings : {
     brandName: 'YachtVoyage',
     heroBadge: 'Göcek • Marmaris • Fethiye • Bodrum',
@@ -7,6 +8,15 @@
     heroSubtitle: 'Lisanslı kaptanlar, özel yat filosu, anlık müsaitlik takvimi ve şeffaf ödeme planlarıyla mavi yolculuğunu dakikalar içinde planla.',
     heroImage: 'https://images.unsplash.com/photo-1569263979104-865ab9cd8d5e?auto=format&fit=crop&w=1920&q=80'
 }; %>
+<% const heroBadgeText = (homeIsEn && hCfg.heroBadgeEn) ? hCfg.heroBadgeEn : (hCfg.heroBadge || 'Göcek • Marmaris • Fethiye • Bodrum'); %>
+<% const heroTitleText = homeIsEn
+    ? (hCfg.heroTitleEn || 'Explore the Aegean & Mediterranean coves on your own route')
+    : (hCfg.heroTitle || 'Ege ve Akdeniz koylarını kendi rotanda keşfet'); %>
+<% const heroSubText = homeIsEn
+    ? (hCfg.heroSubtitleEn || 'Plan your blue cruise in minutes with licensed captains, a private yacht fleet, live availability calendar, and transparent payment plans.')
+    : (hCfg.heroSubtitle || 'Lisanslı kaptanlar, özel yat filosu, anlık müsaitlik takvimi ve şeffaf ödeme planlarıyla mavi yolculuğunu dakikalar içinde planla.'); %>
+<% const heroImgUrl = hCfg.heroImage || 'https://images.unsplash.com/photo-1569263979104-865ab9cd8d5e?auto=format&fit=crop&w=1920&q=80'; %>
+
 <% const homeYachts = (typeof yachts !== 'undefined' && Array.isArray(yachts)) ? yachts : []; %>
 <% const homeCats = (typeof categories !== 'undefined' && Array.isArray(categories)) ? categories : []; %>
 <% const homeTours = (typeof tours !== 'undefined' && Array.isArray(tours)) ? tours : []; %>
@@ -16,31 +26,46 @@
     { name: 'Fethiye' },
     { name: 'Bodrum' }
 ]; %>
+<% const nowLocal = new Date(); %>
+<% const todayLocalYmd = nowLocal.getFullYear() + '-' + String(nowLocal.getMonth() + 1).padStart(2, '0') + '-' + String(nowLocal.getDate()).padStart(2, '0'); %>
 
-<!-- HERO & HIZLI ARAMA -->
+<% const catSingularEn = {
+    'Motor Yachts': 'Motor Yacht',
+    'Gulets': 'Gulet',
+    'Sailing Yachts': 'Sailing Yacht',
+    'Catamarans': 'Catamaran',
+    'Superyachts': 'Superyacht'
+}; %>
+<% const summaryTrToEn = {
+    'Yassıca Adaları, Bedri Rahmi Koyu ve Tersane Adası duraklarıyla tam gün özel tekne turu.': 'Full-day private yacht tour with stops at Yassıca Islands, Bedri Rahmi Cove, and Tersane Island.',
+    'Cennet Koyu, Türkbükü ve Orak Adası arasında lüks konaklamalı özel rota.': 'Private luxury overnight route between Paradise Bay (Cennet Koyu), Türkbükü, and Orak Island.'
+}; %>
+
 <section class="relative bg-[#0B1F3A] text-white overflow-hidden">
-    <div class="absolute inset-0 opacity-35 bg-cover bg-center" style="background-image: url('<%= hCfg.heroImage %>')"></div>
+    <div class="absolute inset-0 opacity-35 bg-cover bg-center" style="background-image: url('<%= heroImgUrl %>')"></div>
     <div class="absolute inset-0 bg-gradient-to-b from-[#0B1F3A]/70 via-[#0B1F3A]/55 to-[#0B1F3A]"></div>
 
     <div class="max-w-7xl mx-auto px-4 sm:px-6 py-16 md:py-24 relative z-10 space-y-10">
         <div class="max-w-3xl space-y-4">
-            <span class="inline-flex items-center space-x-2 bg-white/10 backdrop-blur-xs border border-white/15 text-sky-200 text-xs font-bold px-3.5 py-1.5 rounded-full">
+            <span class="inline-flex items-center space-x-2 bg-white/10 backdrop-blur-sm border border-white/15 text-sky-200 text-xs font-bold px-3.5 py-1.5 rounded-full">
                 <i class="fa-solid fa-compass text-teal-300"></i>
-                <span><%= hCfg.heroBadge %></span>
+                <span><%= heroBadgeText %></span>
             </span>
             <h1 class="text-3xl sm:text-5xl font-extrabold leading-tight tracking-tight">
-                <%= hCfg.heroTitle %>
+                <%= heroTitleText %>
             </h1>
             <p class="text-slate-200 text-sm sm:text-base max-w-2xl leading-relaxed">
-                <%= hCfg.heroSubtitle %>
+                <%= heroSubText %>
             </p>
         </div>
 
         <form action="/yachts" method="GET" class="bg-white text-slate-800 p-4 md:p-5 rounded-3xl shadow-2xl grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 items-end">
             <div>
-                <label class="block text-[11px] font-bold text-slate-400 uppercase mb-1">Kalkış Limanı</label>
+                <label class="block text-[11px] font-bold text-slate-400 uppercase mb-1">
+                    <%= homeIsEn ? 'Departure Port' : 'Kalkış Limanı' %>
+                </label>
                 <select name="location" class="w-full p-3 text-sm font-semibold border border-slate-200 rounded-xl bg-slate-50">
-                    <option value="">Tüm Limanlar</option>
+                    <option value="all"><%= homeIsEn ? 'All Ports' : 'Tüm Limanlar' %></option>
                     <% homeDeps.forEach(function(dep) { %>
                         <option value="<%= dep.name %>"><%= dep.name %></option>
                     <% }) %>
@@ -48,28 +73,42 @@
             </div>
 
             <div>
-                <label class="block text-[11px] font-bold text-slate-400 uppercase mb-1">Yat Kategorisi</label>
+                <label class="block text-[11px] font-bold text-slate-400 uppercase mb-1">
+                    <%= homeIsEn ? 'Yacht Category' : 'Yat Kategorisi' %>
+                </label>
                 <select name="category" class="w-full p-3 text-sm font-semibold border border-slate-200 rounded-xl bg-slate-50">
-                    <option value="">Tüm Kategoriler</option>
+                    <option value="all"><%= homeIsEn ? 'All Categories' : 'Tüm Kategoriler' %></option>
                     <% homeCats.forEach(function(cat) { %>
-                        <option value="<%= cat.key %>"><%= cat.nameTr || cat.title || cat.key %></option>
+                        <% const catOptLabel = homeIsEn
+                            ? (cat.nameEn || cat.titleEn || catSingularEn[cat.key] || cat.key || cat.nameTr)
+                            : (cat.nameTr || cat.title || cat.key); %>
+                        <option value="<%= cat.key || cat.nameTr %>"><%= catOptLabel %></option>
                     <% }) %>
                 </select>
             </div>
 
             <div>
-                <label class="block text-[11px] font-bold text-slate-400 uppercase mb-1">Giriş Tarihi</label>
-                <input type="date" id="homeCheckIn" name="checkIn" class="w-full p-3 text-sm font-semibold border border-slate-200 rounded-xl bg-slate-50">
+                <label class="block text-[11px] font-bold text-slate-400 uppercase mb-1">
+                    <%= homeIsEn ? 'Check-in Date' : 'Giriş Tarihi' %>
+                </label>
+                <input type="date" id="homeCheckIn" name="checkIn" min="<%= todayLocalYmd %>" class="w-full p-3 text-sm font-semibold border border-slate-200 rounded-xl bg-slate-50">
             </div>
 
             <div>
-                <label class="block text-[11px] font-bold text-slate-400 uppercase mb-1">Misafir Sayısı</label>
-                <input type="number" name="guests" min="1" max="30" placeholder="Örn: 4" class="w-full p-3 text-sm font-semibold border border-slate-200 rounded-xl bg-slate-50">
+                <label class="block text-[11px] font-bold text-slate-400 uppercase mb-1">
+                    <%= homeIsEn ? 'Guest Capacity' : 'Misafir Sayısı' %>
+                </label>
+                <select name="guests" class="w-full p-3 text-sm font-semibold border border-slate-200 rounded-xl bg-slate-50">
+                    <option value=""><%= homeIsEn ? 'Any Capacity' : 'Fark Etmez' %></option>
+                    <option value="1-6"><%= homeIsEn ? '1 - 6 Guests' : '1 - 6 Misafir' %></option>
+                    <option value="7-12"><%= homeIsEn ? '7 - 12 Guests' : '7 - 12 Misafir' %></option>
+                    <option value="13+"><%= homeIsEn ? '13+ Guests' : '13+ Misafir' %></option>
+                </select>
             </div>
 
             <div>
                 <button type="submit" class="w-full bg-teal-600 hover:bg-teal-700 text-white py-3.5 px-5 rounded-xl text-sm font-bold transition shadow-lg">
-                    <i class="fa-solid fa-magnifying-glass mr-1.5"></i>Yatları Keşfet
+                    <i class="fa-solid fa-magnifying-glass mr-1.5"></i><%= homeIsEn ? 'Explore Yachts' : 'Yatları Keşfet' %>
                 </button>
             </div>
         </form>
@@ -77,92 +116,108 @@
 </section>
 
 <main class="max-w-7xl mx-auto px-4 sm:px-6 py-14 space-y-16">
-    <!-- AVANTAJLAR -->
     <section class="grid grid-cols-2 lg:grid-cols-4 gap-4 text-xs sm:text-sm">
-        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs flex items-center space-x-3.5">
+        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center space-x-3.5">
             <div class="w-10 h-10 rounded-xl bg-teal-50 text-teal-700 flex items-center justify-center shrink-0">
                 <i class="fa-solid fa-shield-halved text-lg"></i>
             </div>
             <div>
-                <div class="font-extrabold text-slate-900">Lisanslı Kaptanlar</div>
-                <div class="text-[11px] text-slate-500">Deneyimli ve belgeli mürettebat</div>
+                <div class="font-extrabold text-slate-900"><%= homeIsEn ? 'Licensed Captains' : 'Lisanslı Kaptanlar' %></div>
+                <div class="text-[11px] text-slate-500"><%= homeIsEn ? 'Experienced & certified crew' : 'Deneyimli ve belgeli mürettebat' %></div>
             </div>
         </div>
-        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs flex items-center space-x-3.5">
+        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center space-x-3.5">
             <div class="w-10 h-10 rounded-xl bg-sky-50 text-[#0B1F3A] flex items-center justify-center shrink-0">
                 <i class="fa-solid fa-calendar-check text-lg"></i>
             </div>
             <div>
-                <div class="font-extrabold text-slate-900">Canlı Müsaitlik</div>
-                <div class="text-[11px] text-slate-500">Çakışmasız anlık takvim kontrolü</div>
+                <div class="font-extrabold text-slate-900"><%= homeIsEn ? 'Live Availability' : 'Canlı Müsaitlik' %></div>
+                <div class="text-[11px] text-slate-500"><%= homeIsEn ? 'Conflict-free instant calendar check' : 'Çakışmasız anlık takvim kontrolü' %></div>
             </div>
         </div>
-        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs flex items-center space-x-3.5">
+        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center space-x-3.5">
             <div class="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-700 flex items-center justify-center shrink-0">
                 <i class="fa-solid fa-rotate-left text-lg"></i>
             </div>
             <div>
-                <div class="font-extrabold text-slate-900">Ücretsiz İptal</div>
-                <div class="text-[11px] text-slate-500">7 gün kalaya kadar %100 iade</div>
+                <div class="font-extrabold text-slate-900"><%= homeIsEn ? 'Free Cancellation' : 'Ücretsiz İptal' %></div>
+                <div class="text-[11px] text-slate-500"><%= homeIsEn ? '100% refund up to 7 days prior' : '7 gün kalaya kadar %100 iade' %></div>
             </div>
         </div>
-        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs flex items-center space-x-3.5">
+        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center space-x-3.5">
             <div class="w-10 h-10 rounded-xl bg-amber-50 text-amber-700 flex items-center justify-center shrink-0">
                 <i class="fa-solid fa-headset text-lg"></i>
             </div>
             <div>
-                <div class="font-extrabold text-slate-900">7/24 Yat Konsyerji</div>
-                <div class="text-[11px] text-slate-500">Özel menü ve transfer desteği</div>
+                <div class="font-extrabold text-slate-900"><%= homeIsEn ? '24/7 Yacht Concierge' : '7/24 Yat Konsyerji' %></div>
+                <div class="text-[11px] text-slate-500"><%= homeIsEn ? 'Custom menu & transfer support' : 'Özel menü ve transfer desteği' %></div>
             </div>
         </div>
     </section>
 
-    <!-- ÖNE ÇIKAN FİLO -->
     <section class="space-y-6">
         <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-3">
             <div>
-                <span class="text-xs font-extrabold uppercase tracking-wider text-teal-600">Seçkin Filo</span>
-                <h2 class="text-2xl md:text-3xl font-extrabold text-[#0B1F3A] mt-1">Öne Çıkan Yatlarımız</h2>
+                <span class="text-xs font-extrabold uppercase tracking-wider text-teal-600"><%= homeIsEn ? 'Curated Fleet' : 'Seçkin Filo' %></span>
+                <h2 class="text-2xl md:text-3xl font-extrabold text-[#0B1F3A] mt-1"><%= homeIsEn ? 'Our Featured Yachts' : 'Öne Çıkan Yatlarımız' %></h2>
             </div>
             <a href="/yachts" class="text-xs font-bold text-[#0B1F3A] hover:text-teal-700 transition">
-                Tüm Filoyu Gör (<%= homeYachts.length %> Yat) →
+                <%= homeIsEn
+                    ? ('View Full Fleet (' + homeYachts.length + (homeYachts.length === 1 ? ' Yacht) →' : ' Yachts) →'))
+                    : ('Tüm Filoyu Gör (' + homeYachts.length + ' Yat) →') %>
             </a>
         </div>
 
         <% const featuredYachts = homeYachts.slice(0, 6); %>
         <% if (featuredYachts.length === 0) { %>
             <div class="bg-white p-10 rounded-2xl border border-slate-200 text-center text-sm text-slate-500">
-                Henüz listelenecek yat bulunmuyor.
+                <%= homeIsEn ? 'No yachts available to display yet.' : 'Henüz listelenecek yat bulunmuyor.' %>
             </div>
         <% } else { %>
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 <% featuredYachts.forEach(function(yacht) { %>
                     <% const coverImg = (yacht.images && yacht.images[0]) || yacht.image || 'https://images.unsplash.com/photo-1567899378494-47b22a2ae96a?auto=format&fit=crop&w=900&q=80'; %>
+                    <% const yCatLabel = homeIsEn
+                        ? (catSingularEn[yacht.category] || catSingularEn[yacht.categoryEn] || yacht.categoryEn || yacht.category || yacht.categoryTr)
+                        : (yacht.categoryTr || yacht.category); %>
+                    <% const yDescText = (homeIsEn && yacht.descriptionEn)
+                        ? yacht.descriptionEn
+                        : (homeIsEn
+                            ? 'Private captained blue cruise and daily cove tour experience.'
+                            : (yacht.description || 'Özel kaptanlı mavi yolculuk ve günlük koy turu deneyimi.')); %>
                     <div class="group bg-white rounded-2xl overflow-hidden border border-slate-200 shadow-sm hover:shadow-xl transition flex flex-col justify-between">
                         <div>
-                            <a href="/yachts/<%= yacht.id %>" class="block relative h-52 overflow-hidden bg-slate-100">
+                            <a href="/yachts/<%= encodeURIComponent(yacht.id) %>" class="block relative h-52 overflow-hidden bg-slate-100">
                                 <img src="<%= coverImg %>" onerror="fallbackYachtImg(this)" alt="<%= yacht.name %>" class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
                                 <span class="absolute top-3 left-3 bg-[#0B1F3A]/90 text-white text-[11px] font-bold px-3 py-1 rounded-full">
                                     <%= yacht.location %>
                                 </span>
                                 <span class="absolute top-3 right-3 bg-white/95 text-slate-800 text-[11px] font-bold px-2.5 py-1 rounded-full">
-                                    <%= yacht.categoryTr || yacht.category %>
+                                    <%= yCatLabel %>
                                 </span>
                             </a>
                             <div class="p-5 space-y-2.5">
                                 <h3 class="text-lg font-extrabold text-slate-900">
-                                    <a href="/yachts/<%= yacht.id %>" class="hover:text-teal-700 transition"><%= yacht.name %></a>
+                                    <a href="/yachts/<%= encodeURIComponent(yacht.id) %>" class="hover:text-teal-700 transition"><%= yacht.name %></a>
                                 </h3>
                                 <p class="text-xs text-slate-500 line-clamp-2 leading-relaxed">
-                                    <%= yacht.description || 'Özel kaptanlı mavi yolculuk ve günlük koy turu deneyimi.' %>
+                                    <%= yDescText %>
                                 </p>
                                 <div class="flex flex-wrap items-center gap-3 text-xs text-slate-600 pt-1">
-                                    <span><i class="fa-solid fa-users text-teal-600 mr-1"></i>Maks. <%= yacht.guests %> Misafir</span>
+                                    <span>
+                                        <i class="fa-solid fa-users text-teal-600 mr-1"></i>
+                                        <%= homeIsEn
+                                            ? ('Max. ' + yacht.guests + (Number(yacht.guests) === 1 ? ' Guest' : ' Guests'))
+                                            : ('Maks. ' + yacht.guests + ' Misafir') %>
+                                    </span>
                                     <% if (yacht.length) { %>
                                         <span><i class="fa-solid fa-ruler-horizontal text-teal-600 mr-1"></i><%= yacht.length %></span>
                                     <% } %>
                                     <% if (yacht.cabins) { %>
-                                        <span><i class="fa-solid fa-bed text-teal-600 mr-1"></i><%= yacht.cabins %> Kabin</span>
+                                        <span>
+                                            <i class="fa-solid fa-bed text-teal-600 mr-1"></i>
+                                            <%= yacht.cabins %> <%= homeIsEn ? (Number(yacht.cabins) === 1 ? 'Cabin' : 'Cabins') : 'Kabin' %>
+                                        </span>
                                     <% } %>
                                 </div>
                             </div>
@@ -170,15 +225,15 @@
 
                         <div class="px-5 py-4 bg-slate-50 border-t border-slate-100 flex items-center justify-between gap-2">
                             <div>
-                                <span class="text-[11px] text-slate-400 block">Günlük Başlangıç</span>
+                                <span class="text-[11px] text-slate-400 block"><%= homeIsEn ? 'Daily Starting Rate' : 'Günlük Başlangıç' %></span>
                                 <span class="text-lg font-extrabold text-[#0B1F3A]">€<%= Number(yacht.price || 0).toLocaleString() %></span>
                             </div>
                             <div class="flex items-center space-x-2">
-                                <a href="/yachts/<%= yacht.id %>" class="px-3.5 py-2 rounded-xl border border-slate-300 text-xs font-bold text-slate-700 hover:bg-slate-100 transition">
-                                    Detay
+                                <a href="/yachts/<%= encodeURIComponent(yacht.id) %>" class="px-3.5 py-2 rounded-xl border border-slate-300 text-xs font-bold text-slate-700 hover:bg-slate-100 transition">
+                                    <%= homeIsEn ? 'Details' : 'Detay' %>
                                 </a>
-                                <a href="/checkout/<%= yacht.id %>" class="px-4 py-2 rounded-xl bg-teal-600 hover:bg-teal-700 text-white text-xs font-bold transition shadow-xs">
-                                    Rezerv Et
+                                <a href="/checkout?yachtId=<%= encodeURIComponent(yacht.id) %>" class="px-4 py-2 rounded-xl bg-teal-600 hover:bg-teal-700 text-white text-xs font-bold transition shadow-sm">
+                                    <%= homeIsEn ? 'Book Now' : 'Rezerv Et' %>
                                 </a>
                             </div>
                         </div>
@@ -188,42 +243,50 @@
         <% } %>
     </section>
 
-    <!-- POPÜLER ROTALAR / TURLAR -->
     <% if (homeTours.length > 0) { %>
         <section class="space-y-6">
             <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-3">
                 <div>
-                    <span class="text-xs font-extrabold uppercase tracking-wider text-teal-600">Özel Rotalar</span>
-                    <h2 class="text-2xl md:text-3xl font-extrabold text-[#0B1F3A] mt-1">Popüler Mavi Yolculuk Paketleri</h2>
+                    <span class="text-xs font-extrabold uppercase tracking-wider text-teal-600"><%= homeIsEn ? 'Curated Routes' : 'Özel Rotalar' %></span>
+                    <h2 class="text-2xl md:text-3xl font-extrabold text-[#0B1F3A] mt-1"><%= homeIsEn ? 'Popular Blue Cruise Packages' : 'Popüler Mavi Yolculuk Paketleri' %></h2>
                 </div>
                 <a href="/rotalar" class="text-xs font-bold text-[#0B1F3A] hover:text-teal-700 transition">
-                    Tüm Rotaları İncele →
+                    <%= homeIsEn ? 'Explore All Routes →' : 'Tüm Rotaları İncele →' %>
                 </a>
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <% homeTours.slice(0, 2).forEach(function(tour) { %>
                     <% const linkedYacht = homeYachts.find(function(y) { return Number(y.id) === Number(tour.yachtId); }); %>
-                    <% const tourImg = tour.img || (linkedYacht && linkedYacht.images && linkedYacht.images[0]) || 'https://images.unsplash.com/photo-1500375592092-40eb2168fd21?auto=format&fit=crop&w=900&q=80'; %>
+                    <% const tourImg = tour.img || tour.image || (linkedYacht && linkedYacht.images && linkedYacht.images[0]) || 'https://images.unsplash.com/photo-1500375592092-40eb2168fd21?auto=format&fit=crop&w=900&q=80'; %>
+                    <% const tTitle = (homeIsEn && tour.titleEn) ? tour.titleEn : tour.title; %>
+                    <% const tRegion = (homeIsEn && tour.regionEn) ? tour.regionEn : tour.region; %>
+                    <% const dNum = Math.max(1, Number(tour.durationDays || 1)); %>
+                    <% const tDur = (homeIsEn && tour.durationLabelEn)
+                        ? tour.durationLabelEn
+                        : (tour.durationLabel || (homeIsEn ? (dNum + (dNum === 1 ? ' Day' : ' Days')) : (dNum + ' Gün'))); %>
+                    <% const tSum = homeIsEn
+                        ? (tour.summaryEn || summaryTrToEn[tour.summary] || tour.summary)
+                        : tour.summary; %>
                     <div class="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm flex flex-col sm:flex-row">
-                        <img src="<%= tourImg %>" onerror="fallbackYachtImg(this)" alt="<%= tour.title %>" class="w-full sm:w-48 h-48 sm:h-auto object-cover shrink-0">
+                        <img src="<%= tourImg %>" onerror="fallbackYachtImg(this)" alt="<%= tTitle %>" class="w-full sm:w-48 h-48 sm:h-auto object-cover shrink-0">
                         <div class="p-5 flex flex-col justify-between flex-1 space-y-3">
                             <div>
                                 <div class="flex items-center justify-between gap-2">
-                                    <span class="text-[11px] font-bold text-teal-700 uppercase"><%= tour.region %></span>
+                                    <span class="text-[11px] font-bold text-teal-700 uppercase"><%= tRegion %></span>
                                     <span class="text-[11px] font-bold bg-slate-100 text-slate-700 px-2.5 py-0.5 rounded-md">
-                                        <%= tour.durationLabel || ((tour.durationDays || 1) + ' Gün') %>
+                                        <%= tDur %>
                                     </span>
                                 </div>
-                                <h3 class="text-base font-extrabold text-slate-900 mt-1"><%= tour.title %></h3>
-                                <p class="text-xs text-slate-500 mt-1 line-clamp-2"><%= tour.summary %></p>
+                                <h3 class="text-base font-extrabold text-slate-900 mt-1"><%= tTitle %></h3>
+                                <p class="text-xs text-slate-500 mt-1 line-clamp-2"><%= tSum %></p>
                             </div>
                             <div class="pt-2 border-t border-slate-100 flex items-center justify-between">
                                 <span class="text-xs font-bold text-slate-700">
-                                    <%= linkedYacht ? linkedYacht.name : (tour.region + ' Rotası') %>
+                                    <%= linkedYacht ? linkedYacht.name : (tRegion + (homeIsEn ? ' Route' : ' Rotası')) %>
                                 </span>
-                                <a href="<%= linkedYacht ? ('/yachts/' + linkedYacht.id) : ('/yachts?location=' + encodeURIComponent(tour.region || '')) %>" class="text-xs font-extrabold text-teal-700 hover:underline">
-                                    İncele →
+                                <a href="<%= linkedYacht ? ('/yachts/' + encodeURIComponent(linkedYacht.id)) : ('/yachts?location=' + encodeURIComponent(tour.region || '')) %>" class="text-xs font-extrabold text-teal-700 hover:underline">
+                                    <%= homeIsEn ? 'Explore →' : 'İncele →' %>
                                 </a>
                             </div>
                         </div>

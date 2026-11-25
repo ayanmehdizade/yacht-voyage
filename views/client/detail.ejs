@@ -5,6 +5,7 @@
     brandName: 'YachtVoyage',
     whatsappNumber: '902521234567'
 }; %>
+<% const cleanWaNum = String(dSite.whatsappNumber || '902521234567').replace(/\D/g, '') || '902521234567'; %>
 <% const planCfg = (typeof paymentPlanSettings !== 'undefined' && paymentPlanSettings) ? paymentPlanSettings : {
     installmentPercent: 50,
     installmentInterestPercent: 0,
@@ -35,8 +36,10 @@
 <% const yFeatures = (ydIsEn && Array.isArray(yacht.featuresEn) && yacht.featuresEn.length) ? yacht.featuresEn : (yacht.features || []); %>
 <% const yInclusions = (ydIsEn && Array.isArray(yacht.inclusionsEn) && yacht.inclusionsEn.length) ? yacht.inclusionsEn : (yacht.inclusions || []); %>
 <% const yItinerary = (ydIsEn && Array.isArray(yacht.itineraryEn) && yacht.itineraryEn.length) ? yacht.itineraryEn : (yacht.itinerary || []); %>
-<% const todayIso = new Date().toISOString().slice(0, 10); %>
-<% const upcomingBookings = (yachtBookings || []).filter(b => b.checkOut >= todayIso); %>
+<% const yImages = (Array.isArray(yacht.images) && yacht.images.length) ? yacht.images : ['https://images.unsplash.com/photo-1567899378494-47b22a2ae96a?auto=format&fit=crop&w=1000&q=80']; %>
+<% const nowLocal = new Date(); %>
+<% const todayLocalYmd = nowLocal.getFullYear() + '-' + String(nowLocal.getMonth() + 1).padStart(2, '0') + '-' + String(nowLocal.getDate()).padStart(2, '0'); %>
+<% const upcomingBookings = (yachtBookings || []).filter(b => b.checkOut >= todayLocalYmd); %>
 <% const defaultGuests = Math.min(Number(yacht.guests) || 12, 6); %>
 
 <div id="detailBookedDates" class="hidden">
@@ -52,6 +55,9 @@
       data-installment-pct="<%= planCfg.installmentPercent %>"
       data-interest-pct="<%= planCfg.installmentInterestPercent %>"
       data-yacht-title="<%= yacht.name %> (<%= yacht.location %>)"
+      data-wa-num="<%= cleanWaNum %>"
+      data-brand-name="<%= dSite.brandName || 'YachtVoyage' %>"
+      data-total-photos="<%= yImages.length %>"
       class="max-w-7xl mx-auto px-4 sm:px-6 py-8 space-y-8">
 
     <% if (reviewSaved) { %>
@@ -63,15 +69,18 @@
 
     <div class="space-y-3">
         <div class="relative rounded-2xl overflow-hidden h-[320px] md:h-[450px] bg-slate-200">
-            <img id="mainPhoto" src="<%= yacht.images[0] %>" alt="<%= yacht.name %>" class="detail-img w-full h-full object-cover">
-            <span class="absolute bottom-4 left-4 bg-[#0B1F3A]/85 text-white text-xs font-bold px-3 py-1.5 rounded-lg">
-                1 / <%= yacht.images.length %> <%= ydIsEn ? 'Photos' : 'Fotoğraf' %>
+            <img id="mainPhoto" src="<%= yImages[0] %>" alt="<%= yacht.name %>" class="detail-img w-full h-full object-cover">
+            <span id="photoCounterBadge" class="absolute bottom-4 left-4 bg-[#0B1F3A]/85 text-white text-xs font-bold px-3 py-1.5 rounded-lg">
+                1 / <%= yImages.length %> <%= ydIsEn ? 'Photos' : 'Fotoğraf' %>
             </span>
         </div>
         <div class="grid grid-cols-4 gap-3">
-            <% for (let i = 0; i < yacht.images.length; i++) { %>
-                <button type="button" data-img-src="<%= yacht.images[i] %>" class="thumb-btn rounded-xl overflow-hidden h-20 md:h-24 border-2 border-transparent hover:border-[#0B1F3A] transition">
-                    <img src="<%= yacht.images[i] %>" alt="<%= yacht.name %>" class="detail-img w-full h-full object-cover">
+            <% for (let i = 0; i < yImages.length; i++) { %>
+                <button type="button"
+                        data-img-src="<%= yImages[i] %>"
+                        data-img-idx="<%= i + 1 %>"
+                        class="thumb-btn rounded-xl overflow-hidden h-20 md:h-24 border-2 <%= i === 0 ? 'border-[#0B1F3A]' : 'border-transparent' %> hover:border-[#0B1F3A] transition">
+                    <img src="<%= yImages[i] %>" alt="<%= yacht.name %>" class="detail-img w-full h-full object-cover">
                 </button>
             <% } %>
         </div>
@@ -83,7 +92,7 @@
                 <div>
                     <div class="flex items-center space-x-2.5">
                         <h1 class="text-3xl md:text-4xl font-extrabold text-slate-900"><%= yacht.name %></h1>
-                        <span class="bg-[#0B1F3A] text-white text-xs font-extrabold px-2.5 py-1 rounded-lg"><%= yacht.rating.toFixed(1) %> / 5</span>
+                        <span class="bg-[#0B1F3A] text-white text-xs font-extrabold px-2.5 py-1 rounded-lg"><%= Number(yacht.rating || 5).toFixed(1) %> / 5</span>
                     </div>
                     <p class="text-xs text-slate-500 mt-1"><%= yCatLabel %> • <%= yacht.length %> • <%= yacht.year %> • <%= yacht.location %> Marina</p>
                 </div>
@@ -116,7 +125,6 @@
                 </div>
             </div>
 
-            <!-- Kiralama Şartları Özeti -->
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 bg-slate-50 border border-slate-200 rounded-2xl p-4 text-xs">
                 <div class="flex items-start space-x-2.5">
                     <i class="fa-solid fa-shield-halved text-teal-600 mt-0.5"></i>
@@ -265,7 +273,7 @@
                     <div>
                         <h2 class="text-lg font-extrabold text-[#0B1F3A]"><%= ydIsEn ? 'Guest Reviews' : 'Misafir Değerlendirmeleri' %></h2>
                         <p class="text-xs text-slate-500">
-                            <%= ydIsEn ? 'Average Rating:' : 'Ortalama Puan:' %> <strong><%= yacht.rating.toFixed(1) %> / 5.0</strong> (<%= yacht.reviews %> <%= ydIsEn ? (Number(yacht.reviews) === 1 ? 'review' : 'reviews') : 'yorum' %>)
+                            <%= ydIsEn ? 'Average Rating:' : 'Ortalama Puan:' %> <strong><%= Number(yacht.rating || 5).toFixed(1) %> / 5.0</strong> (<%= yacht.reviews %> <%= ydIsEn ? (Number(yacht.reviews) === 1 ? 'review' : 'reviews') : 'yorum' %>)
                         </p>
                     </div>
                     <span class="bg-emerald-50 text-emerald-700 text-xs font-bold px-3 py-1.5 rounded-full"><%= ydIsEn ? '✓ Verified Guests' : '✓ Doğrulanmış Misafirler' %></span>
@@ -302,12 +310,11 @@
             </div>
         </div>
 
-        <!-- SAĞ REZERVASYON KUTUSU (CHECKOUT İLE %100 AYNI HESAP) -->
         <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-xl h-fit sticky top-24 space-y-5">
             <div class="flex items-baseline justify-between">
                 <div>
                     <span class="text-xs text-slate-400 block"><%= ydIsEn ? 'Daily Yacht Rate' : 'Tekne Günlük Fiyatı' %></span>
-                    <span class="text-3xl font-extrabold text-[#0B1F3A]">€<%= yacht.price.toLocaleString() %></span>
+                    <span class="text-3xl font-extrabold text-[#0B1F3A]">€<%= Number(yacht.price || 0).toLocaleString() %></span>
                     <span class="text-xs text-slate-400"><%= ydIsEn ? '/ day' : '/ gün' %></span>
                 </div>
                 <span id="detailAvailStatus" class="text-[11px] font-bold px-2.5 py-1 rounded-full bg-amber-50 text-amber-800"><%= ydIsEn ? 'Select Dates' : 'Tarih Seçin' %></span>
@@ -318,11 +325,11 @@
                 <div class="grid grid-cols-2 gap-3">
                     <div>
                         <label class="block text-[11px] font-bold text-slate-500 uppercase mb-1"><%= ydIsEn ? 'CHECK-IN *' : 'Giriş *' %></label>
-                        <input type="date" id="inDate" name="checkIn" min="<%= todayIso %>" value="<%= (checkIn && checkIn >= todayIso) ? checkIn : '' %>" required class="w-full p-2.5 text-xs font-semibold border border-slate-200 rounded-xl">
+                        <input type="date" id="inDate" name="checkIn" min="<%= todayLocalYmd %>" value="<%= (checkIn && checkIn >= todayLocalYmd) ? checkIn : '' %>" required class="w-full p-2.5 text-xs font-semibold border border-slate-200 rounded-xl">
                     </div>
                     <div>
                         <label class="block text-[11px] font-bold text-slate-500 uppercase mb-1"><%= ydIsEn ? 'CHECK-OUT *' : 'Çıkış *' %></label>
-                        <input type="date" id="outDate" name="checkOut" min="<%= todayIso %>" value="<%= (checkOut && checkIn && checkOut > checkIn && checkIn >= todayIso) ? checkOut : '' %>" required class="w-full p-2.5 text-xs font-semibold border border-slate-200 rounded-xl">
+                        <input type="date" id="outDate" name="checkOut" min="<%= todayLocalYmd %>" value="<%= (checkOut && checkIn && checkOut > checkIn && checkIn >= todayLocalYmd) ? checkOut : '' %>" required class="w-full p-2.5 text-xs font-semibold border border-slate-200 rounded-xl">
                     </div>
                 </div>
 
@@ -347,7 +354,7 @@
                         <% const exLabel = ydIsEn ? (ex.nameEn || extrasTrToEn[ex.name] || ex.name) : ex.name; %>
                         <label class="flex items-center justify-between p-2.5 border border-slate-200 rounded-xl cursor-pointer hover:bg-slate-50 text-xs">
                             <span class="flex items-center space-x-2">
-                                <input type="checkbox" name="extras" value="<%= ex.name %>" data-per-guest="<%= pGuest %>" class="detail-extra-cb rounded text-[#0B1F3A]">
+                                <input type="checkbox" name="extras" value="<%= ex.name %>" data-display-label="<%= exLabel %>" data-per-guest="<%= pGuest %>" class="detail-extra-cb rounded text-[#0B1F3A]">
                                 <span>
                                     <span class="font-semibold text-slate-800 block"><%= exLabel %></span>
                                     <span class="text-[10px] text-slate-400">€<%= pGuest.toLocaleString() %> <%= ydIsEn ? '/ guest' : '/ kişi' %></span>
@@ -406,7 +413,31 @@
     const maxGuests = Number(root.dataset.maxGuests) || 12;
     const installmentPct = Number(root.dataset.installmentPct) || 50;
     const interestPct = Number(root.dataset.interestPct) || 0;
-    const yachtTitle = root.dataset.yachtTitle;
+    const yachtTitle = root.dataset.yachtTitle || '';
+    const waNum = root.dataset.waNum || '902521234567';
+    const brandName = root.dataset.brandName || 'YachtVoyage';
+    const totalPhotos = Number(root.dataset.totalPhotos) || 1;
+
+    function toYMD(dateObj) {
+        const y = dateObj.getFullYear();
+        const m = String(dateObj.getMonth() + 1).padStart(2, '0');
+        const d = String(dateObj.getDate()).padStart(2, '0');
+        return `${y}-${m}-${d}`;
+    }
+
+    function addDaysYMD(ymdStr, deltaDays) {
+        const parts = ymdStr.split('-').map(Number);
+        const dt = new Date(parts[0], (parts[1] || 1) - 1, (parts[2] || 1) + deltaDays);
+        return toYMD(dt);
+    }
+
+    function diffDaysYMD(startYmd, endYmd) {
+        const p1 = startYmd.split('-').map(Number);
+        const p2 = endYmd.split('-').map(Number);
+        const utc1 = Date.UTC(p1[0], (p1[1] || 1) - 1, p1[2] || 1);
+        const utc2 = Date.UTC(p2[0], (p2[1] || 1) - 1, p2[2] || 1);
+        return Math.round((utc2 - utc1) / 86400000);
+    }
 
     const existingBookings = Array.from(document.querySelectorAll('.booked-range')).map(function(el) {
         return { checkIn: el.dataset.in, checkOut: el.dataset.out };
@@ -418,15 +449,33 @@
 
     document.querySelectorAll('.detail-img').forEach(function(img) {
         img.addEventListener('error', function() {
-            if (typeof fallbackYachtImg === 'function') fallbackYachtImg(this);
+            if (typeof fallbackYachtImg === 'function') {
+                fallbackYachtImg(this);
+            } else if (!this.dataset.fallbackApplied) {
+                this.dataset.fallbackApplied = '1';
+                this.src = 'https://images.unsplash.com/photo-1567899378494-47b22a2ae96a?auto=format&fit=crop&w=1000&q=80';
+            }
         });
     });
 
+    const photoCounterBadge = document.getElementById('photoCounterBadge');
     document.querySelectorAll('.thumb-btn').forEach(function(btn) {
         btn.addEventListener('click', function() {
             const mp = document.getElementById('mainPhoto');
             delete mp.dataset.fallbackApplied;
             mp.src = this.dataset.imgSrc;
+
+            const idx = this.dataset.imgIdx || '1';
+            if (photoCounterBadge) {
+                photoCounterBadge.textContent = idx + ' / ' + totalPhotos + ' ' + (isEnYd ? 'Photos' : 'Fotoğraf');
+            }
+
+            document.querySelectorAll('.thumb-btn').forEach(function(b) {
+                b.classList.remove('border-[#0B1F3A]');
+                b.classList.add('border-transparent');
+            });
+            this.classList.remove('border-transparent');
+            this.classList.add('border-[#0B1F3A]');
         });
     });
 
@@ -444,11 +493,8 @@
         }
 
         const inVal = inInput.value;
-        if (inVal) {
-            const dMin = new Date(inVal + 'T00:00:00');
-            dMin.setDate(dMin.getDate() + 1);
-            const nextYmd = dMin.toISOString().slice(0, 10);
-            outInput.min = nextYmd;
+        if (inVal && /^\d{4}-\d{2}-\d{2}$/.test(inVal)) {
+            outInput.min = addDaysYMD(inVal, 1);
             if (outInput.value && outInput.value <= inVal) {
                 outInput.value = '';
             }
@@ -457,9 +503,7 @@
 
         let diff = 0;
         if (inVal && outVal && outVal > inVal) {
-            const d1 = new Date(inVal + 'T00:00:00');
-            const d2 = new Date(outVal + 'T00:00:00');
-            diff = Math.round((d2 - d1) / (1000 * 60 * 60 * 24));
+            diff = Math.max(0, diffDaysYMD(inVal, outVal));
         }
 
         const conflict = (inVal && outVal && outVal > inVal)
@@ -469,8 +513,8 @@
         if (!inVal || !outVal || outVal <= inVal) {
             statusBadge.className = 'text-[11px] font-bold px-2.5 py-1 rounded-full bg-amber-50 text-amber-800';
             statusBadge.innerText = isEnYd ? 'Select Dates' : 'Tarih Seçin';
-            submitBtn.disabled = false;
-            submitBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+            submitBtn.disabled = true;
+            submitBtn.classList.add('opacity-50', 'cursor-not-allowed');
         } else if (conflict) {
             statusBadge.className = 'text-[11px] font-bold px-2.5 py-1 rounded-full bg-rose-50 text-rose-700';
             statusBadge.innerText = isEnYd ? 'Booked Dates' : 'Dolu Tarih';
@@ -492,7 +536,7 @@
             if (priceEl) priceEl.innerText = '+€' + itemTotal.toLocaleString();
             if (cb.checked) {
                 extrasSum += itemTotal;
-                selectedExtras.push(cb.value);
+                selectedExtras.push(cb.dataset.displayLabel || cb.value);
             }
         });
 
@@ -520,7 +564,6 @@
         document.getElementById('detailPayNow').innerText = '€' + payNow.toLocaleString();
         document.getElementById('detailRemaining').innerText = '€' + remaining.toLocaleString();
 
-        const waNum = '<%= dSite.whatsappNumber %>';
         const dayUnit = isEnYd ? (diff === 1 ? 'day' : 'days') : 'gün';
         const guestUnit = isEnYd ? (guests === 1 ? 'guest' : 'guests') : 'misafir';
         const dateText = (inVal && outVal)
@@ -530,9 +573,9 @@
             ? ((isEnYd ? ' | Extras: ' : ' | Ekstralar: ') + selectedExtras.join(', '))
             : '';
         const waText = isEnYd
-            ? ('Hello <%= dSite.brandName %>, I would like to inquire about ' + yachtTitle + ' for ' + dateText + ', ' + guests + ' ' + guestUnit + extraNote + (total > 0 ? ', estimated €' + total.toLocaleString() : '') + '.')
-            : ('Merhaba <%= dSite.brandName %>, ' + yachtTitle + ' için ' + dateText + ', ' + guests + ' ' + guestUnit + extraNote + (total > 0 ? ', tahmini €' + total.toLocaleString() : '') + ' hakkında bilgi almak istiyorum.');
-        document.getElementById('waLink').href = 'https://wa.me/' + waNum + '?text=' + encodeURIComponent(waText);
+            ? ('Hello ' + brandName + ', I would like to inquire about ' + yachtTitle + ' for ' + dateText + ', ' + guests + ' ' + guestUnit + extraNote + (total > 0 ? ', estimated €' + total.toLocaleString() : '') + '.')
+            : ('Merhaba ' + brandName + ', ' + yachtTitle + ' için ' + dateText + ', ' + guests + ' ' + guestUnit + extraNote + (total > 0 ? ', tahmini €' + total.toLocaleString() : '') + ' hakkında bilgi almak istiyorum.');
+        document.getElementById('waLink').href = 'https://wa.me/' + encodeURIComponent(waNum) + '?text=' + encodeURIComponent(waText);
     }
 
     document.getElementById('inDate').addEventListener('change', calcPrice);

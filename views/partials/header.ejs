@@ -206,7 +206,7 @@ const idleTabClass = 'text-slate-200 hover:text-white';
         (function () {
             if (!YV_IS_EN) return;
 
-            const CACHE_PREFIX = 'yv_ai_en_v9:';
+            const CACHE_PREFIX = 'yv_ai_en_v10:';
             const GLOSSARY = {
                 'Yatlar': 'Yachts',
                 'Yat Kiralama': 'Yacht Charter',
@@ -216,6 +216,9 @@ const idleTabClass = 'text-slate-200 hover:text-white';
                 'Rezervasyonum': 'My Booking',
                 'Rezervasyon Yap': 'Book Now',
                 'Hemen Rezervasyon Yap': 'Book Now',
+                'Admin Girişi': 'Admin Login',
+                'Admin Paneli': 'Admin Panel',
+                'WhatsApp Destek Hattı': 'WhatsApp Support Line',
                 'Motor Yat': 'Motor Yacht',
                 'Motor Yatlar': 'Motor Yachts',
                 'Gulet': 'Gulet',
@@ -737,7 +740,7 @@ const idleTabClass = 'text-slate-200 hover:text-white';
                     <a href="/lang/en" class="px-2 py-1 rounded-md transition <%= en ? activeTabClass : idleTabClass %>">ENG</a>
                 </div>
                 <a href="/admin" class="px-3.5 py-2.5 rounded-lg bg-white/10 hover:bg-white/20 border border-white/15 text-xs font-bold text-white transition">
-                    <i class="fa-solid fa-lock mr-1.5 text-teal-300"></i>Admin
+                    <i class="fa-solid fa-lock mr-1.5 text-teal-300"></i><%= en ? 'Admin' : 'Admin' %>
                 </a>
                 <a href="/yachts" class="bg-white text-[#0B1F3A] hover:bg-sky-50 px-4 py-2.5 rounded-lg text-sm font-bold transition shadow">
                     <%= en ? 'Book Now' : 'Hemen Rezervasyon Yap' %>
@@ -761,7 +764,7 @@ const idleTabClass = 'text-slate-200 hover:text-white';
             <a href="/rotalar" class="block py-1.5 text-slate-200 hover:text-white"><%= en ? 'Routes' : 'Rotalar' %></a>
             <a href="/kategoriler" class="block py-1.5 text-slate-200 hover:text-white"><%= en ? 'Categories' : 'Kategoriler' %></a>
             <a href="/my-booking" class="block py-1.5 text-slate-200 hover:text-white"><%= en ? 'My Booking (PNR)' : 'Rezervasyonum (PNR)' %></a>
-            <a href="/admin" class="block py-1.5 text-teal-300 hover:text-white font-semibold"><i class="fa-solid fa-user-shield mr-1.5"></i>Admin Panel</a>
+            <a href="/admin" class="block py-1.5 text-teal-300 hover:text-white font-semibold"><i class="fa-solid fa-user-shield mr-1.5"></i><%= en ? 'Admin Panel' : 'Admin Paneli' %></a>
             <a href="/yachts" class="block text-center bg-white text-[#0B1F3A] py-2.5 rounded-lg font-bold">
                 <%= en ? 'Book Now' : 'Hemen Rezervasyon Yap' %>
             </a>

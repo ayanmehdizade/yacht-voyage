@@ -9,7 +9,8 @@
     }
 </style>
 
-<% const todayIso = new Date().toISOString().slice(0, 10); %>
+<% const nowLocal = new Date(); %>
+<% const todayIso = nowLocal.getFullYear() + '-' + String(nowLocal.getMonth() + 1).padStart(2, '0') + '-' + String(nowLocal.getDate()).padStart(2, '0'); %>
 <% const depList = (typeof departurePoints !== 'undefined' && Array.isArray(departurePoints) && departurePoints.length) ? departurePoints : [
     { name: 'Göcek', desc: homeIsEn ? 'Coves & D-Marin departure' : 'Koylar & D-Marin kalkış' },
     { name: 'Marmaris', desc: homeIsEn ? 'Netsel Marina & Hisarönü' : 'Netsel Marina & Hisarönü' },
@@ -17,8 +18,8 @@
     { name: 'Bodrum', desc: homeIsEn ? 'Yalıkavak & Türkbükü' : 'Yalıkavak & Türkbükü' }
 ]; %>
 <% const defaultDep = depList[0] || { name: 'Göcek', desc: homeIsEn ? 'Coves & D-Marin departure' : 'Koylar & D-Marin kalkış' }; %>
+<% const homeCats = (typeof categories !== 'undefined' && Array.isArray(categories)) ? categories : []; %>
 
-<!-- HERO & ARAMA ÇUBUĞU -->
 <section class="relative bg-[#0B1F3A] text-white overflow-x-clip">
     <img src="https://images.unsplash.com/photo-1567899378494-47b22a2ae96a?auto=format&fit=crop&w=1200&q=85"
          onerror="fallbackYachtImg(this)"
@@ -199,7 +200,6 @@
     </div>
 </section>
 
-<!-- GÜVEN ROZETLERİ -->
 <section class="bg-white border-b border-slate-200">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 py-7 grid grid-cols-2 md:grid-cols-4 gap-6 text-sm">
         <div class="flex items-center space-x-3">
@@ -221,7 +221,6 @@
     </div>
 </section>
 
-<!-- TUR PAKETLERİ VE DAHİL OLANLAR -->
 <section id="tur-paketleri" class="max-w-7xl mx-auto px-4 sm:px-6 pt-16 space-y-8">
     <div class="flex items-center gap-4">
         <div class="flex-1 h-px bg-slate-200"></div>
@@ -230,23 +229,29 @@
     </div>
 
     <% const homeTours = (typeof tours !== 'undefined' && Array.isArray(tours)) ? tours : []; %>
+    <% const sortedHomeTours = [...homeTours].sort((a, b) => {
+        const aM = String(a.region || '').toLowerCase().includes('marmaris') ? 0 : 1;
+        const bM = String(b.region || '').toLowerCase().includes('marmaris') ? 0 : 1;
+        return aM - bM;
+    }); %>
     <% const fallbackTourImgs = [
         'https://images.unsplash.com/photo-1500375592092-40eb2168fd21?auto=format&fit=crop&w=800&q=80',
         'https://images.unsplash.com/photo-1544551763-46a013bb70d5?auto=format&fit=crop&w=800&q=80',
         'https://images.unsplash.com/photo-1567899378494-47b22a2ae96a?auto=format&fit=crop&w=800&q=80'
     ]; %>
 
-    <% if (homeTours.length === 0) { %>
+    <% if (sortedHomeTours.length === 0) { %>
         <div class="bg-white p-8 rounded-2xl border border-slate-200 text-center text-xs text-slate-500">
             <%= homeIsEn ? 'No tour packages published yet. You can add them from the admin panel.' : 'Henüz yayınlanmış tur paketi bulunmuyor. Admin panelden ekleyebilirsiniz.' %>
         </div>
     <% } else { %>
         <div class="grid grid-cols-1 md:grid-cols-3 gap-7">
-            <% homeTours.slice(0, 3).forEach((pkg, pIdx) => { %>
+            <% sortedHomeTours.slice(0, 3).forEach((pkg, pIdx) => { %>
                 <% const linkedYacht = (typeof yachts !== 'undefined' && Array.isArray(yachts)) ? (yachts.find(y => Number(y.id) === Number(pkg.yachtId)) || yachts[0]) : null; %>
                 <% const pkgImg = pkg.img || fallbackTourImgs[pIdx % fallbackTourImgs.length]; %>
                 <% const pkgTitle = (homeIsEn && pkg.titleEn) ? pkg.titleEn : pkg.title; %>
                 <% const pkgRegion = (homeIsEn && pkg.regionEn) ? pkg.regionEn : pkg.region; %>
+                <% const meetingSpot = (homeIsEn && pkg.meetingPointEn) ? pkg.meetingPointEn : (pkg.meetingPoint || (pkgRegion + ' Marina')); %>
                 <% const pkgIncluded = (homeIsEn && Array.isArray(pkg.includedEn) && pkg.includedEn.length) ? pkg.includedEn : ((Array.isArray(pkg.included) && pkg.included.length) ? pkg.included : (homeIsEn ? ['Licensed captain and fuel', 'Swimming stops and refreshments'] : ['Lisanslı kaptan ve yakıt', 'Yüzme molaları ve ikramlar'])); %>
                 <% const pkgExcluded = (homeIsEn && Array.isArray(pkg.excludedEn) && pkg.excludedEn.length) ? pkg.excludedEn : ((Array.isArray(pkg.excluded) && pkg.excluded.length) ? pkg.excluded : (homeIsEn ? ['Custom menu & airport transfer'] : ['Özel menü & havalimanı transferi'])); %>
                 <div class="bg-white rounded-2xl overflow-hidden border border-slate-200 shadow-sm hover:shadow-xl transition flex flex-col justify-between">
@@ -264,12 +269,13 @@
                             </div>
 
                             <div class="flex flex-wrap gap-3 text-xs text-slate-600 bg-slate-50 p-3 rounded-xl">
-                                <span><i class="fa-regular fa-clock text-teal-600 mr-1"></i><%= pkg.durationLabel || (pkg.durationDays + (homeIsEn ? (Number(pkg.durationDays) === 1 ? ' Day' : ' Days') : ' Gün')) %></span>
+                                <span><i class="fa-regular fa-clock text-teal-600 mr-1"></i><strong><%= homeIsEn ? 'Time:' : 'Saat:' %></strong> <%= pkg.durationLabel || (pkg.durationDays + (homeIsEn ? (Number(pkg.durationDays) === 1 ? ' Day' : ' Days') : ' Gün')) %></span>
+                                <span><i class="fa-solid fa-location-dot text-teal-600 mr-1"></i><strong><%= homeIsEn ? 'Meeting:' : 'Buluşma Noktası:' %></strong> <%= meetingSpot %></span>
                                 <span><i class="fa-solid fa-users text-teal-600 mr-1"></i><%= pkg.capacityLabel || (linkedYacht ? (homeIsEn ? ('Up to ' + linkedYacht.guests + ' guests') : ('En fazla ' + linkedYacht.guests + ' kişi')) : (homeIsEn ? 'Private Group' : 'Özel Grup')) %></span>
                             </div>
 
                             <div class="space-y-1.5">
-                                <div class="text-[11px] font-bold uppercase text-emerald-700 tracking-wider"><%= homeIsEn ? 'Included in Package' : 'Pakete Dahil Olanlar' %></div>
+                                <div class="text-[11px] font-bold uppercase text-emerald-700 tracking-wider"><%= homeIsEn ? 'Included in Package' : 'Fiyata Dahil Olanlar' %></div>
                                 <% pkgIncluded.forEach(item => { %>
                                     <div class="text-xs text-slate-700 flex items-start space-x-2">
                                         <i class="fa-solid fa-check text-emerald-600 mt-0.5"></i>
@@ -305,7 +311,6 @@
     <% } %>
 </section>
 
-<!-- İNTERAKTİF ROTA & KOY REHBERİ -->
 <section id="rotalar" data-home-section class="hidden max-w-7xl mx-auto px-4 sm:px-6 pt-10 space-y-6">
     <div class="flex flex-col md:flex-row md:items-end justify-between gap-4">
         <div>
@@ -356,7 +361,6 @@
     </div>
 </section>
 
-<!-- FİLO YAT BİLGİLERİ -->
 <section id="hizmetler" data-home-section class="hidden max-w-7xl mx-auto px-4 sm:px-6 pt-10 space-y-8">
     <div>
         <h2 class="text-2xl md:text-3xl font-extrabold text-[#0B1F3A]"><%= homeIsEn ? 'Fleet Yachts & Technical Specs' : 'Filomuzdaki Yatlar & Teknik Bilgiler' %></h2>
@@ -397,7 +401,6 @@
     </div>
 </section>
 
-<!-- YAT KATEGORİLERİ -->
 <section id="kategoriler" data-home-section class="hidden max-w-7xl mx-auto px-4 sm:px-6 pt-10">
     <div class="mb-8">
         <h2 class="text-2xl md:text-3xl font-extrabold text-[#0B1F3A]"><%= homeIsEn ? 'Our Yacht Categories' : 'Yat Kategorilerimiz' %></h2>
@@ -411,7 +414,6 @@
         'Catamarans': 'https://images.unsplash.com/photo-1544551763-46a013bb70d5?auto=format&fit=crop&w=500&q=80',
         'Superyachts': 'https://images.unsplash.com/photo-1567899378494-47b22a2ae96a?auto=format&fit=crop&w=500&q=80'
     }; %>
-    <% const homeCats = (typeof categories !== 'undefined' && Array.isArray(categories)) ? categories : []; %>
 
     <div class="grid grid-cols-2 md:grid-cols-5 gap-5">
         <% homeCats.forEach(cat => { %>
@@ -430,7 +432,6 @@
     </div>
 </section>
 
-<!-- DOĞRULANMIŞ MİSAFİR DENEYİMLERİ & SSS -->
 <section class="max-w-7xl mx-auto px-4 sm:px-6 pt-16 pb-6 grid grid-cols-1 lg:grid-cols-12 gap-8">
     <div class="lg:col-span-6 space-y-4">
         <span class="text-xs font-extrabold uppercase tracking-wider text-teal-600"><%= homeIsEn ? 'Verified Reviews' : 'Doğrulanmış Yorumlar' %></span>

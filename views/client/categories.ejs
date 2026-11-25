@@ -48,19 +48,24 @@
     <% } else { %>
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             <% listCats.forEach(function(cat) { %>
+                <% const rawKey = String(cat.key || cat.nameTr || cat.title || 'all'); %>
                 <% const catTitle = catIsEn
-                    ? (catSingularEn[cat.key] || cat.nameEn || cat.titleEn || cat.key || cat.nameTr)
+                    ? (cat.nameEn || cat.titleEn || catSingularEn[cat.key] || cat.key || cat.nameTr || cat.title)
                     : (cat.nameTr || cat.title || cat.key); %>
                 <% const catDesc = catIsEn
                     ? (cat.descEn || catDescEn[cat.key] || cat.desc || 'Private yacht category')
                     : (cat.desc || 'Özel yat kategorisi'); %>
                 <% const catImg = cat.img || catImgMap[cat.key] || catImgMap['Motor Yachts']; %>
                 <% const matchedCount = allYachts.filter(function(y) {
-                    return String(y.category || '').toLowerCase() === String(cat.key || '').toLowerCase() ||
-                           String(y.categoryTr || '').toLowerCase() === String((cat.nameTr || cat.title || cat.key) || '').toLowerCase();
+                    const yCat = String(y.category || '').toLowerCase();
+                    const yCatEn = String(y.categoryEn || '').toLowerCase();
+                    const yCatTr = String(y.categoryTr || '').toLowerCase();
+                    const kLower = String(cat.key || '').toLowerCase();
+                    const trLower = String(cat.nameTr || cat.title || '').toLowerCase();
+                    return (kLower && (yCat === kLower || yCatEn === kLower)) || (trLower && yCatTr === trLower);
                 }).length; %>
-                <% const displayCount = (typeof cat.yachtCount === 'number') ? cat.yachtCount : matchedCount; %>
-                <a href="/yachts?category=<%= encodeURIComponent(cat.key) %>" class="group bg-white rounded-2xl overflow-hidden border border-slate-200 shadow-sm hover:shadow-xl transition flex flex-col justify-between">
+                <% const displayCount = (typeof cat.yachtCount === 'number' && !Number.isNaN(cat.yachtCount)) ? cat.yachtCount : matchedCount; %>
+                <a href="/yachts?category=<%= encodeURIComponent(rawKey) %>" class="group bg-white rounded-2xl overflow-hidden border border-slate-200 shadow-sm hover:shadow-xl transition flex flex-col justify-between">
                     <div>
                         <div class="relative h-44 overflow-hidden bg-slate-100">
                             <img src="<%= catImg %>" onerror="fallbackYachtImg(this)" alt="<%= catTitle %>" class="w-full h-full object-cover group-hover:scale-105 transition duration-500">

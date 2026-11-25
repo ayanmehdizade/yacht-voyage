@@ -15,6 +15,11 @@
 
     <% const routeTours = (typeof tours !== 'undefined' && Array.isArray(tours)) ? tours : []; %>
     <% const routeYachts = (typeof yachts !== 'undefined' && Array.isArray(yachts)) ? yachts : []; %>
+    <% const itemTrToEn = {
+        'Lisanslı kaptan ve mürettebat': 'Licensed captain and crew',
+        'Rota boyunca koy molaları': 'Cove stops along the route',
+        'Özel menü ve havalimanı transferi': 'Custom menu and airport transfer'
+    }; %>
     <% const summaryTrToEn = {
         'Yassıca Adaları, Bedri Rahmi Koyu ve Tersane Adası duraklarıyla tam gün özel tekne turu.': 'Full-day private yacht tour with stops at Yassıca Islands, Bedri Rahmi Cove, and Tersane Island.',
         'Cennet Koyu, Türkbükü ve Orak Adası arasında lüks konaklamalı özel rota.': 'Private luxury overnight route between Paradise Bay (Cennet Koyu), Türkbükü, and Orak Island.'
@@ -36,17 +41,22 @@
                 <% const tourImg = tour.img || (linkedYacht && linkedYacht.images && linkedYacht.images[0]) || 'https://images.unsplash.com/photo-1500375592092-40eb2168fd21?auto=format&fit=crop&w=900&q=80'; %>
                 <% const tourTitle = (routesIsEn && tour.titleEn) ? tour.titleEn : tour.title; %>
                 <% const tourRegion = (routesIsEn && tour.regionEn) ? tour.regionEn : tour.region; %>
-                <% const daysNum = Number(tour.durationDays || 1); %>
+                <% const daysNum = Math.max(1, Number(tour.durationDays || 1)); %>
                 <% const tourDuration = (routesIsEn && tour.durationLabelEn)
                     ? tour.durationLabelEn
                     : (tour.durationLabel || (routesIsEn ? (daysNum + (daysNum === 1 ? ' Day' : ' Days')) : (daysNum + ' Gün'))); %>
+                <% const meetingSpot = (routesIsEn && tour.meetingPointEn)
+                    ? tour.meetingPointEn
+                    : (tour.meetingPoint || (tourRegion ? (tourRegion + ' Marina') : (routesIsEn ? 'Main Marina' : 'Ana Marina'))); %>
                 <% const tourSummary = routesIsEn
                     ? (tour.summaryEn || summaryTrToEn[tour.summary] || tour.summary || (tourRegion + ' private yacht route and cove exploration.'))
                     : (tour.summary || (tourRegion + ' hattında özel tekne rotası ve koy keşfi.')); %>
-                <% const rawStops = (routesIsEn && Array.isArray(tour.includedEn) && tour.includedEn.length) ? tour.includedEn : (Array.isArray(tour.included) ? tour.included : []); %>
-                <% const stops = rawStops.slice(0, 3); %>
+                <% const rawIncluded = (routesIsEn && Array.isArray(tour.includedEn) && tour.includedEn.length)
+                    ? tour.includedEn
+                    : (Array.isArray(tour.included) ? tour.included : []); %>
+                <% const includedList = routesIsEn ? rawIncluded.map(function(item) { return itemTrToEn[item] || item; }) : rawIncluded; %>
                 <% const locQuery = encodeURIComponent(tour.region || (linkedYacht && linkedYacht.location) || ''); %>
-                <% const targetUrl = linkedYacht ? ('/yachts/' + linkedYacht.id) : ('/yachts?location=' + locQuery); %>
+                <% const targetUrl = linkedYacht ? ('/yachts/' + encodeURIComponent(linkedYacht.id)) : ('/yachts?location=' + locQuery); %>
                 <div class="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm hover:shadow-md transition flex flex-col justify-between">
                     <div>
                         <img src="<%= tourImg %>" onerror="fallbackYachtImg(this)" alt="<%= tourTitle %>" class="w-full h-52 object-cover">
@@ -60,10 +70,22 @@
                             <p class="text-xs text-slate-600 leading-relaxed">
                                 <%= tourSummary %>
                             </p>
-                            <% if (stops.length > 0) { %>
-                                <div class="flex flex-wrap gap-1.5 pt-1 text-[11px] font-semibold text-slate-700">
-                                    <% stops.forEach(function(item, idx) { %>
-                                        <span class="bg-slate-100 px-2.5 py-1 rounded-lg"><%= idx + 1 %>. <%= item %></span>
+
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs bg-slate-50 p-3 rounded-xl text-slate-700">
+                                <div><i class="fa-regular fa-clock text-teal-600 mr-1"></i><strong><%= routesIsEn ? 'Duration:' : 'Süre:' %></strong> <%= tourDuration %></div>
+                                <div><i class="fa-solid fa-location-dot text-teal-600 mr-1"></i><strong><%= routesIsEn ? 'Meeting Point:' : 'Buluşma Noktası:' %></strong> <%= meetingSpot %></div>
+                            </div>
+
+                            <% if (includedList.length > 0) { %>
+                                <div class="space-y-1 pt-1">
+                                    <div class="text-[11px] font-bold uppercase text-emerald-700 tracking-wider">
+                                        <%= routesIsEn ? 'Included in Price' : 'Fiyata Dahil Olanlar' %>
+                                    </div>
+                                    <% includedList.slice(0, 3).forEach(function(item) { %>
+                                        <div class="text-xs text-slate-700 flex items-start gap-1.5">
+                                            <i class="fa-solid fa-check text-emerald-600 mt-0.5"></i>
+                                            <span><%= item %></span>
+                                        </div>
                                     <% }) %>
                                 </div>
                             <% } %>

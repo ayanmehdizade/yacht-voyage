@@ -96,331 +96,264 @@
     </div>
 </div>
 
-    <!-- MASAÜSTÜ SIDEBAR -->
-    <aside class="admin-sidebar hidden md:flex w-64 bg-[#0B1F3A] text-slate-300 p-6 flex-col justify-between shrink-0">
-        <div>
-            <div class="text-white font-extrabold text-lg mb-7 flex items-center space-x-2.5">
-                <div class="w-9 h-9 rounded-xl bg-white/10 flex items-center justify-center">
-                    <i class="fa-solid fa-sailboat text-sky-400"></i>
-                </div>
-                <div>
-                    <span class="block leading-none">Yacht CRM</span>
-                    <span class="text-[10px] text-sky-300 tracking-[0.2em]">OPERATIONS</span>
-                </div>
+<!-- MASAÜSTÜ SIDEBAR -->
+<aside class="admin-sidebar hidden md:flex w-64 bg-[#0B1F3A] text-slate-300 p-6 flex-col justify-between shrink-0">
+    <div>
+        <div class="text-white font-extrabold text-lg mb-7 flex items-center space-x-2.5">
+            <div class="w-9 h-9 rounded-xl bg-white/10 flex items-center justify-center">
+                <i class="fa-solid fa-sailboat text-sky-400"></i>
             </div>
-            <nav class="space-y-1.5 text-sm" id="adminSidebarNav">
-                <button type="button" data-admin-tab="dashboard" class="admin-nav-btn w-full text-left flex items-center space-x-3 p-3 bg-teal-600 text-white rounded-xl font-semibold shadow transition">
-                    <i class="fa-solid fa-chart-pie w-4"></i><span>Dashboard</span>
-                </button>
-                <button type="button" data-admin-tab="rezervasyonlar" class="admin-nav-btn w-full text-left flex items-center space-x-3 p-3 hover:bg-white/10 rounded-xl transition">
-                    <i class="fa-solid fa-calendar-check w-4"></i><span>Rezervasyonlar</span>
-                </button>
-                <button type="button" data-admin-tab="filo-listesi" class="admin-nav-btn w-full text-left flex items-center space-x-3 p-3 hover:bg-white/10 rounded-xl transition">
-                    <i class="fa-solid fa-ship w-4"></i><span>Aktif Filo &amp; Kapasite</span>
-                </button>
-                <button type="button" data-admin-tab="turlar-kategoriler" class="admin-nav-btn w-full text-left flex items-center space-x-3 p-3 hover:bg-white/10 rounded-xl transition">
-                    <i class="fa-solid fa-compass w-4"></i><span>Turlar &amp; Kategoriler</span>
-                </button>
-                <button type="button" data-admin-tab="ayarlar" class="admin-nav-btn w-full text-left flex items-center space-x-3 p-3 hover:bg-white/10 rounded-xl transition">
-                    <i class="fa-solid fa-sliders w-4"></i><span>Site, Ödeme &amp; Sözleşme</span>
-                </button>
-                <a href="/" class="flex items-center space-x-3 p-3 hover:bg-white/10 rounded-xl transition">
-                    <i class="fa-solid fa-globe w-4"></i><span>Müşteri Sitesi</span>
-                </a>
-            </nav>
-        </div>
-
-        <div class="text-xs text-slate-400 border-t border-white/10 pt-4 space-y-3">
             <div>
-                <div class="font-bold text-white"><%= (typeof adminUser !== 'undefined' && adminUser && adminUser.name) ? adminUser.name : 'Operasyon Yöneticisi' %></div>
-                <div>Club &amp; Fleet Manager • CRM v3</div>
+                <span class="block leading-none">Yacht CRM</span>
+                <span class="text-[10px] text-sky-300 tracking-[0.2em]">OPERATIONS</span>
             </div>
-            <form action="/admin/logout" method="POST">
-                <button type="submit" class="w-full py-2 px-3 rounded-xl bg-white/10 hover:bg-rose-600/80 text-white font-bold text-xs transition flex items-center justify-center space-x-2">
-                    <i class="fa-solid fa-right-from-bracket"></i>
-                    <span>Çıkış Yap</span>
-                </button>
-            </form>
         </div>
-    </aside>
-
-    <!-- ANA İÇERİK -->
-    <main class="admin-main-wrap flex-1 p-6 md:p-8 space-y-6 min-w-0">
-        <div class="admin-top-header flex flex-wrap items-center justify-between gap-3">
-            <div>
-                <h1 id="adminPageTitle" class="text-xl sm:text-2xl font-extrabold text-[#0B1F3A]">Dashboard &amp; Genel Bakış</h1>
-                <p id="adminPageSubtitle" class="text-xs text-slate-500 mt-0.5">Filo, turlar, kategoriler, ödemeler ve rezervasyon yönetimi</p>
-            </div>
-            <a href="/" class="admin-action-btn text-xs bg-white border border-slate-200 px-4 py-2.5 rounded-xl font-bold text-slate-700 hover:bg-slate-50 shadow-sm">
-                ← Müşteri Sayfasına Dön
+        <nav class="space-y-1.5 text-sm" id="adminSidebarNav">
+            <button type="button" data-admin-tab="dashboard" class="admin-nav-btn w-full text-left flex items-center space-x-3 p-3 bg-teal-600 text-white rounded-xl font-semibold shadow transition">
+                <i class="fa-solid fa-chart-pie w-4"></i><span>Dashboard</span>
+            </button>
+            <button type="button" data-admin-tab="rezervasyonlar" class="admin-nav-btn w-full text-left flex items-center space-x-3 p-3 hover:bg-white/10 rounded-xl transition">
+                <i class="fa-solid fa-calendar-check w-4"></i><span>Rezervasyonlar</span>
+            </button>
+            <button type="button" data-admin-tab="filo-listesi" class="admin-nav-btn w-full text-left flex items-center space-x-3 p-3 hover:bg-white/10 rounded-xl transition">
+                <i class="fa-solid fa-ship w-4"></i><span>Aktif Filo &amp; Kapasite</span>
+            </button>
+            <button type="button" data-admin-tab="turlar-kategoriler" class="admin-nav-btn w-full text-left flex items-center space-x-3 p-3 hover:bg-white/10 rounded-xl transition">
+                <i class="fa-solid fa-compass w-4"></i><span>Turlar &amp; Kategoriler</span>
+            </button>
+            <button type="button" data-admin-tab="ayarlar" class="admin-nav-btn w-full text-left flex items-center space-x-3 p-3 hover:bg-white/10 rounded-xl transition">
+                <i class="fa-solid fa-sliders w-4"></i><span>Site, Ödeme &amp; Sözleşme</span>
+            </button>
+            <a href="/" class="flex items-center space-x-3 p-3 hover:bg-white/10 rounded-xl transition">
+                <i class="fa-solid fa-globe w-4"></i><span>Müşteri Sitesi</span>
             </a>
+        </nav>
+    </div>
+
+    <div class="text-xs text-slate-400 border-t border-white/10 pt-4 space-y-3">
+        <div>
+            <div class="font-bold text-white"><%= (typeof adminUser !== 'undefined' && adminUser && adminUser.name) ? adminUser.name : 'Operasyon Yöneticisi' %></div>
+            <div>Club &amp; Fleet Manager • CRM v3</div>
+        </div>
+        <form action="/admin/logout" method="POST">
+            <button type="submit" class="w-full py-2 px-3 rounded-xl bg-white/10 hover:bg-rose-600/80 text-white font-bold text-xs transition flex items-center justify-center space-x-2">
+                <i class="fa-solid fa-right-from-bracket"></i>
+                <span>Çıkış Yap</span>
+            </button>
+        </form>
+    </div>
+</aside>
+
+<!-- ANA İÇERİK -->
+<main class="admin-main-wrap flex-1 p-6 md:p-8 space-y-6 min-w-0">
+    <div class="admin-top-header flex flex-wrap items-center justify-between gap-3">
+        <div>
+            <h1 id="adminPageTitle" class="text-xl sm:text-2xl font-extrabold text-[#0B1F3A]">Dashboard &amp; Genel Bakış</h1>
+            <p id="adminPageSubtitle" class="text-xs text-slate-500 mt-0.5">Filo, turlar, kategoriler, ödemeler ve rezervasyon yönetimi</p>
+        </div>
+        <a href="/" class="admin-action-btn text-xs bg-white border border-slate-200 px-4 py-2.5 rounded-xl font-bold text-slate-700 hover:bg-slate-50 shadow-sm">
+            ← Müşteri Sayfasına Dön
+        </a>
+    </div>
+
+    <% if (typeof notice !== 'undefined' && notice) { %>
+        <div class="bg-emerald-50 border border-emerald-200 text-emerald-800 px-4 py-3 rounded-2xl text-xs font-bold flex items-center space-x-2">
+            <i class="fa-solid fa-circle-check text-emerald-600 shrink-0"></i>
+            <span><%= notice %></span>
+        </div>
+    <% } %>
+
+    <!-- 1. DASHBOARD -->
+    <section id="view-dashboard" class="admin-view space-y-6">
+        <%
+            const rawBookings = (typeof bookings !== 'undefined' && Array.isArray(bookings)) ? bookings : [];
+            const rawYachts = (typeof yachts !== 'undefined' && Array.isArray(yachts)) ? yachts : [];
+            const rawTours = (typeof tours !== 'undefined' && Array.isArray(tours)) ? tours : [];
+            const rawCats = (typeof categories !== 'undefined' && Array.isArray(categories)) ? categories : [];
+            const rawExtras = (typeof extras !== 'undefined' && Array.isArray(extras)) ? extras : [];
+            const rawPayments = (typeof paymentOptions !== 'undefined' && Array.isArray(paymentOptions)) ? paymentOptions : [];
+
+            const isCancelled = b => b.status === 'İptal Edildi' || b.status === 'İptal';
+            const activeBookings = rawBookings.filter(b => !isCancelled(b));
+            const cancelledBookings = rawBookings.filter(b => isCancelled(b));
+            const approvedCount = rawBookings.filter(b => b.status === 'Onaylandı').length;
+            const pendingCount = rawBookings.filter(b => b.status === 'Beklemede' || b.status === 'Ödeme Bekliyor').length;
+            const cancelledCount = cancelledBookings.length;
+
+            const grossVolume = activeBookings.reduce((sum, b) => sum + Number(b.totalAmount || 0), 0);
+            const collectedRevenue = activeBookings.reduce((sum, b) => sum + Number(b.paidAmount || 0), 0);
+            const refundedTotal = cancelledBookings.reduce((sum, b) => {
+                const ref = b.refundedAmount !== undefined ? Number(b.refundedAmount || 0) : Number(b.paidAmount || 0);
+                return sum + ref;
+            }, 0);
+            const remainingBalance = Math.max(0, grossVolume - collectedRevenue);
+            const collectionRate = grossVolume > 0 ? Math.min(100, Math.round((collectedRevenue / grossVolume) * 100)) : 0;
+
+            const avgDailyPrice = rawYachts.length
+                ? Math.round(rawYachts.reduce((sum, y) => sum + Number(y.price || 0), 0) / rawYachts.length)
+                : 0;
+            const totalGuestCapacity = rawYachts.reduce((sum, y) => sum + Number(y.guests || 0), 0);
+
+            const locationStatsMap = {};
+            rawYachts.forEach(y => {
+                const loc = (y.location || 'Diğer').trim();
+                if (!locationStatsMap[loc]) locationStatsMap[loc] = { name: loc, count: 0, totalCapacity: 0 };
+                locationStatsMap[loc].count += 1;
+                locationStatsMap[loc].totalCapacity += Number(y.guests || 0);
+            });
+            const locationStats = Object.values(locationStatsMap).sort((a, b) => b.count - a.count);
+
+            const categoryStatsMap = {};
+            rawYachts.forEach(y => {
+                const catLabel = (y.categoryTr || y.category || 'Diğer').trim();
+                if (!categoryStatsMap[catLabel]) categoryStatsMap[catLabel] = { name: catLabel, count: 0 };
+                categoryStatsMap[catLabel].count += 1;
+            });
+            const categoryStats = Object.values(categoryStatsMap).sort((a, b) => b.count - a.count);
+        %>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+            <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+                <div class="flex items-center justify-between">
+                    <span class="text-slate-400 text-xs font-bold uppercase">Toplam Rezervasyon</span>
+                    <span class="w-8 h-8 rounded-xl bg-sky-50 text-sky-700 flex items-center justify-center text-xs">
+                        <i class="fa-solid fa-calendar-check"></i>
+                    </span>
+                </div>
+                <h3 class="text-3xl font-extrabold text-[#0B1F3A] mt-2"><%= rawBookings.length %></h3>
+                <div class="mt-2 flex flex-wrap gap-1.5 text-[11px] font-semibold">
+                    <span class="text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md"><%= approvedCount %> onaylı</span>
+                    <span class="text-amber-700 bg-amber-50 px-2 py-0.5 rounded-md"><%= pendingCount %> beklemede</span>
+                    <span class="text-rose-700 bg-rose-50 px-2 py-0.5 rounded-md"><%= cancelledCount %> iptal</span>
+                </div>
+            </div>
+
+            <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+                <div class="flex items-center justify-between">
+                    <span class="text-slate-400 text-xs font-bold uppercase">Net Tahsilat &amp; İade</span>
+                    <span class="w-8 h-8 rounded-xl bg-teal-50 text-teal-700 flex items-center justify-center text-xs">
+                        <i class="fa-solid fa-coins"></i>
+                    </span>
+                </div>
+                <h3 class="text-3xl font-extrabold text-teal-700 mt-2">€<%= collectedRevenue.toLocaleString() %></h3>
+                <span class="text-[11px] text-slate-500 mt-2 block">
+                    İade edilen: <strong class="text-rose-700">€<%= refundedTotal.toLocaleString() %></strong> • Kalan: <strong class="text-amber-700">€<%= remainingBalance.toLocaleString() %></strong>
+                </span>
+            </div>
+
+            <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+                <div class="flex items-center justify-between">
+                    <span class="text-slate-400 text-xs font-bold uppercase">Aktif Filo &amp; Tur</span>
+                    <span class="w-8 h-8 rounded-xl bg-indigo-50 text-indigo-700 flex items-center justify-center text-xs">
+                        <i class="fa-solid fa-ship"></i>
+                    </span>
+                </div>
+                <h3 class="text-3xl font-extrabold text-[#0B1F3A] mt-2"><%= rawYachts.length %> Yat / <%= rawTours.length %> Tur</h3>
+                <span class="text-[11px] text-slate-500 mt-2 block">
+                    <%= rawCats.length %> kategori • Toplam <strong class="text-slate-700"><%= totalGuestCapacity %></strong> kişi kapasite
+                </span>
+            </div>
+
+            <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+                <div class="flex items-center justify-between">
+                    <span class="text-slate-400 text-xs font-bold uppercase">Ort. Günlük Fiyat</span>
+                    <span class="w-8 h-8 rounded-xl bg-amber-50 text-amber-700 flex items-center justify-center text-xs">
+                        <i class="fa-solid fa-tag"></i>
+                    </span>
+                </div>
+                <h3 class="text-3xl font-extrabold text-amber-600 mt-2">€<%= avgDailyPrice.toLocaleString() %></h3>
+                <span class="text-[11px] text-slate-500 mt-2 block">
+                    <%= rawExtras.filter(e => e.active !== false).length %> aktif ekstra • <%= rawPayments.filter(p => p.active !== false).length %> ödeme yöntemi
+                </span>
+            </div>
         </div>
 
-        <% if (typeof notice !== 'undefined' && notice) { %>
-            <div class="bg-emerald-50 border border-emerald-200 text-emerald-800 px-4 py-3 rounded-2xl text-xs font-bold flex items-center space-x-2">
-                <i class="fa-solid fa-circle-check text-emerald-600 shrink-0"></i>
-                <span><%= notice %></span>
-            </div>
-        <% } %>
-
-        <!-- 1. DASHBOARD -->
-        <section id="view-dashboard" class="admin-view space-y-6">
-            <%
-                const rawBookings = (typeof bookings !== 'undefined' && Array.isArray(bookings)) ? bookings : [];
-                const rawYachts = (typeof yachts !== 'undefined' && Array.isArray(yachts)) ? yachts : [];
-                const rawTours = (typeof tours !== 'undefined' && Array.isArray(tours)) ? tours : [];
-                const rawCats = (typeof categories !== 'undefined' && Array.isArray(categories)) ? categories : [];
-                const rawExtras = (typeof extras !== 'undefined' && Array.isArray(extras)) ? extras : [];
-                const rawPayments = (typeof paymentOptions !== 'undefined' && Array.isArray(paymentOptions)) ? paymentOptions : [];
-
-                const isCancelled = b => b.status === 'İptal Edildi' || b.status === 'İptal';
-                const activeBookings = rawBookings.filter(b => !isCancelled(b));
-                const cancelledBookings = rawBookings.filter(b => isCancelled(b));
-                const approvedCount = rawBookings.filter(b => b.status === 'Onaylandı').length;
-                const pendingCount = rawBookings.filter(b => b.status === 'Beklemede' || b.status === 'Ödeme Bekliyor').length;
-                const cancelledCount = cancelledBookings.length;
-
-                const grossVolume = activeBookings.reduce((sum, b) => sum + Number(b.totalAmount || 0), 0);
-                const collectedRevenue = activeBookings.reduce((sum, b) => sum + Number(b.paidAmount || 0), 0);
-                const refundedTotal = cancelledBookings.reduce((sum, b) => {
-                    const ref = b.refundedAmount !== undefined ? Number(b.refundedAmount || 0) : Number(b.paidAmount || 0);
-                    return sum + ref;
-                }, 0);
-                const remainingBalance = Math.max(0, grossVolume - collectedRevenue);
-                const collectionRate = grossVolume > 0 ? Math.min(100, Math.round((collectedRevenue / grossVolume) * 100)) : 0;
-
-                const avgDailyPrice = rawYachts.length
-                    ? Math.round(rawYachts.reduce((sum, y) => sum + Number(y.price || 0), 0) / rawYachts.length)
-                    : 0;
-                const totalGuestCapacity = rawYachts.reduce((sum, y) => sum + Number(y.guests || 0), 0);
-
-                const locationStatsMap = {};
-                rawYachts.forEach(y => {
-                    const loc = (y.location || 'Diğer').trim();
-                    if (!locationStatsMap[loc]) locationStatsMap[loc] = { name: loc, count: 0, totalCapacity: 0 };
-                    locationStatsMap[loc].count += 1;
-                    locationStatsMap[loc].totalCapacity += Number(y.guests || 0);
-                });
-                const locationStats = Object.values(locationStatsMap).sort((a, b) => b.count - a.count);
-
-                const categoryStatsMap = {};
-                rawYachts.forEach(y => {
-                    const catLabel = (y.categoryTr || y.category || 'Diğer').trim();
-                    if (!categoryStatsMap[catLabel]) categoryStatsMap[catLabel] = { name: catLabel, count: 0 };
-                    categoryStatsMap[catLabel].count += 1;
-                });
-                const categoryStats = Object.values(categoryStatsMap).sort((a, b) => b.count - a.count);
-            %>
-
-            <!-- ÜST KPI KARTLARI -->
-            <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
-                <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
-                    <div class="flex items-center justify-between">
-                        <span class="text-slate-400 text-xs font-bold uppercase">Toplam Rezervasyon</span>
-                        <span class="w-8 h-8 rounded-xl bg-sky-50 text-sky-700 flex items-center justify-center text-xs">
-                            <i class="fa-solid fa-calendar-check"></i>
-                        </span>
-                    </div>
-                    <h3 class="text-3xl font-extrabold text-[#0B1F3A] mt-2"><%= rawBookings.length %></h3>
-                    <div class="mt-2 flex flex-wrap gap-1.5 text-[11px] font-semibold">
-                        <span class="text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md"><%= approvedCount %> onaylı</span>
-                        <span class="text-amber-700 bg-amber-50 px-2 py-0.5 rounded-md"><%= pendingCount %> beklemede</span>
-                        <span class="text-rose-700 bg-rose-50 px-2 py-0.5 rounded-md"><%= cancelledCount %> iptal</span>
-                    </div>
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div class="bg-white p-5 sm:p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+                <div class="flex items-center justify-between">
+                    <h3 class="font-extrabold text-slate-900 text-sm sm:text-base">Tahsilat, İade &amp; Bakiye</h3>
+                    <span class="text-xs font-extrabold text-teal-700 bg-teal-50 px-2.5 py-1 rounded-lg">%<%= collectionRate %></span>
                 </div>
 
-                <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
-                    <div class="flex items-center justify-between">
-                        <span class="text-slate-400 text-xs font-bold uppercase">Net Tahsilat &amp; İade</span>
-                        <span class="w-8 h-8 rounded-xl bg-teal-50 text-teal-700 flex items-center justify-center text-xs">
-                            <i class="fa-solid fa-coins"></i>
-                        </span>
-                    </div>
-                    <h3 class="text-3xl font-extrabold text-teal-700 mt-2">€<%= collectedRevenue.toLocaleString() %></h3>
-                    <span class="text-[11px] text-slate-500 mt-2 block">
-                        İade edilen: <strong class="text-rose-700">€<%= refundedTotal.toLocaleString() %></strong> • Kalan: <strong class="text-amber-700">€<%= remainingBalance.toLocaleString() %></strong>
-                    </span>
+                <div class="w-full h-3 bg-slate-100 rounded-full overflow-hidden">
+                    <div class="dash-progress-bar h-full bg-teal-600 rounded-full transition-all duration-300" data-width="<%= collectionRate %>"></div>
                 </div>
 
-                <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
-                    <div class="flex items-center justify-between">
-                        <span class="text-slate-400 text-xs font-bold uppercase">Aktif Filo &amp; Tur</span>
-                        <span class="w-8 h-8 rounded-xl bg-indigo-50 text-indigo-700 flex items-center justify-center text-xs">
-                            <i class="fa-solid fa-ship"></i>
-                        </span>
+                <div class="space-y-2.5 text-xs pt-1">
+                    <div class="flex items-center justify-between py-1.5 border-b border-slate-100">
+                        <span class="text-slate-500">Aktif Rezervasyon Hacmi</span>
+                        <span class="font-extrabold text-slate-900">€<%= grossVolume.toLocaleString() %></span>
                     </div>
-                    <h3 class="text-3xl font-extrabold text-[#0B1F3A] mt-2"><%= rawYachts.length %> Yat / <%= rawTours.length %> Tur</h3>
-                    <span class="text-[11px] text-slate-500 mt-2 block">
-                        <%= rawCats.length %> kategori • Toplam <strong class="text-slate-700"><%= totalGuestCapacity %></strong> kişi kapasite
-                    </span>
-                </div>
-
-                <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
-                    <div class="flex items-center justify-between">
-                        <span class="text-slate-400 text-xs font-bold uppercase">Ort. Günlük Fiyat</span>
-                        <span class="w-8 h-8 rounded-xl bg-amber-50 text-amber-700 flex items-center justify-center text-xs">
-                            <i class="fa-solid fa-tag"></i>
-                        </span>
+                    <div class="flex items-center justify-between py-1.5 border-b border-slate-100">
+                        <span class="text-slate-500">Aktif Tahsil Edilen Tutar</span>
+                        <span class="font-extrabold text-emerald-700">€<%= collectedRevenue.toLocaleString() %></span>
                     </div>
-                    <h3 class="text-3xl font-extrabold text-amber-600 mt-2">€<%= avgDailyPrice.toLocaleString() %></h3>
-                    <span class="text-[11px] text-slate-500 mt-2 block">
-                        <%= rawExtras.filter(e => e.active !== false).length %> aktif ekstra • <%= rawPayments.filter(p => p.active !== false).length %> ödeme yöntemi
-                    </span>
+                    <div class="flex items-center justify-between py-1.5 border-b border-slate-100">
+                        <span class="text-slate-500">İptal / İade Edilen Tutar</span>
+                        <span class="font-extrabold text-rose-700">€<%= refundedTotal.toLocaleString() %></span>
+                    </div>
+                    <div class="flex items-center justify-between py-1.5">
+                        <span class="text-slate-500">Bekleyen / Kalan Bakiye</span>
+                        <span class="font-extrabold text-amber-700">€<%= remainingBalance.toLocaleString() %></span>
+                    </div>
                 </div>
             </div>
 
-            <!-- GELİR DAĞILIMI & LOKASYON/KATEGORİ İSTATİSTİKLERİ -->
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <div class="bg-white p-5 sm:p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
-                    <div class="flex items-center justify-between">
-                        <h3 class="font-extrabold text-slate-900 text-sm sm:text-base">Tahsilat, İade &amp; Bakiye</h3>
-                        <span class="text-xs font-extrabold text-teal-700 bg-teal-50 px-2.5 py-1 rounded-lg">%<%= collectionRate %></span>
-                    </div>
-
-                    <div class="w-full h-3 bg-slate-100 rounded-full overflow-hidden">
-                        <div class="dash-progress-bar h-full bg-teal-600 rounded-full transition-all duration-300" data-width="<%= collectionRate %>"></div>
-                    </div>
-
-                    <div class="space-y-2.5 text-xs pt-1">
-                        <div class="flex items-center justify-between py-1.5 border-b border-slate-100">
-                            <span class="text-slate-500">Aktif Rezervasyon Hacmi</span>
-                            <span class="font-extrabold text-slate-900">€<%= grossVolume.toLocaleString() %></span>
-                        </div>
-                        <div class="flex items-center justify-between py-1.5 border-b border-slate-100">
-                            <span class="text-slate-500">Aktif Tahsil Edilen Tutar</span>
-                            <span class="font-extrabold text-emerald-700">€<%= collectedRevenue.toLocaleString() %></span>
-                        </div>
-                        <div class="flex items-center justify-between py-1.5 border-b border-slate-100">
-                            <span class="text-slate-500">İptal / İade Edilen Tutar</span>
-                            <span class="font-extrabold text-rose-700">€<%= refundedTotal.toLocaleString() %></span>
-                        </div>
-                        <div class="flex items-center justify-between py-1.5">
-                            <span class="text-slate-500">Bekleyen / Kalan Bakiye</span>
-                            <span class="font-extrabold text-amber-700">€<%= remainingBalance.toLocaleString() %></span>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="bg-white p-5 sm:p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
-                    <h3 class="font-extrabold text-slate-900 text-sm sm:text-base">Liman Bazlı Filo Dağılımı</h3>
-                    <% if (locationStats.length === 0) { %>
-                        <p class="text-xs text-slate-400">Henüz yat verisi yok.</p>
-                    <% } else { %>
-                        <div class="space-y-3 text-xs">
-                            <% locationStats.forEach(loc => { %>
-                                <% const pct = rawYachts.length ? Math.round((loc.count / rawYachts.length) * 100) : 0; %>
-                                <div class="space-y-1">
-                                    <div class="flex items-center justify-between">
-                                        <span class="font-bold text-slate-800"><%= loc.name %></span>
-                                        <span class="text-slate-500"><strong><%= loc.count %></strong> yat • <%= loc.totalCapacity %> kişi</span>
-                                    </div>
-                                    <div class="w-full h-2 bg-slate-100 rounded-full overflow-hidden">
-                                        <div class="dash-progress-bar h-full bg-[#0B1F3A] rounded-full" data-width="<%= pct %>"></div>
-                                    </div>
+            <div class="bg-white p-5 sm:p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+                <h3 class="font-extrabold text-slate-900 text-sm sm:text-base">Liman Bazlı Filo Dağılımı</h3>
+                <% if (locationStats.length === 0) { %>
+                    <p class="text-xs text-slate-400">Henüz yat verisi yok.</p>
+                <% } else { %>
+                    <div class="space-y-3 text-xs">
+                        <% locationStats.forEach(loc => { %>
+                            <% const pct = rawYachts.length ? Math.round((loc.count / rawYachts.length) * 100) : 0; %>
+                            <div class="space-y-1">
+                                <div class="flex items-center justify-between">
+                                    <span class="font-bold text-slate-800"><%= loc.name %></span>
+                                    <span class="text-slate-500"><strong><%= loc.count %></strong> yat • <%= loc.totalCapacity %> kişi</span>
                                 </div>
-                            <% }) %>
-                        </div>
-                    <% } %>
-                </div>
-
-                <div class="bg-white p-5 sm:p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
-                    <h3 class="font-extrabold text-slate-900 text-sm sm:text-base">Kategori Bazlı Yat Sayısı</h3>
-                    <% if (categoryStats.length === 0) { %>
-                        <p class="text-xs text-slate-400">Henüz kategori verisi yok.</p>
-                    <% } else { %>
-                        <div class="space-y-3 text-xs">
-                            <% categoryStats.forEach(cat => { %>
-                                <% const catPct = rawYachts.length ? Math.round((cat.count / rawYachts.length) * 100) : 0; %>
-                                <div class="space-y-1">
-                                    <div class="flex items-center justify-between">
-                                        <span class="font-bold text-slate-800"><%= cat.name %></span>
-                                        <span class="text-slate-500"><strong><%= cat.count %></strong> yat (%<%= catPct %>)</span>
-                                    </div>
-                                    <div class="w-full h-2 bg-slate-100 rounded-full overflow-hidden">
-                                        <div class="dash-progress-bar h-full bg-teal-600 rounded-full" data-width="<%= catPct %>"></div>
-                                    </div>
+                                <div class="w-full h-2 bg-slate-100 rounded-full overflow-hidden">
+                                    <div class="dash-progress-bar h-full bg-[#0B1F3A] rounded-full" data-width="<%= pct %>"></div>
                                 </div>
-                            <% }) %>
-                        </div>
-                    <% } %>
-                </div>
-            </div>
-
-            <!-- SON REZERVASYONLAR ÖZETİ -->
-            <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-                <div class="p-4 sm:p-5 border-b border-slate-100 flex items-center justify-between gap-3">
-                    <div>
-                        <h3 class="font-extrabold text-slate-900 text-sm sm:text-base">Son Rezervasyonlar</h3>
-                        <p class="text-xs text-slate-500">Rezervasyon durumu ve ödeme/iade özeti</p>
+                            </div>
+                        <% }) %>
                     </div>
-                    <button type="button" onclick="switchAdminTab('rezervasyonlar')" class="text-xs font-bold text-teal-700 hover:underline">
-                        Tümünü Gör →
-                    </button>
-                </div>
-                <div class="overflow-x-auto">
-                    <table class="admin-table w-full text-left text-xs">
-                        <thead class="bg-slate-50 text-slate-400 uppercase text-[10px]">
-                            <tr>
-                                <th class="p-4">PNR</th>
-                                <th class="p-4">Müşteri</th>
-                                <th class="p-4">Yat</th>
-                                <th class="p-4">Tarih</th>
-                                <th class="p-4">Tutar / Ödeme</th>
-                                <th class="p-4">Durum</th>
-                            </tr>
-                        </thead>
-                        <tbody class="divide-y divide-slate-100">
-                            <% if (rawBookings.length === 0) { %>
-                                <tr>
-                                    <td colspan="6" class="p-6 text-center text-slate-400">Henüz rezervasyon kaydı bulunmuyor.</td>
-                                </tr>
-                            <% } else { %>
-                                <% rawBookings.slice(0, 5).forEach(b => { %>
-                                    <% const st = (b.status === 'İptal') ? 'İptal Edildi' : ((b.status === 'Ödeme Bekliyor') ? 'Beklemede' : (b.status || 'Beklemede')); %>
-                                    <% const isRef = st === 'İptal Edildi'; %>
-                                    <tr class="hover:bg-slate-50/70">
-                                        <td class="p-4 font-mono font-bold text-[#0B1F3A]"><%= b.id %></td>
-                                        <td class="p-4 font-bold text-slate-900"><%= b.customer %></td>
-                                        <td class="p-4 text-slate-700"><%= b.yacht %></td>
-                                        <td class="p-4 text-slate-600"><%= b.checkIn %> → <%= b.checkOut %></td>
-                                        <td class="p-4 font-extrabold text-slate-900">
-                                            <% if (isRef) { %>
-                                                <span class="text-rose-700">İade / İptal (€<%= Number(b.refundedAmount || b.paidAmount || 0).toLocaleString() %>)</span>
-                                            <% } else { %>
-                                                <span>€<%= Number(b.totalAmount || 0).toLocaleString() %> <span class="text-[11px] font-semibold text-emerald-700">(Ödenen: €<%= Number(b.paidAmount || 0).toLocaleString() %>)</span></span>
-                                            <% } %>
-                                        </td>
-                                        <td class="p-4">
-                                            <% if (st === 'Onaylandı') { %>
-                                                <span class="bg-emerald-100 text-emerald-700 px-2.5 py-1 rounded-full font-bold text-[11px]">Onaylandı</span>
-                                            <% } else if (isRef) { %>
-                                                <span class="bg-rose-100 text-rose-700 px-2.5 py-1 rounded-full font-bold text-[11px]">İptal Edildi</span>
-                                            <% } else { %>
-                                                <span class="bg-amber-100 text-amber-800 px-2.5 py-1 rounded-full font-bold text-[11px]">Beklemede</span>
-                                            <% } %>
-                                        </td>
-                                    </tr>
-                                <% }) %>
-                            <% } %>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </section>
-
-        <!-- 3. REZERVASYONLAR -->
-        <section id="view-rezervasyonlar" class="admin-view hidden bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-            <div class="p-4 sm:p-5 border-b border-slate-100 flex flex-col lg:flex-row lg:items-center justify-between gap-3">
-                <div class="flex flex-wrap items-center gap-2">
-                    <span class="font-extrabold text-slate-900 text-sm sm:text-base mr-1">Rezervasyonlar (<%= bookings.length %>)</span>
-                    <button type="button" data-status-filter="all" class="status-filter-btn px-3 py-1.5 rounded-lg text-[11px] font-bold bg-[#0B1F3A] text-white">Tümü</button>
-                    <button type="button" data-status-filter="Onaylandı" class="status-filter-btn px-3 py-1.5 rounded-lg text-[11px] font-bold bg-slate-100 text-slate-700">Onaylandı</button>
-                    <button type="button" data-status-filter="Beklemede" class="status-filter-btn px-3 py-1.5 rounded-lg text-[11px] font-bold bg-slate-100 text-slate-700">Beklemede</button>
-                    <button type="button" data-status-filter="İptal Edildi" class="status-filter-btn px-3 py-1.5 rounded-lg text-[11px] font-bold bg-slate-100 text-slate-700">İptal Edildi</button>
-                </div>
-                <input id="bookingSearchInput" type="text" placeholder="PNR, müşteri veya yat ara..." class="px-3.5 py-2 text-xs border border-slate-200 rounded-xl w-full lg:w-64 focus:outline-none">
+                <% } %>
             </div>
 
+            <div class="bg-white p-5 sm:p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+                <h3 class="font-extrabold text-slate-900 text-sm sm:text-base">Kategori Bazlı Yat Sayısı</h3>
+                <% if (categoryStats.length === 0) { %>
+                    <p class="text-xs text-slate-400">Henüz kategori verisi yok.</p>
+                <% } else { %>
+                    <div class="space-y-3 text-xs">
+                        <% categoryStats.forEach(cat => { %>
+                            <% const catPct = rawYachts.length ? Math.round((cat.count / rawYachts.length) * 100) : 0; %>
+                            <div class="space-y-1">
+                                <div class="flex items-center justify-between">
+                                    <span class="font-bold text-slate-800"><%= cat.name %></span>
+                                    <span class="text-slate-500"><strong><%= cat.count %></strong> yat (%<%= catPct %>)</span>
+                                </div>
+                                <div class="w-full h-2 bg-slate-100 rounded-full overflow-hidden">
+                                    <div class="dash-progress-bar h-full bg-teal-600 rounded-full" data-width="<%= catPct %>"></div>
+                                </div>
+                            </div>
+                        <% }) %>
+                    </div>
+                <% } %>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+            <div class="p-4 sm:p-5 border-b border-slate-100 flex items-center justify-between gap-3">
+                <div>
+                    <h3 class="font-extrabold text-slate-900 text-sm sm:text-base">Son Rezervasyonlar</h3>
+                    <p class="text-xs text-slate-500">Rezervasyon durumu ve ödeme/iade özeti</p>
+                </div>
+                <button type="button" onclick="switchAdminTab('rezervasyonlar')" class="text-xs font-bold text-teal-700 hover:underline">
+                    Tümünü Gör →
+                </button>
+            </div>
             <div class="overflow-x-auto">
                 <table class="admin-table w-full text-left text-xs">
                     <thead class="bg-slate-50 text-slate-400 uppercase text-[10px]">
@@ -428,666 +361,782 @@
                             <th class="p-4">PNR</th>
                             <th class="p-4">Müşteri</th>
                             <th class="p-4">Yat</th>
-                            <th class="p-4">Tarih &amp; Kişi</th>
-                            <th class="p-4">Rezervasyon Durumu</th>
-                            <th class="p-4">Ödeme &amp; İade Durumu</th>
-                            <th class="p-4 text-right">İşlem</th>
+                            <th class="p-4">Tarih</th>
+                            <th class="p-4">Tutar / Ödeme</th>
+                            <th class="p-4">Durum</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-slate-100">
-                        <% bookings.forEach(b => { %>
-                            <% const normStatus = (b.status === 'İptal') ? 'İptal Edildi' : ((b.status === 'Ödeme Bekliyor') ? 'Beklemede' : (b.status || 'Beklemede')); %>
-                            <% const isCanc = normStatus === 'İptal Edildi'; %>
-                            <% const payAmt = Number(b.paidAmount || 0); %>
-                            <% const totAmt = Number(b.totalAmount || 0); %>
-                            <% const refAmt = isCanc ? (b.refundedAmount !== undefined ? Number(b.refundedAmount || 0) : payAmt) : Number(b.refundedAmount || 0); %>
-                            <% const payBadge = b.paymentStatus || (isCanc ? (refAmt > 0 ? 'İade Edildi / İptal' : 'Ödeme İptal') : (payAmt >= totAmt ? 'Tam Ödendi' : (payAmt > 0 ? 'Ön Ödeme Alındı' : 'Ödeme Bekliyor'))); %>
-                            <tr class="booking-row hover:bg-slate-50/70" data-booking-status="<%= normStatus %>">
-                                <td class="p-4 font-mono font-bold text-[#0B1F3A]"><%= b.id %></td>
-                                <td class="p-4">
-                                    <div class="font-bold text-slate-900"><%= b.customer %></div>
-                                    <div class="text-[11px] text-slate-400"><%= b.email || '' %> <%= b.phone ? ('• ' + b.phone) : '' %></div>
-                                </td>
-                                <td class="p-4 font-semibold text-slate-700"><%= b.yacht %></td>
-                                <td class="p-4 text-slate-600">
-                                    <div><%= b.checkIn %> → <%= b.checkOut %></div>
-                                    <div class="text-[11px] font-bold text-slate-800"><%= b.guests %> Kişi (<%= b.days || 1 %> Gün)</div>
-                                </td>
-                                <td class="p-4">
-                                    <% if (normStatus === 'Onaylandı') { %>
-                                        <span class="inline-flex items-center whitespace-nowrap shrink-0 bg-emerald-100 text-emerald-700 px-3 py-1 rounded-full font-bold text-[11px]">Onaylandı</span>
-                                    <% } else if (isCanc) { %>
-                                        <span class="inline-flex items-center whitespace-nowrap shrink-0 bg-rose-100 text-rose-700 px-3 py-1 rounded-full font-bold text-[11px]">İptal Edildi</span>
-                                    <% } else { %>
-                                        <span class="inline-flex items-center whitespace-nowrap shrink-0 bg-amber-100 text-amber-800 px-3 py-1 rounded-full font-bold text-[11px]">Beklemede</span>
-                                    <% } %>
-                                </td>
-                                <td class="p-4 space-y-1">
-                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-md text-[11px] font-bold <%= isCanc ? 'bg-rose-50 text-rose-700 border border-rose-200' : 'bg-sky-50 text-sky-800 border border-sky-200' %>">
-                                        <%= payBadge %>
-                                    </span>
-                                    <div class="text-[11px] text-slate-600">
-                                        Toplam: <strong>€<%= totAmt.toLocaleString() %></strong> • Aktif Tahsilat: <strong class="text-emerald-700">€<%= (isCanc ? 0 : payAmt).toLocaleString() %></strong>
-                                    </div>
-                                    <% if (refAmt > 0) { %>
-                                        <div class="text-[11px] font-bold text-rose-700">İade Tutarı: €<%= refAmt.toLocaleString() %></div>
-                                    <% } %>
-                                </td>
-                                <td class="p-4 text-right whitespace-nowrap space-x-1">
-                                    <form action="/admin/bookings/<%= b.id %>/status" method="POST" class="inline">
-                                        <input type="hidden" name="status" value="Onaylandı">
-                                        <button type="submit" class="admin-action-btn px-2.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg font-bold transition">Onayla</button>
-                                    </form>
-                                    <form action="/admin/bookings/<%= b.id %>/status" method="POST" class="inline">
-                                        <input type="hidden" name="status" value="Beklemede">
-                                        <button type="submit" class="admin-action-btn px-2.5 py-1.5 bg-amber-100 hover:bg-amber-200 text-amber-800 rounded-lg font-bold transition">Beklet</button>
-                                    </form>
-                                    <form action="/admin/bookings/<%= b.id %>/status" method="POST" class="inline">
-                                        <input type="hidden" name="status" value="İptal Edildi">
-                                        <button type="submit" class="admin-action-btn px-2.5 py-1.5 bg-rose-600 hover:bg-rose-700 text-white rounded-lg font-bold transition">İptal Et</button>
-                                    </form>
-                                    <form action="/admin/bookings/<%= b.id %>/delete" method="POST" class="inline">
-                                        <button type="submit" class="admin-action-btn px-2 py-1.5 text-slate-400 hover:text-rose-600 rounded-lg transition" title="Sil"><i class="fa-solid fa-trash"></i></button>
-                                    </form>
-                                </td>
+                        <% if (rawBookings.length === 0) { %>
+                            <tr>
+                                <td colspan="6" class="p-6 text-center text-slate-400">Henüz rezervasyon kaydı bulunmuyor.</td>
                             </tr>
-                        <% }) %>
+                        <% } else { %>
+                            <% rawBookings.slice(0, 5).forEach(b => { %>
+                                <% const st = (b.status === 'İptal') ? 'İptal Edildi' : ((b.status === 'Ödeme Bekliyor') ? 'Beklemede' : (b.status || 'Beklemede')); %>
+                                <% const isRef = st === 'İptal Edildi'; %>
+                                <tr class="hover:bg-slate-50/70">
+                                    <td class="p-4 font-mono font-bold text-[#0B1F3A]"><%= b.id %></td>
+                                    <td class="p-4 font-bold text-slate-900"><%= b.customer %></td>
+                                    <td class="p-4 text-slate-700"><%= b.yacht %></td>
+                                    <td class="p-4 text-slate-600"><%= b.checkIn %> → <%= b.checkOut %></td>
+                                    <td class="p-4 font-extrabold text-slate-900">
+                                        <% if (isRef) { %>
+                                            <span class="text-rose-700">İade / İptal (€<%= Number(b.refundedAmount || b.paidAmount || 0).toLocaleString() %>)</span>
+                                        <% } else { %>
+                                            <span>€<%= Number(b.totalAmount || 0).toLocaleString() %> <span class="text-[11px] font-semibold text-emerald-700">(Ödenen: €<%= Number(b.paidAmount || 0).toLocaleString() %>)</span></span>
+                                        <% } %>
+                                    </td>
+                                    <td class="p-4">
+                                        <% if (st === 'Onaylandı') { %>
+                                            <span class="bg-emerald-100 text-emerald-700 px-2.5 py-1 rounded-full font-bold text-[11px]">Onaylandı</span>
+                                        <% } else if (isRef) { %>
+                                            <span class="bg-rose-100 text-rose-700 px-2.5 py-1 rounded-full font-bold text-[11px]">İptal Edildi</span>
+                                        <% } else { %>
+                                            <span class="bg-amber-100 text-amber-800 px-2.5 py-1 rounded-full font-bold text-[11px]">Beklemede</span>
+                                        <% } %>
+                                    </td>
+                                </tr>
+                            <% }) %>
+                        <% } %>
                     </tbody>
                 </table>
             </div>
-        </section>
+        </div>
+    </section>
 
-        <!-- 4. AKTİF FİLO & KAPASİTE DÜZENLEME (ÇOKLU FOTOĞRAF + YENİ YAT EKLE + KART GÖRÜNÜMÜ + OPERASYON TAKVİM ÖZETİ) -->
-        <section id="view-filo-listesi" class="admin-view hidden space-y-5">
-            <div class="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-wrap items-center justify-between gap-3">
-                <div>
-                    <h3 class="font-extrabold text-slate-900 text-sm sm:text-base">Aktif Yat Filosu (<%= yachts.length %>)</h3>
-                    <p class="text-xs text-slate-500 mt-0.5">Yeni tekne ekleyin, birden fazla fotoğraf yükleyin, kapasite/fiyat güncelleyin ve aktif rezervasyon takvimini inceleyin</p>
-                </div>
-                <button type="button" onclick="document.getElementById('newYachtInlineBox').classList.toggle('hidden')" class="px-4 py-2 bg-[#0B1F3A] hover:bg-sky-900 text-white rounded-xl text-xs font-bold transition">
-                    + Yeni Yat Ekle
-                </button>
+    <!-- 2. REZERVASYONLAR -->
+    <section id="view-rezervasyonlar" class="admin-view hidden bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+        <div class="p-4 sm:p-5 border-b border-slate-100 flex flex-col lg:flex-row lg:items-center justify-between gap-3">
+            <div class="flex flex-wrap items-center gap-2">
+                <span class="font-extrabold text-slate-900 text-sm sm:text-base mr-1">Rezervasyonlar (<%= bookings.length %>)</span>
+                <button type="button" data-status-filter="all" class="status-filter-btn px-3 py-1.5 rounded-lg text-[11px] font-bold bg-[#0B1F3A] text-white">Tümü</button>
+                <button type="button" data-status-filter="Onaylandı" class="status-filter-btn px-3 py-1.5 rounded-lg text-[11px] font-bold bg-slate-100 text-slate-700">Onaylandı</button>
+                <button type="button" data-status-filter="Beklemede" class="status-filter-btn px-3 py-1.5 rounded-lg text-[11px] font-bold bg-slate-100 text-slate-700">Beklemede</button>
+                <button type="button" data-status-filter="İptal Edildi" class="status-filter-btn px-3 py-1.5 rounded-lg text-[11px] font-bold bg-slate-100 text-slate-700">İptal Edildi</button>
             </div>
+            <input id="bookingSearchInput" type="text" placeholder="PNR, müşteri veya yat ara..." class="px-3.5 py-2 text-xs border border-slate-200 rounded-xl w-full lg:w-64 focus:outline-none">
+        </div>
 
-            <!-- Açılır / Kapanır Yeni Yat Ekleme Formu -->
-            <div id="newYachtInlineBox" class="hidden bg-white p-5 sm:p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
-                <div class="flex items-center justify-between">
-                    <h4 class="font-extrabold text-slate-900 text-sm">Sisteme Yeni Yat Ekle</h4>
-                    <button type="button" onclick="document.getElementById('newYachtInlineBox').classList.add('hidden')" class="text-xs font-bold text-slate-400 hover:text-slate-700">Kapat ✕</button>
-                </div>
-                <form id="newYachtForm" action="/admin/add-yacht" method="POST" enctype="multipart/form-data" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
-                    <input type="text" name="name" placeholder="Yat Adı (Örn: Azimut 60)" required class="p-2.5 border border-slate-200 rounded-xl text-xs font-medium">
-                    <select name="category" class="p-2.5 border border-slate-200 rounded-xl text-xs font-medium bg-white">
-                        <% (categories || []).forEach(cat => { %>
-                            <option value="<%= cat.key %>"><%= cat.nameTr %> (<%= cat.key %>)</option>
-                        <% }) %>
-                    </select>
-                    <input type="text" name="location" placeholder="Liman (Göcek, Marmaris, Bodrum...)" required class="p-2.5 border border-slate-200 rounded-xl text-xs font-medium">
-                    <input type="text" name="length" placeholder="Uzunluk (Örn: 19 m)" class="p-2.5 border border-slate-200 rounded-xl text-xs font-medium">
-                    <input type="number" name="price" placeholder="Günlük Fiyat (€)" required min="1" class="p-2.5 border border-slate-200 rounded-xl text-xs font-medium">
-                    <input type="number" name="guests" placeholder="Kişi Kapasitesi" required min="1" class="p-2.5 border border-slate-200 rounded-xl text-xs font-medium">
-                    <input type="number" name="cabins" placeholder="Kabin Sayısı" min="1" class="p-2.5 border border-slate-200 rounded-xl text-xs font-medium">
-                    <input type="number" name="crew" placeholder="Mürettebat Sayısı" min="1" class="p-2.5 border border-slate-200 rounded-xl text-xs font-medium">
+        <div class="overflow-x-auto">
+            <table class="admin-table w-full text-left text-xs">
+                <thead class="bg-slate-50 text-slate-400 uppercase text-[10px]">
+                    <tr>
+                        <th class="p-4">PNR</th>
+                        <th class="p-4">Müşteri</th>
+                        <th class="p-4">Yat</th>
+                        <th class="p-4">Tarih &amp; Kişi</th>
+                        <th class="p-4">Rezervasyon Durumu</th>
+                        <th class="p-4">Ödeme &amp; İade Durumu</th>
+                        <th class="p-4 text-right">İşlem</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100">
+                    <% bookings.forEach(b => { %>
+                        <% const normStatus = (b.status === 'İptal') ? 'İptal Edildi' : ((b.status === 'Ödeme Bekliyor') ? 'Beklemede' : (b.status || 'Beklemede')); %>
+                        <% const isCanc = normStatus === 'İptal Edildi'; %>
+                        <% const payAmt = Number(b.paidAmount || 0); %>
+                        <% const totAmt = Number(b.totalAmount || 0); %>
+                        <% const refAmt = isCanc ? (b.refundedAmount !== undefined ? Number(b.refundedAmount || 0) : payAmt) : Number(b.refundedAmount || 0); %>
+                        <% const payBadge = b.paymentStatus || (isCanc ? (refAmt > 0 ? 'İade Edildi / İptal' : 'Ödeme İptal') : (payAmt >= totAmt ? 'Tam Ödendi' : (payAmt > 0 ? 'Ön Ödeme Alındı' : 'Ödeme Bekliyor'))); %>
+                        <% const safeBid = encodeURIComponent(b.id); %>
+                        <tr class="booking-row hover:bg-slate-50/70" data-booking-status="<%= normStatus %>">
+                            <td class="p-4 font-mono font-bold text-[#0B1F3A]"><%= b.id %></td>
+                            <td class="p-4">
+                                <div class="font-bold text-slate-900"><%= b.customer %></div>
+                                <div class="text-[11px] text-slate-400"><%= b.email || '' %> <%= b.phone ? ('• ' + b.phone) : '' %></div>
+                            </td>
+                            <td class="p-4 font-semibold text-slate-700"><%= b.yacht %></td>
+                            <td class="p-4 text-slate-600">
+                                <div><%= b.checkIn %> → <%= b.checkOut %></div>
+                                <div class="text-[11px] font-bold text-slate-800"><%= b.guests %> Kişi (<%= b.days || 1 %> Gün)</div>
+                            </td>
+                            <td class="p-4">
+                                <% if (normStatus === 'Onaylandı') { %>
+                                    <span class="inline-flex items-center whitespace-nowrap shrink-0 bg-emerald-100 text-emerald-700 px-3 py-1 rounded-full font-bold text-[11px]">Onaylandı</span>
+                                <% } else if (isCanc) { %>
+                                    <span class="inline-flex items-center whitespace-nowrap shrink-0 bg-rose-100 text-rose-700 px-3 py-1 rounded-full font-bold text-[11px]">İptal Edildi</span>
+                                <% } else { %>
+                                    <span class="inline-flex items-center whitespace-nowrap shrink-0 bg-amber-100 text-amber-800 px-3 py-1 rounded-full font-bold text-[11px]">Beklemede</span>
+                                <% } %>
+                            </td>
+                            <td class="p-4 space-y-1">
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-md text-[11px] font-bold <%= isCanc ? 'bg-rose-50 text-rose-700 border border-rose-200' : 'bg-sky-50 text-sky-800 border border-sky-200' %>">
+                                    <%= payBadge %>
+                                </span>
+                                <div class="text-[11px] text-slate-600">
+                                    Toplam: <strong>€<%= totAmt.toLocaleString() %></strong> • Aktif Tahsilat: <strong class="text-emerald-700">€<%= (isCanc ? 0 : payAmt).toLocaleString() %></strong>
+                                </div>
+                                <% if (refAmt > 0) { %>
+                                    <div class="text-[11px] font-bold text-rose-700">İade Tutarı: €<%= refAmt.toLocaleString() %></div>
+                                <% } %>
+                            </td>
+                            <td class="p-4 text-right whitespace-nowrap space-x-1">
+                                <form action="/admin/bookings/<%= safeBid %>/status" method="POST" class="inline">
+                                    <input type="hidden" name="status" value="Onaylandı">
+                                    <button type="submit" class="admin-action-btn px-2.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg font-bold transition">Onayla</button>
+                                </form>
+                                <form action="/admin/bookings/<%= safeBid %>/status" method="POST" class="inline">
+                                    <input type="hidden" name="status" value="Beklemede">
+                                    <button type="submit" class="admin-action-btn px-2.5 py-1.5 bg-amber-100 hover:bg-amber-200 text-amber-800 rounded-lg font-bold transition">Beklet</button>
+                                </form>
+                                <form action="/admin/bookings/<%= safeBid %>/status" method="POST" class="inline">
+                                    <input type="hidden" name="status" value="İptal Edildi">
+                                    <button type="submit" class="admin-action-btn px-2.5 py-1.5 bg-rose-600 hover:bg-rose-700 text-white rounded-lg font-bold transition">İptal Et</button>
+                                </form>
+                                <form action="/admin/bookings/<%= safeBid %>/delete" method="POST" class="inline">
+                                    <button type="submit" class="admin-action-btn px-2 py-1.5 text-slate-400 hover:text-rose-600 rounded-lg transition" title="Sil"><i class="fa-solid fa-trash"></i></button>
+                                </form>
+                            </td>
+                        </tr>
+                    <% }) %>
+                </tbody>
+            </table>
+        </div>
+    </section>
 
-                    <div class="sm:col-span-2 lg:col-span-3 p-3.5 border border-dashed border-slate-300 rounded-xl bg-slate-50 space-y-2.5">
-                        <div class="flex flex-wrap items-center justify-between gap-2">
-                            <label class="block text-[11px] font-bold text-slate-700">Yat Fotoğrafları Yükle (Birden Fazla Seçebilirsiniz — JPG, PNG, WEBP)</label>
-                            <span id="newYachtPhotoCount" class="text-[11px] font-bold text-teal-700">0 fotoğraf seçildi</span>
-                        </div>
-                        <input id="yachtPhotoFileInput" type="file" name="imageFiles" accept="image/*" multiple class="text-xs text-slate-600 file:mr-2 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-[#0B1F3A] file:text-white">
-                        <input id="yachtPhotoBase64" type="hidden" name="imageData">
-                        <input id="yachtPhotosJson" type="hidden" name="imagesData">
-                        <div id="newYachtGalleryPreview" class="flex flex-wrap gap-2 pt-1"></div>
+    <!-- 3. AKTİF FİLO & KAPASİTE DÜZENLEME -->
+    <section id="view-filo-listesi" class="admin-view hidden space-y-5">
+        <div class="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-wrap items-center justify-between gap-3">
+            <div>
+                <h3 class="font-extrabold text-slate-900 text-sm sm:text-base">Aktif Yat Filosu (<%= yachts.length %>)</h3>
+                <p class="text-xs text-slate-500 mt-0.5">Yeni tekne ekleyin, birden fazla fotoğraf yükleyin, kapasite/fiyat güncelleyin ve aktif rezervasyon takvimini inceleyin</p>
+            </div>
+            <button type="button" onclick="document.getElementById('newYachtInlineBox').classList.toggle('hidden')" class="px-4 py-2 bg-[#0B1F3A] hover:bg-sky-900 text-white rounded-xl text-xs font-bold transition">
+                + Yeni Yat Ekle
+            </button>
+        </div>
+
+        <div id="newYachtInlineBox" class="hidden bg-white p-5 sm:p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+            <div class="flex items-center justify-between">
+                <h4 class="font-extrabold text-slate-900 text-sm">Sisteme Yeni Yat Ekle</h4>
+                <button type="button" onclick="document.getElementById('newYachtInlineBox').classList.add('hidden')" class="text-xs font-bold text-slate-400 hover:text-slate-700">Kapat ✕</button>
+            </div>
+            <form id="newYachtForm" action="/admin/add-yacht" method="POST" enctype="multipart/form-data" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
+                <input type="text" name="name" placeholder="Yat Adı (Örn: Azimut 60)" required class="p-2.5 border border-slate-200 rounded-xl text-xs font-medium">
+                <select name="category" class="p-2.5 border border-slate-200 rounded-xl text-xs font-medium bg-white">
+                    <% (categories || []).forEach(cat => { %>
+                        <option value="<%= cat.key %>"><%= cat.nameTr %> (<%= cat.key %>)</option>
+                    <% }) %>
+                </select>
+                <input type="text" name="location" placeholder="Liman (Göcek, Marmaris, Bodrum...)" required class="p-2.5 border border-slate-200 rounded-xl text-xs font-medium">
+                <input type="text" name="length" placeholder="Uzunluk (Örn: 19 m)" class="p-2.5 border border-slate-200 rounded-xl text-xs font-medium">
+                <input type="number" name="price" placeholder="Günlük Fiyat (€)" required min="1" class="p-2.5 border border-slate-200 rounded-xl text-xs font-medium">
+                <input type="number" name="guests" placeholder="Kişi Kapasitesi" required min="1" class="p-2.5 border border-slate-200 rounded-xl text-xs font-medium">
+                <input type="number" name="cabins" placeholder="Kabin Sayısı" min="1" class="p-2.5 border border-slate-200 rounded-xl text-xs font-medium">
+                <input type="number" name="crew" placeholder="Mürettebat Sayısı" min="1" class="p-2.5 border border-slate-200 rounded-xl text-xs font-medium">
+
+                <div class="sm:col-span-2 lg:col-span-3 p-3.5 border border-dashed border-slate-300 rounded-xl bg-slate-50 space-y-2.5">
+                    <div class="flex flex-wrap items-center justify-between gap-2">
+                        <label class="block text-[11px] font-bold text-slate-700">Yat Fotoğrafları Yükle (Birden Fazla Seçebilirsiniz — JPG, PNG, WEBP)</label>
+                        <span id="newYachtPhotoCount" class="text-[11px] font-bold text-teal-700">0 fotoğraf seçildi</span>
                     </div>
+                    <input id="yachtPhotoFileInput" type="file" name="imageFiles" accept="image/*" multiple class="text-xs text-slate-600 file:mr-2 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-[#0B1F3A] file:text-white">
+                    <input id="yachtPhotoBase64" type="hidden" name="imageData">
+                    <input id="yachtPhotosJson" type="hidden" name="imagesData">
+                    <div id="newYachtGalleryPreview" class="flex flex-wrap gap-2 pt-1"></div>
+                </div>
 
-                    <input type="text" name="description" placeholder="Kısa yat açıklaması" class="sm:col-span-2 lg:col-span-3 p-2.5 border border-slate-200 rounded-xl text-xs font-medium">
-                    <button type="submit" class="admin-action-btn bg-teal-600 hover:bg-teal-700 text-white py-2.5 px-4 rounded-xl font-bold text-xs transition shadow">
-                        + Yat ve Fotoğrafları Kaydet
-                    </button>
-                </form>
-            </div>
+                <input type="text" name="description" placeholder="Kısa yat açıklaması" class="sm:col-span-2 lg:col-span-3 p-2.5 border border-slate-200 rounded-xl text-xs font-medium">
+                <button type="submit" class="admin-action-btn bg-teal-600 hover:bg-teal-700 text-white py-2.5 px-4 rounded-xl font-bold text-xs transition shadow">
+                    + Yat ve Fotoğrafları Kaydet
+                </button>
+            </form>
+        </div>
 
-            <!-- Mevcut Yat Kartları -->
-            <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-                <% yachts.forEach(y => { %>
-                    <% const yImages = (Array.isArray(y.images) && y.images.length) ? y.images : ['https://images.unsplash.com/photo-1567899378494-47b22a2ae96a?auto=format&fit=crop&w=600&q=80']; %>
-                    <% const currentImg = yImages[0]; %>
-                    <% const ySchedules = (bookings || []).filter(b => (Number(b.yachtId) === Number(y.id) || String(b.yacht || '').toLowerCase() === String(y.name || '').toLowerCase()) && b.status !== 'İptal Edildi' && b.status !== 'İptal'); %>
-                    <div class="yacht-edit-card bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden flex flex-col justify-between" data-yacht-id="<%= y.id %>">
-                        <form id="yacht-form-<%= y.id %>" action="/admin/yachts/<%= y.id %>/update" method="POST" enctype="multipart/form-data" class="flex-1 flex flex-col">
-                            <!-- Kapak Fotoğrafı & Çoklu Fotoğraf Ekle Butonu -->
-                            <div class="relative h-44 bg-slate-100 group">
-                                <img src="<%= currentImg %>" alt="<%= y.name %>" class="card-cover-img w-full h-full object-cover">
-                                <div class="absolute inset-0 bg-gradient-to-t from-slate-950/60 via-transparent to-transparent"></div>
-                                <span class="absolute top-3 left-3 px-2.5 py-1 rounded-lg bg-white/95 text-[#0B1F3A] text-[11px] font-extrabold shadow-sm">
-                                    <%= y.categoryTr %>
-                                </span>
-                                <span class="card-photo-badge absolute top-3 right-3 px-2.5 py-1 rounded-lg bg-[#0B1F3A]/85 text-white text-[10px] font-bold">
-                                    <%= yImages.length %> Fotoğraf
-                                </span>
-                                <label class="absolute bottom-3 right-3 cursor-pointer px-3 py-1.5 rounded-xl bg-white/95 hover:bg-white text-slate-900 text-[11px] font-bold shadow-md transition flex items-center gap-1.5">
-                                    <i class="fa-solid fa-images text-teal-600"></i>
-                                    <span>Fotoğraf Ekle / Değiştir</span>
-                                    <input type="file" name="imageFiles" accept="image/*" multiple class="card-multi-input hidden">
+        <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+            <% yachts.forEach(y => { %>
+                <% const yImages = (Array.isArray(y.images) && y.images.length) ? y.images : ['https://images.unsplash.com/photo-1567899378494-47b22a2ae96a?auto=format&fit=crop&w=600&q=80']; %>
+                <% const currentImg = yImages[0]; %>
+                <% const ySchedules = (bookings || []).filter(b => (Number(b.yachtId) === Number(y.id) || String(b.yacht || '').toLowerCase() === String(y.name || '').toLowerCase()) && b.status !== 'İptal Edildi' && b.status !== 'İptal'); %>
+                <% const safeYid = encodeURIComponent(y.id); %>
+                <div class="yacht-edit-card bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden flex flex-col justify-between" data-yacht-id="<%= y.id %>">
+                    <form id="yacht-form-<%= y.id %>" action="/admin/yachts/<%= safeYid %>/update" method="POST" enctype="multipart/form-data" class="flex-1 flex flex-col">
+                        <div class="relative h-44 bg-slate-100 group">
+                            <img src="<%= currentImg %>" alt="<%= y.name %>" class="card-cover-img w-full h-full object-cover">
+                            <div class="absolute inset-0 bg-gradient-to-t from-slate-950/60 via-transparent to-transparent"></div>
+                            <span class="absolute top-3 left-3 px-2.5 py-1 rounded-lg bg-white/95 text-[#0B1F3A] text-[11px] font-extrabold shadow-sm">
+                                <%= y.categoryTr %>
+                            </span>
+                            <span class="card-photo-badge absolute top-3 right-3 px-2.5 py-1 rounded-lg bg-[#0B1F3A]/85 text-white text-[10px] font-bold">
+                                <%= yImages.length %> Fotoğraf
+                            </span>
+                            <label class="absolute bottom-3 right-3 cursor-pointer px-3 py-1.5 rounded-xl bg-white/95 hover:bg-white text-slate-900 text-[11px] font-bold shadow-md transition flex items-center gap-1.5">
+                                <i class="fa-solid fa-images text-teal-600"></i>
+                                <span>Fotoğraf Ekle / Değiştir</span>
+                                <input type="file" name="imageFiles" accept="image/*" multiple class="card-multi-input hidden">
+                            </label>
+                        </div>
+
+                        <div class="px-4 pt-3">
+                            <div class="flex items-center justify-between mb-1.5">
+                                <span class="text-[10px] font-bold uppercase text-slate-400">Galeri Fotoğrafları (1. Kapak)</span>
+                                <span class="card-gallery-count text-[10px] font-bold text-teal-700"><%= yImages.length %> adet</span>
+                            </div>
+                            <div class="card-gallery-list flex flex-wrap gap-1.5">
+                                <% yImages.forEach((imgUrl, idx) => { %>
+                                    <div class="card-gallery-item relative w-12 h-10 rounded-lg overflow-hidden border <%= idx === 0 ? 'border-teal-600 ring-1 ring-teal-600' : 'border-slate-200' %>">
+                                        <img src="<%= imgUrl %>" alt="<%= y.name %> <%= idx + 1 %>" class="card-gal-thumb w-full h-full object-cover">
+                                        <button type="button" onclick="removeCardGalleryItem(this)" title="Fotoğrafı kaldır" class="w-4 h-4 rounded-full bg-rose-600 text-white text-[9px] font-bold flex items-center justify-center absolute top-0.5 right-0.5 opacity-90 hover:opacity-100">
+                                            ✕
+                                        </button>
+                                    </div>
+                                <% }) %>
+                            </div>
+                            <input type="hidden" name="imagesData" class="card-images-hidden" value="">
+                        </div>
+
+                        <div class="p-4 sm:p-5 space-y-3.5 text-xs flex-1">
+                            <div>
+                                <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">Yat Adı</label>
+                                <input type="text" name="name" value="<%= y.name %>" required class="w-full px-3 py-2 border border-slate-200 rounded-xl font-bold text-slate-900 focus:outline-none focus:border-teal-600">
+                            </div>
+
+                            <div class="grid grid-cols-3 gap-2">
+                                <div>
+                                    <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">Liman</label>
+                                    <input type="text" name="location" value="<%= y.location %>" required class="w-full px-2.5 py-1.5 border border-slate-200 rounded-xl text-slate-700 font-medium">
+                                </div>
+                                <div>
+                                    <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">Uzunluk</label>
+                                    <input type="text" name="length" value="<%= y.length || '20 m' %>" class="w-full px-2.5 py-1.5 border border-slate-200 rounded-xl text-slate-700 font-medium">
+                                </div>
+                                <div>
+                                    <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">Hız</label>
+                                    <input type="text" name="speed" value="<%= y.speed || '24 kn' %>" class="w-full px-2.5 py-1.5 border border-slate-200 rounded-xl text-slate-700 font-medium">
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-4 gap-2">
+                                <div>
+                                    <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">Kişi</label>
+                                    <input type="number" name="guests" value="<%= y.guests %>" min="1" class="w-full px-2 py-1.5 border border-slate-200 rounded-xl font-bold text-slate-900 text-center">
+                                </div>
+                                <div>
+                                    <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">Kabin</label>
+                                    <input type="number" name="cabins" value="<%= y.cabins || 4 %>" min="1" class="w-full px-2 py-1.5 border border-slate-200 rounded-xl font-bold text-slate-900 text-center">
+                                </div>
+                                <div>
+                                    <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">Ekip</label>
+                                    <input type="number" name="crew" value="<%= y.crew || 2 %>" min="1" class="w-full px-2 py-1.5 border border-slate-200 rounded-xl font-bold text-slate-900 text-center">
+                                </div>
+                                <div>
+                                    <label class="block text-[10px] font-bold uppercase text-teal-700 mb-1">Günlük (€)</label>
+                                    <input type="number" name="price" value="<%= y.price %>" min="1" class="w-full px-2 py-1.5 border border-teal-200 bg-teal-50/40 rounded-xl font-extrabold text-teal-800 text-center">
+                                </div>
+                            </div>
+
+                            <div>
+                                <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">Açıklama</label>
+                                <textarea name="description" rows="2" placeholder="Yat açıklaması..." class="w-full px-3 py-2 border border-slate-200 rounded-xl text-[11px] text-slate-600 leading-relaxed resize-none focus:outline-none focus:border-teal-600"><%= y.description || '' %></textarea>
+                            </div>
+
+                            <div class="bg-slate-50 border border-slate-200/80 rounded-xl p-2.5 space-y-1">
+                                <div class="text-[10px] font-bold uppercase text-slate-500 flex items-center justify-between">
+                                    <span><i class="fa-regular fa-calendar-days text-teal-600 mr-1"></i>Operasyon Takvimi</span>
+                                    <span class="text-slate-400"><%= ySchedules.length %> kayıt</span>
+                                </div>
+                                <% if (ySchedules.length === 0) { %>
+                                    <div class="text-[11px] text-emerald-700 font-semibold">Aktif rezervasyon kaydı yok • Müsait</div>
+                                <% } else { %>
+                                    <div class="space-y-1 max-h-20 overflow-y-auto">
+                                        <% ySchedules.forEach(sc => { %>
+                                            <div class="text-[11px] text-slate-700 flex items-center justify-between bg-white px-2 py-1 rounded border border-slate-100">
+                                                <span class="font-semibold"><%= sc.checkIn %> → <%= sc.checkOut %></span>
+                                                <span class="font-mono text-[10px] text-slate-400">#<%= sc.id %> • <%= sc.status %></span>
+                                            </div>
+                                        <% }) %>
+                                    </div>
+                                <% } %>
+                            </div>
+                        </div>
+                    </form>
+
+                    <div class="px-4 py-3 bg-slate-50 border-t border-slate-100 flex items-center justify-between gap-2">
+                        <form action="/admin/yachts/<%= safeYid %>/delete" method="POST">
+                            <button type="submit" class="px-3 py-1.5 text-rose-600 hover:bg-rose-100/70 rounded-xl text-xs font-bold transition">
+                                Sil
+                            </button>
+                        </form>
+                        <button type="submit" form="yacht-form-<%= y.id %>" class="px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white rounded-xl text-xs font-bold shadow-sm transition">
+                            Değişiklikleri Kaydet
+                        </button>
+                    </div>
+                </div>
+            <% }) %>
+        </div>
+    </section>
+
+    <!-- 4. YENİ TUR & YENİ KATEGORİ -->
+    <section id="view-turlar-kategoriler" class="admin-view hidden grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div class="bg-white p-5 sm:p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+            <h3 class="font-extrabold text-slate-900 text-base">Yeni Tur Paketi Ekle</h3>
+            <form action="/admin/tours/add" method="POST" enctype="multipart/form-data" class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <input type="text" name="title" placeholder="Tur Adı (Örn: Marmaris Hisarönü Turu)" required class="sm:col-span-2 p-2.5 border border-slate-200 rounded-xl text-xs font-medium">
+                <input type="text" name="region" placeholder="Bölge (Göcek, Bodrum...)" required class="p-2.5 border border-slate-200 rounded-xl text-xs font-medium">
+                <input type="number" name="durationDays" placeholder="Süre (Gün)" min="1" value="1" required class="p-2.5 border border-slate-200 rounded-xl text-xs font-medium">
+                <input type="number" name="pricePerDay" placeholder="Günlük Tur Ücreti (€)" min="1" required class="p-2.5 border border-slate-200 rounded-xl text-xs font-medium">
+                <select name="yachtId" class="p-2.5 border border-slate-200 rounded-xl text-xs font-medium bg-white">
+                    <% yachts.forEach(y => { %>
+                        <option value="<%= y.id %>"><%= y.name %> (<%= y.location %>)</option>
+                    <% }) %>
+                </select>
+
+                <div class="sm:col-span-2 p-3 border border-dashed border-slate-300 rounded-xl bg-slate-50 flex items-center justify-between gap-3">
+                    <div class="space-y-1">
+                        <label class="block text-[11px] font-bold text-slate-700">Tur Fotoğrafı Yükle (JPG, PNG, WEBP)</label>
+                        <input type="file" name="imageFile" accept="image/*" onchange="previewNewTourImg(this)" class="text-xs text-slate-600 file:mr-2 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-[#0B1F3A] file:text-white">
+                        <input id="newTourPhotoBase64" type="hidden" name="imageData">
+                    </div>
+                    <img id="newTourPhotoPreview" src="https://images.unsplash.com/photo-1544551763-46a013bb70d5?auto=format&fit=crop&w=240&q=60" alt="Tur Önizleme" class="w-20 h-14 object-cover rounded-lg border border-slate-200 shrink-0">
+                </div>
+
+                <input type="text" name="summary" placeholder="Kısa rota özeti" class="sm:col-span-2 p-2.5 border border-slate-200 rounded-xl text-xs font-medium">
+                <button type="submit" class="sm:col-span-2 bg-teal-600 hover:bg-teal-700 text-white py-2.5 rounded-xl font-bold text-xs transition">+ Tur Ekle</button>
+            </form>
+
+            <div class="space-y-3 border-t border-slate-100 pt-4 text-xs">
+                <% (tours || []).forEach(t => { %>
+                    <% const tImg = t.image || t.img || (Array.isArray(t.images) && t.images[0]) || 'https://images.unsplash.com/photo-1544551763-46a013bb70d5?auto=format&fit=crop&w=320&q=60'; %>
+                    <% const safeTid = encodeURIComponent(t.id); %>
+                    <form action="/admin/tours/<%= safeTid %>/update" method="POST" enctype="multipart/form-data" class="tour-edit-card p-3 bg-slate-50 rounded-xl border border-slate-200 space-y-2.5">
+                        <div class="flex items-center gap-3">
+                            <img src="<%= tImg %>" alt="<%= t.title %>" class="tour-card-preview w-20 h-14 object-cover rounded-lg border border-slate-200 shrink-0">
+                            <div class="flex-1 min-w-0 space-y-1">
+                                <div class="flex items-center justify-between gap-2">
+                                    <span class="text-[11px] font-bold text-slate-700 truncate"><%= t.title %></span>
+                                    <span class="text-[10px] text-slate-400 shrink-0">ID: #<%= t.id %></span>
+                                </div>
+                                <label class="inline-flex items-center gap-1.5 cursor-pointer px-2.5 py-1 rounded-lg bg-white border border-slate-200 hover:bg-slate-100 text-[11px] font-bold text-slate-700">
+                                    <i class="fa-solid fa-camera text-teal-600"></i>
+                                    <span>Fotoğraf Değiştir</span>
+                                    <input type="file" name="imageFile" accept="image/*" class="tour-card-file hidden">
+                                    <input type="hidden" name="imageData" class="tour-card-base64" value="">
                                 </label>
                             </div>
-
-                            <!-- Galeri Küçük Fotoğrafları (İlk fotoğraf kapaktır, çarpı ile çıkarılabilir) -->
-                            <div class="px-4 pt-3">
-                                <div class="flex items-center justify-between mb-1.5">
-                                    <span class="text-[10px] font-bold uppercase text-slate-400">Galeri Fotoğrafları (1. Kapak)</span>
-                                    <span class="card-gallery-count text-[10px] font-bold text-teal-700"><%= yImages.length %> adet</span>
-                                </div>
-                                <div class="card-gallery-list flex flex-wrap gap-1.5">
-                                    <% yImages.forEach((imgUrl, idx) => { %>
-                                        <div class="card-gallery-item relative w-12 h-10 rounded-lg overflow-hidden border <%= idx === 0 ? 'border-teal-600 ring-1 ring-teal-600' : 'border-slate-200' %>" data-img-url="<%= imgUrl %>">
-                                            <img src="<%= imgUrl %>" alt="<%= y.name %> <%= idx + 1 %>" class="w-full h-full object-cover">
-                                            <button type="button" onclick="removeCardGalleryItem(this)" title="Fotoğrafı kaldır" class="w-4 h-4 rounded-full bg-rose-600 text-white text-[9px] font-bold flex items-center justify-center absolute top-0.5 right-0.5 opacity-90 hover:opacity-100">
-                                                ✕
-                                            </button>
-                                        </div>
-                                    <% }) %>
-                                </div>
-                                <input type="hidden" name="imagesData" class="card-images-hidden" value="">
-                            </div>
-
-                            <!-- Form Alanları -->
-                            <div class="p-4 sm:p-5 space-y-3.5 text-xs flex-1">
-                                <div>
-                                    <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">Yat Adı</label>
-                                    <input type="text" name="name" value="<%= y.name %>" required class="w-full px-3 py-2 border border-slate-200 rounded-xl font-bold text-slate-900 focus:outline-none focus:border-teal-600">
-                                </div>
-
-                                <div class="grid grid-cols-3 gap-2">
-                                    <div>
-                                        <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">Liman</label>
-                                        <input type="text" name="location" value="<%= y.location %>" required class="w-full px-2.5 py-1.5 border border-slate-200 rounded-xl text-slate-700 font-medium">
-                                    </div>
-                                    <div>
-                                        <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">Uzunluk</label>
-                                        <input type="text" name="length" value="<%= y.length || '20 m' %>" class="w-full px-2.5 py-1.5 border border-slate-200 rounded-xl text-slate-700 font-medium">
-                                    </div>
-                                    <div>
-                                        <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">Hız</label>
-                                        <input type="text" name="speed" value="<%= y.speed || '24 kn' %>" class="w-full px-2.5 py-1.5 border border-slate-200 rounded-xl text-slate-700 font-medium">
-                                    </div>
-                                </div>
-
-                                <div class="grid grid-cols-4 gap-2">
-                                    <div>
-                                        <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">Kişi</label>
-                                        <input type="number" name="guests" value="<%= y.guests %>" min="1" class="w-full px-2 py-1.5 border border-slate-200 rounded-xl font-bold text-slate-900 text-center">
-                                    </div>
-                                    <div>
-                                        <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">Kabin</label>
-                                        <input type="number" name="cabins" value="<%= y.cabins || 4 %>" min="1" class="w-full px-2 py-1.5 border border-slate-200 rounded-xl font-bold text-slate-900 text-center">
-                                    </div>
-                                    <div>
-                                        <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">Ekip</label>
-                                        <input type="number" name="crew" value="<%= y.crew || 2 %>" min="1" class="w-full px-2 py-1.5 border border-slate-200 rounded-xl font-bold text-slate-900 text-center">
-                                    </div>
-                                    <div>
-                                        <label class="block text-[10px] font-bold uppercase text-teal-700 mb-1">Günlük (€)</label>
-                                        <input type="number" name="price" value="<%= y.price %>" min="1" class="w-full px-2 py-1.5 border border-teal-200 bg-teal-50/40 rounded-xl font-extrabold text-teal-800 text-center">
-                                    </div>
-                                </div>
-
-                                <div>
-                                    <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">Açıklama</label>
-                                    <textarea name="description" rows="2" placeholder="Yat açıklaması..." class="w-full px-3 py-2 border border-slate-200 rounded-xl text-[11px] text-slate-600 leading-relaxed resize-none focus:outline-none focus:border-teal-600"><%= y.description || '' %></textarea>
-                                </div>
-
-                                <!-- Operasyon Takvimi / Dolu Günler Özeti -->
-                                <div class="bg-slate-50 border border-slate-200/80 rounded-xl p-2.5 space-y-1">
-                                    <div class="text-[10px] font-bold uppercase text-slate-500 flex items-center justify-between">
-                                        <span><i class="fa-regular fa-calendar-days text-teal-600 mr-1"></i>Operasyon Takvimi</span>
-                                        <span class="text-slate-400"><%= ySchedules.length %> kayıt</span>
-                                    </div>
-                                    <% if (ySchedules.length === 0) { %>
-                                        <div class="text-[11px] text-emerald-700 font-semibold">Aktif bron kaydı yok • Müsait</div>
-                                    <% } else { %>
-                                        <div class="space-y-1 max-h-20 overflow-y-auto">
-                                            <% ySchedules.forEach(sc => { %>
-                                                <div class="text-[11px] text-slate-700 flex items-center justify-between bg-white px-2 py-1 rounded border border-slate-100">
-                                                    <span class="font-semibold"><%= sc.checkIn %> → <%= sc.checkOut %></span>
-                                                    <span class="font-mono text-[10px] text-slate-400">#<%= sc.id %> • <%= sc.status %></span>
-                                                </div>
-                                            <% }) %>
-                                        </div>
-                                    <% } %>
-                                </div>
-                            </div>
-                        </form>
-
-                        <!-- Alt Butonlar -->
-                        <div class="px-4 py-3 bg-slate-50 border-t border-slate-100 flex items-center justify-between gap-2">
-                            <form action="/admin/yachts/<%= y.id %>/delete" method="POST">
-                                <button type="submit" class="px-3 py-1.5 text-rose-600 hover:bg-rose-100/70 rounded-xl text-xs font-bold transition">
-                                    Sil
-                                </button>
-                            </form>
-                            <button type="submit" form="yacht-form-<%= y.id %>" class="px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white rounded-xl text-xs font-bold shadow-sm transition">
-                                Değişiklikleri Kaydet
-                            </button>
                         </div>
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                            <input type="text" name="title" value="<%= t.title %>" required class="p-2 bg-white border border-slate-200 rounded-lg text-xs font-bold">
+                            <input type="text" name="region" value="<%= t.region %>" required class="p-2 bg-white border border-slate-200 rounded-lg text-xs">
+                            <input type="number" name="pricePerDay" value="<%= Number(t.pricePerDay || 0) %>" min="1" required class="p-2 bg-white border border-slate-200 rounded-lg text-xs font-bold">
+                        </div>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                            <input type="text" name="durationLabel" value="<%= t.durationLabel || (t.durationDays + ' Gün') %>" placeholder="Süre metni" class="p-2 bg-white border border-slate-200 rounded-lg text-xs">
+                            <input type="text" name="capacityLabel" value="<%= t.capacityLabel || 'En fazla 12 kişi' %>" placeholder="Kapasite metni" class="p-2 bg-white border border-slate-200 rounded-lg text-xs">
+                        </div>
+                        <div class="flex items-center justify-end gap-2 pt-1">
+                            <button type="submit" class="px-3 py-1.5 bg-teal-600 hover:bg-teal-700 text-white rounded-lg font-bold text-[11px]">Güncelle</button>
+                            <button type="submit" formaction="/admin/tours/<%= safeTid %>/delete" class="px-2.5 py-1.5 text-rose-600 hover:bg-rose-50 rounded-lg font-bold text-[11px]">Sil</button>
+                        </div>
+                    </form>
+                <% }) %>
+            </div>
+        </div>
+
+        <div class="bg-white p-5 sm:p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+            <h3 class="font-extrabold text-slate-900 text-base">Yeni Yat Kategorisi Ekle</h3>
+            <form action="/admin/categories/add" method="POST" class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <input type="text" name="nameTr" placeholder="Kategori Adı (Örn: Trawler)" required class="p-2.5 border border-slate-200 rounded-xl text-xs font-medium">
+                <input type="text" name="key" placeholder="Sistem Kodu (Örn: Trawlers)" class="p-2.5 border border-slate-200 rounded-xl text-xs font-medium">
+                <input type="text" name="desc" placeholder="Kısa kategori açıklaması" class="sm:col-span-2 p-2.5 border border-slate-200 rounded-xl text-xs font-medium">
+                <button type="submit" class="sm:col-span-2 bg-[#0B1F3A] hover:bg-slate-800 text-white py-2.5 rounded-xl font-bold text-xs transition">+ Kategori Ekle</button>
+            </form>
+
+            <div class="space-y-3 border-t border-slate-100 pt-4 text-xs">
+                <% (categories || []).forEach(c => { %>
+                    <% const safeCid = encodeURIComponent(c.id); %>
+                    <form action="/admin/categories/<%= safeCid %>/update" method="POST" class="p-3 bg-slate-50 rounded-xl border border-slate-200 space-y-2">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                            <input type="text" name="nameTr" value="<%= c.nameTr %>" required class="p-2 bg-white border border-slate-200 rounded-lg text-xs font-bold">
+                            <input type="text" name="key" value="<%= c.key %>" required class="p-2 bg-white border border-slate-200 rounded-lg text-xs">
+                        </div>
+                        <input type="text" name="desc" value="<%= c.desc || '' %>" placeholder="Açıklama" class="w-full p-2 bg-white border border-slate-200 rounded-lg text-xs">
+                        <div class="flex items-center justify-between gap-2 pt-1">
+                            <span class="text-[11px] text-slate-400">ID: #<%= c.id %></span>
+                            <div class="flex items-center gap-2">
+                                <button type="submit" class="px-3 py-1.5 bg-[#0B1F3A] hover:bg-slate-800 text-white rounded-lg font-bold text-[11px]">Güncelle</button>
+                                <button type="submit" formaction="/admin/categories/<%= safeCid %>/delete" class="px-2.5 py-1.5 text-rose-600 hover:bg-rose-50 rounded-lg font-bold text-[11px]">Sil</button>
+                            </div>
+                        </div>
+                    </form>
+                <% }) %>
+            </div>
+        </div>
+    </section>
+
+    <!-- 5. SİTE, İLETİŞİM, ÖDEME PLANI, SÖZLEŞME & EKSTRALAR -->
+    <section id="view-ayarlar" class="admin-view hidden space-y-6">
+        <div class="bg-white p-5 sm:p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+            <div>
+                <h3 class="font-extrabold text-slate-900 text-base">Panel Yetkilileri / İşçi Erişimi</h3>
+                <p class="text-xs text-slate-500 mt-0.5">Buradan eklediğiniz çalışanlar kendi e-posta ve şifreleri ile <strong>/admin/login</strong> üzerinden panele giriş yapabilir.</p>
+            </div>
+
+            <form action="/admin/staff/add" method="POST" class="grid grid-cols-1 sm:grid-cols-4 gap-3">
+                <input type="text" name="name" placeholder="Ad Soyad" required class="p-2.5 text-xs border border-slate-200 rounded-xl font-medium">
+                <input type="email" name="email" placeholder="E-posta" required class="p-2.5 text-xs border border-slate-200 rounded-xl font-medium">
+                <input type="text" name="password" placeholder="Şifre" required class="p-2.5 text-xs border border-slate-200 rounded-xl font-medium">
+                <button type="submit" class="bg-[#0B1F3A] text-white text-xs font-bold rounded-xl py-2.5 hover:bg-sky-900 transition">
+                    + İşçi Ekle
+                </button>
+            </form>
+
+            <div class="divide-y divide-slate-100 border-t border-slate-100 pt-2 text-xs">
+                <% (typeof adminUsers !== 'undefined' && adminUsers ? adminUsers : []).forEach(function(u) { %>
+                    <div class="py-2.5 flex items-center justify-between gap-2">
+                        <div>
+                            <span class="font-bold text-slate-900"><%= u.name %></span>
+                            <span class="text-slate-500 ml-2"><%= u.email %></span>
+                            <span class="ml-2 px-2 py-0.5 rounded-full text-[10px] font-bold <%= u.role === 'admin' ? 'bg-sky-100 text-sky-800' : 'bg-slate-100 text-slate-700' %>">
+                                <%= u.role === 'admin' ? 'Yönetici' : 'Personel' %>
+                            </span>
+                        </div>
+                        <% if (adminUsers.length > 1) { %>
+                            <form action="/admin/staff/<%= encodeURIComponent(u.id) %>/delete" method="POST">
+                                <button type="submit" class="text-rose-600 font-bold text-[11px] px-2 py-1 hover:bg-rose-50 rounded-lg">Sil</button>
+                            </form>
+                        <% } %>
                     </div>
                 <% }) %>
             </div>
-        </section>
+        </div>
 
-        <!-- 5. YENİ TUR & YENİ KATEGORİ -->
-        <section id="view-turlar-kategoriler" class="admin-view hidden grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <div class="bg-white p-5 sm:p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
-                <h3 class="font-extrabold text-slate-900 text-base">Yeni Tur Paketi Ekle</h3>
-                <form action="/admin/tours/add" method="POST" enctype="multipart/form-data" class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    <input type="text" name="title" placeholder="Tur Adı (Örn: Marmaris Hisarönü Turu)" required class="sm:col-span-2 p-2.5 border border-slate-200 rounded-xl text-xs font-medium">
-                    <input type="text" name="region" placeholder="Bölge (Göcek, Bodrum...)" required class="p-2.5 border border-slate-200 rounded-xl text-xs font-medium">
-                    <input type="number" name="durationDays" placeholder="Süre (Gün)" min="1" value="1" required class="p-2.5 border border-slate-200 rounded-xl text-xs font-medium">
-                    <input type="number" name="pricePerDay" placeholder="Günlük Tur Ücreti (€)" min="1" required class="p-2.5 border border-slate-200 rounded-xl text-xs font-medium">
-                    <select name="yachtId" class="p-2.5 border border-slate-200 rounded-xl text-xs font-medium bg-white">
-                        <% yachts.forEach(y => { %>
-                            <option value="<%= y.id %>"><%= y.name %> (<%= y.location %>)</option>
-                        <% }) %>
-                    </select>
-
-                    <!-- Yeni Tur Fotoğraf Yükleme -->
-                    <div class="sm:col-span-2 p-3 border border-dashed border-slate-300 rounded-xl bg-slate-50 flex items-center justify-between gap-3">
-                        <div class="space-y-1">
-                            <label class="block text-[11px] font-bold text-slate-700">Tur Fotoğrafı Yükle (JPG, PNG, WEBP)</label>
-                            <input type="file" name="imageFile" accept="image/*" onchange="previewNewTourImg(this)" class="text-xs text-slate-600 file:mr-2 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-[#0B1F3A] file:text-white">
-                            <input id="newTourPhotoBase64" type="hidden" name="imageData">
-                        </div>
-                        <img id="newTourPhotoPreview" src="https://images.unsplash.com/photo-1544551763-46a013bb70d5?auto=format&fit=crop&w=240&q=60" alt="Tur Önizleme" class="w-20 h-14 object-cover rounded-lg border border-slate-200 shrink-0">
-                    </div>
-
-                    <input type="text" name="summary" placeholder="Kısa rota özeti" class="sm:col-span-2 p-2.5 border border-slate-200 rounded-xl text-xs font-medium">
-                    <button type="submit" class="sm:col-span-2 bg-teal-600 hover:bg-teal-700 text-white py-2.5 rounded-xl font-bold text-xs transition">+ Tur Ekle</button>
-                </form>
-
-                <div class="space-y-3 border-t border-slate-100 pt-4 text-xs">
-                    <% (tours || []).forEach(t => { %>
-                        <% const tImg = t.image || (Array.isArray(t.images) && t.images[0]) || 'https://images.unsplash.com/photo-1544551763-46a013bb70d5?auto=format&fit=crop&w=320&q=60'; %>
-                        <form action="/admin/tours/<%= t.id %>/update" method="POST" enctype="multipart/form-data" class="tour-edit-card p-3 bg-slate-50 rounded-xl border border-slate-200 space-y-2.5">
-                            <div class="flex items-center gap-3">
-                                <img src="<%= tImg %>" alt="<%= t.title %>" class="tour-card-preview w-20 h-14 object-cover rounded-lg border border-slate-200 shrink-0">
-                                <div class="flex-1 min-w-0 space-y-1">
-                                    <div class="flex items-center justify-between gap-2">
-                                        <span class="text-[11px] font-bold text-slate-700 truncate"><%= t.title %></span>
-                                        <span class="text-[10px] text-slate-400 shrink-0">ID: #<%= t.id %></span>
-                                    </div>
-                                    <label class="inline-flex items-center gap-1.5 cursor-pointer px-2.5 py-1 rounded-lg bg-white border border-slate-200 hover:bg-slate-100 text-[11px] font-bold text-slate-700">
-                                        <i class="fa-solid fa-camera text-teal-600"></i>
-                                        <span>Fotoğraf Değiştir</span>
-                                        <input type="file" name="imageFile" accept="image/*" class="tour-card-file hidden">
-                                        <input type="hidden" name="imageData" class="tour-card-base64" value="">
-                                    </label>
-                                </div>
-                            </div>
-                            <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
-                                <input type="text" name="title" value="<%= t.title %>" required class="p-2 bg-white border border-slate-200 rounded-lg text-xs font-bold">
-                                <input type="text" name="region" value="<%= t.region %>" required class="p-2 bg-white border border-slate-200 rounded-lg text-xs">
-                                <input type="number" name="pricePerDay" value="<%= Number(t.pricePerDay || 0) %>" min="1" required class="p-2 bg-white border border-slate-200 rounded-lg text-xs font-bold">
-                            </div>
-                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                                <input type="text" name="durationLabel" value="<%= t.durationLabel || (t.durationDays + ' Gün') %>" placeholder="Süre metni" class="p-2 bg-white border border-slate-200 rounded-lg text-xs">
-                                <input type="text" name="capacityLabel" value="<%= t.capacityLabel || 'En fazla 12 kişi' %>" placeholder="Kapasite metni" class="p-2 bg-white border border-slate-200 rounded-lg text-xs">
-                            </div>
-                            <div class="flex items-center justify-end gap-2 pt-1">
-                                <button type="submit" class="px-3 py-1.5 bg-teal-600 hover:bg-teal-700 text-white rounded-lg font-bold text-[11px]">Güncelle</button>
-                                <button type="submit" formaction="/admin/tours/<%= t.id %>/delete" class="px-2.5 py-1.5 text-rose-600 hover:bg-rose-50 rounded-lg font-bold text-[11px]">Sil</button>
-                            </div>
-                        </form>
-                    <% }) %>
-                </div>
+        <form action="/admin/site-settings/update" method="POST" class="bg-white p-5 sm:p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+            <div>
+                <h3 class="font-extrabold text-slate-900 text-base">Site, İletişim, WhatsApp &amp; Footer Bilgileri</h3>
+                <p class="text-xs text-slate-500 mt-0.5">Header, footer ve canlı danışman kutusunda müşteriye görünen tüm iletişim ve marka metinleri.</p>
             </div>
-
-            <div class="bg-white p-5 sm:p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
-                <h3 class="font-extrabold text-slate-900 text-base">Yeni Yat Kategorisi Ekle</h3>
-                <form action="/admin/categories/add" method="POST" class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    <input type="text" name="nameTr" placeholder="Kategori Adı (Örn: Trawler)" required class="p-2.5 border border-slate-200 rounded-xl text-xs font-medium">
-                    <input type="text" name="key" placeholder="Sistem Kodu (Örn: Trawlers)" class="p-2.5 border border-slate-200 rounded-xl text-xs font-medium">
-                    <input type="text" name="desc" placeholder="Kısa kategori açıklaması" class="sm:col-span-2 p-2.5 border border-slate-200 rounded-xl text-xs font-medium">
-                    <button type="submit" class="sm:col-span-2 bg-[#0B1F3A] hover:bg-slate-800 text-white py-2.5 rounded-xl font-bold text-xs transition">+ Kategori Ekle</button>
-                </form>
-
-                <div class="space-y-3 border-t border-slate-100 pt-4 text-xs">
-                    <% (categories || []).forEach(c => { %>
-                        <form action="/admin/categories/<%= c.id %>/update" method="POST" class="p-3 bg-slate-50 rounded-xl border border-slate-200 space-y-2">
-                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                                <input type="text" name="nameTr" value="<%= c.nameTr %>" required class="p-2 bg-white border border-slate-200 rounded-lg text-xs font-bold">
-                                <input type="text" name="key" value="<%= c.key %>" required class="p-2 bg-white border border-slate-200 rounded-lg text-xs">
-                            </div>
-                            <input type="text" name="desc" value="<%= c.desc || '' %>" placeholder="Açıklama" class="w-full p-2 bg-white border border-slate-200 rounded-lg text-xs">
-                            <div class="flex items-center justify-between gap-2 pt-1">
-                                <span class="text-[11px] text-slate-400">ID: #<%= c.id %></span>
-                                <div class="flex items-center gap-2">
-                                    <button type="submit" class="px-3 py-1.5 bg-[#0B1F3A] hover:bg-slate-800 text-white rounded-lg font-bold text-[11px]">Güncelle</button>
-                                    <button type="submit" formaction="/admin/categories/<%= c.id %>/delete" class="px-2.5 py-1.5 text-rose-600 hover:bg-rose-50 rounded-lg font-bold text-[11px]">Sil</button>
-                                </div>
-                            </div>
-                        </form>
-                    <% }) %>
-                </div>
-            </div>
-        </section>
-
-        <!-- 6. SİTE, İLETİŞİM, ÖDEME PLANI, SÖZLEŞME & EKSTRALAR -->
-        <section id="view-ayarlar" class="admin-view hidden space-y-6">
-            <!-- Panel Yetkilileri / İşçi Erişimi -->
-            <div class="bg-white p-5 sm:p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 <div>
-                    <h3 class="font-extrabold text-slate-900 text-base">Panel Yetkilileri / İşçi Erişimi</h3>
-                    <p class="text-xs text-slate-500 mt-0.5">Buradan eklediğiniz çalışanlar kendi e-posta ve şifreleri ile <strong>/admin/login</strong> üzerinden panele giriş yapabilir.</p>
+                    <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Marka Adı</label>
+                    <input type="text" name="brandName" value="<%= sCfg.brandName %>" required class="w-full p-2.5 border border-slate-200 rounded-xl text-xs font-bold text-slate-900">
                 </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Marka Alt Başlığı</label>
+                    <input type="text" name="brandSubtext" value="<%= sCfg.brandSubtext %>" class="w-full p-2.5 border border-slate-200 rounded-xl text-xs font-medium text-slate-900">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Telefon Hattı</label>
+                    <input type="text" name="phone" value="<%= sCfg.phone %>" required class="w-full p-2.5 border border-slate-200 rounded-xl text-xs font-bold text-slate-900">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 uppercase mb-1">WhatsApp No (Sadece Rakam)</label>
+                    <input type="text" name="whatsappNumber" value="<%= sCfg.whatsappNumber %>" required class="w-full p-2.5 border border-slate-200 rounded-xl text-xs font-mono font-bold text-slate-900">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 uppercase mb-1">E-posta Adresi</label>
+                    <input type="email" name="email" value="<%= sCfg.email %>" required class="w-full p-2.5 border border-slate-200 rounded-xl text-xs font-bold text-slate-900">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Telif Hakkı (Footer Altı)</label>
+                    <input type="text" name="copyrightText" value="<%= sCfg.copyrightText %>" class="w-full p-2.5 border border-slate-200 rounded-xl text-xs font-medium text-slate-900">
+                </div>
+                <div class="sm:col-span-2 lg:col-span-3">
+                    <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Footer Açıklama Metni</label>
+                    <input type="text" name="footerAbout" value="<%= sCfg.footerAbout %>" class="w-full p-2.5 border border-slate-200 rounded-xl text-xs font-medium text-slate-900">
+                </div>
+                <div class="sm:col-span-2 lg:col-span-3">
+                    <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Canlı Konsyerj Karşılama Mesajı</label>
+                    <input type="text" name="conciergeWelcome" value="<%= sCfg.conciergeWelcome %>" class="w-full p-2.5 border border-slate-200 rounded-xl text-xs font-medium text-slate-900">
+                </div>
+            </div>
+            <button type="submit" class="px-5 py-2.5 bg-teal-600 hover:bg-teal-700 text-white rounded-xl font-bold text-xs transition">
+                Site &amp; İletişim Bilgilerini Kaydet
+            </button>
+        </form>
 
-                <form action="/admin/staff/add" method="POST" class="grid grid-cols-1 sm:grid-cols-4 gap-3">
-                    <input type="text" name="name" placeholder="Ad Soyad" required class="p-2.5 text-xs border border-slate-200 rounded-xl font-medium">
-                    <input type="email" name="email" placeholder="E-posta" required class="p-2.5 text-xs border border-slate-200 rounded-xl font-medium">
-                    <input type="text" name="password" placeholder="Şifre" required class="p-2.5 text-xs border border-slate-200 rounded-xl font-medium">
-                    <button type="submit" class="bg-[#0B1F3A] text-white text-xs font-bold rounded-xl py-2.5 hover:bg-sky-900 transition">
-                        + İşçi Ekle
-                    </button>
+        <div class="bg-white p-5 sm:p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+            <div>
+                <h3 class="font-extrabold text-slate-900 text-base">Kalkış Noktaları (Ana Sayfa Liman Listesi)</h3>
+                <p class="text-xs text-slate-500 mt-0.5">Giriş ekranındaki <strong>Kalkış Noktası</strong> açılır menüsünde görünen limanları ve açıklamalarını düzenleyin.</p>
+            </div>
+
+            <form action="/admin/departures/add" method="POST" class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <input type="text" name="name" placeholder="Liman / Bölge Adı (Örn: Kaş)" required class="p-2.5 border border-slate-200 rounded-xl text-xs font-medium">
+                <input type="text" name="desc" placeholder="Alt Açıklama (Örn: Kekova & Kaş Marina)" class="p-2.5 border border-slate-200 rounded-xl text-xs font-medium">
+                <button type="submit" class="bg-[#0B1F3A] hover:bg-sky-900 text-white py-2.5 px-4 rounded-xl font-bold text-xs transition">
+                    + Kalkış Noktası Ekle
+                </button>
+            </form>
+
+            <div class="space-y-2.5 border-t border-slate-100 pt-3 text-xs">
+                <% (typeof departurePoints !== 'undefined' && departurePoints ? departurePoints : []).forEach(function(dp) { %>
+                    <% const safeDid = encodeURIComponent(dp.id); %>
+                    <form action="/admin/departures/<%= safeDid %>/update" method="POST" class="p-3 bg-slate-50 rounded-xl border border-slate-200 flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5">
+                        <input type="text" name="name" value="<%= dp.name %>" required class="sm:w-44 p-2 bg-white border border-slate-200 rounded-lg text-xs font-bold text-slate-900">
+                        <input type="text" name="desc" value="<%= dp.desc || '' %>" placeholder="Alt açıklama" class="flex-1 p-2 bg-white border border-slate-200 rounded-lg text-xs text-slate-600">
+                        <div class="flex items-center gap-2 shrink-0 justify-end">
+                            <button type="submit" class="px-3 py-1.5 bg-teal-600 hover:bg-teal-700 text-white rounded-lg font-bold text-[11px]">Kaydet</button>
+                            <button type="submit" formaction="/admin/departures/<%= safeDid %>/delete" class="px-2.5 py-1.5 text-rose-600 hover:bg-rose-50 rounded-lg font-bold text-[11px]">Sil</button>
+                        </div>
+                    </form>
+                <% }) %>
+            </div>
+        </div>
+
+        <form action="/admin/payment-plan/update" method="POST" class="bg-white p-5 sm:p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+            <div>
+                <h3 class="font-extrabold text-slate-900 text-base">Ödeme Planı Oranları (Hisseli Ödeme &amp; İndirimli Tam Ödeme)</h3>
+                <p class="text-xs text-slate-500 mt-0.5">Sağ özet panelindeki <strong>Şimdi Ödenecek</strong> tutarı bu oranlara göre hesaplanır.</p>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Hisseli Ödeme Oranı (%)</label>
+                    <input type="number" name="installmentPercent" min="1" max="99" step="1" value="<%= planCfg.installmentPercent %>" required class="w-full p-2.5 border border-slate-200 rounded-xl text-xs font-bold text-slate-900">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Hisseli Ödeme Faiz / Fark (%)</label>
+                    <input type="number" name="installmentInterestPercent" min="0" max="100" step="0.1" value="<%= planCfg.installmentInterestPercent %>" required class="w-full p-2.5 border border-slate-200 rounded-xl text-xs font-bold text-slate-900">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Tam Ödeme İndirimi (%)</label>
+                    <input type="number" name="fullPaymentDiscountPercent" min="0" max="90" step="0.1" value="<%= planCfg.fullPaymentDiscountPercent %>" required class="w-full p-2.5 border border-slate-200 rounded-xl text-xs font-bold text-slate-900">
+                </div>
+            </div>
+            <button type="submit" class="px-5 py-2.5 bg-[#0B1F3A] hover:bg-sky-900 text-white rounded-xl font-bold text-xs transition">
+                Ödeme Planı Oranlarını Kaydet
+            </button>
+        </form>
+
+        <form action="/admin/contract/update" method="POST" class="bg-white p-5 sm:p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+            <div>
+                <h3 class="font-extrabold text-slate-900 text-base">Kiralama Sözleşmesi Metni</h3>
+                <p class="text-xs text-slate-500 mt-0.5">Müşteri ödeme ekranında <strong>kiralama sözleşmesi</strong> bağlantısına tıklandığında açılan sözleşme metnini buradan düzenleyebilirsiniz.</p>
+            </div>
+            <div>
+                <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Sözleşme Başlığı</label>
+                <input type="text" name="contractTitle" value="<%= contractCfg.title %>" required class="w-full p-2.5 border border-slate-200 rounded-xl text-xs font-bold text-slate-900">
+            </div>
+            <div>
+                <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Sözleşme Maddeleri / Metni</label>
+                <textarea name="contractBody" rows="8" required class="w-full p-3 border border-slate-200 rounded-xl text-xs leading-relaxed text-slate-800"><%= contractCfg.body %></textarea>
+            </div>
+            <button type="submit" class="px-5 py-2.5 bg-[#0B1F3A] hover:bg-sky-900 text-white rounded-xl font-bold text-xs transition">
+                Sözleşmeyi Kaydet
+            </button>
+        </form>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div class="bg-white p-5 sm:p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+                <h3 class="font-extrabold text-slate-900 text-base">Ödeme Seçenekleri Yönetimi</h3>
+                <form action="/admin/payments/add" method="POST" class="flex flex-col sm:flex-row gap-2.5">
+                    <input type="text" name="name" placeholder="Ödeme Yöntemi (Örn: Kapıda / Marina POS)" required class="flex-1 p-2.5 border border-slate-200 rounded-xl text-xs font-medium">
+                    <input type="text" name="desc" placeholder="Açıklama" class="flex-1 p-2.5 border border-slate-200 rounded-xl text-xs font-medium">
+                    <button type="submit" class="px-4 py-2.5 bg-teal-600 hover:bg-teal-700 text-white rounded-xl font-bold text-xs">+ Ekle</button>
                 </form>
 
                 <div class="divide-y divide-slate-100 border-t border-slate-100 pt-2 text-xs">
-                    <% (typeof adminUsers !== 'undefined' && adminUsers ? adminUsers : []).forEach(function(u) { %>
-                        <div class="py-2.5 flex items-center justify-between gap-2">
+                    <% (paymentOptions || []).forEach(p => { %>
+                        <% const safePid = encodeURIComponent(p.id); %>
+                        <div class="py-3 flex items-center justify-between gap-2">
                             <div>
-                                <span class="font-bold text-slate-900"><%= u.name %></span>
-                                <span class="text-slate-500 ml-2"><%= u.email %></span>
-                                <span class="ml-2 px-2 py-0.5 rounded-full text-[10px] font-bold <%= u.role === 'admin' ? 'bg-sky-100 text-sky-800' : 'bg-slate-100 text-slate-700' %>">
-                                    <%= u.role === 'admin' ? 'Yönetici' : 'Personel' %>
-                                </span>
+                                <div class="font-bold text-slate-900"><%= p.name %></div>
+                                <div class="text-[11px] text-slate-500"><%= p.desc || '' %></div>
                             </div>
-                            <% if (adminUsers.length > 1) { %>
-                                <form action="/admin/staff/<%= u.id %>/delete" method="POST">
+                            <div class="flex items-center space-x-2 shrink-0">
+                                <form action="/admin/payments/<%= safePid %>/toggle" method="POST">
+                                    <button type="submit" class="px-2.5 py-1 rounded-full font-bold text-[11px] <%= p.active !== false ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-200 text-slate-600' %>">
+                                        <%= p.active !== false ? 'Aktif' : 'Pasif' %>
+                                    </button>
+                                </form>
+                                <form action="/admin/payments/<%= safePid %>/delete" method="POST">
                                     <button type="submit" class="text-rose-600 font-bold text-[11px] px-2 py-1 hover:bg-rose-50 rounded-lg">Sil</button>
                                 </form>
-                            <% } %>
+                            </div>
                         </div>
                     <% }) %>
                 </div>
             </div>
 
-            <!-- Site, İletişim, WhatsApp & Footer Ayarları -->
-            <form action="/admin/site-settings/update" method="POST" class="bg-white p-5 sm:p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
-                <div>
-                    <h3 class="font-extrabold text-slate-900 text-base">Site, İletişim, WhatsApp &amp; Footer Bilgileri</h3>
-                    <p class="text-xs text-slate-500 mt-0.5">Header, footer ve canlı danışman kutusunda müşteriye görünen tüm iletişim ve marka metinleri.</p>
-                </div>
-                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                    <div>
-                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Marka Adı</label>
-                        <input type="text" name="brandName" value="<%= sCfg.brandName %>" required class="w-full p-2.5 border border-slate-200 rounded-xl text-xs font-bold text-slate-900">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Marka Alt Başlığı</label>
-                        <input type="text" name="brandSubtext" value="<%= sCfg.brandSubtext %>" class="w-full p-2.5 border border-slate-200 rounded-xl text-xs font-medium text-slate-900">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Telefon Hattı</label>
-                        <input type="text" name="phone" value="<%= sCfg.phone %>" required class="w-full p-2.5 border border-slate-200 rounded-xl text-xs font-bold text-slate-900">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1">WhatsApp No (Sadece Rakam)</label>
-                        <input type="text" name="whatsappNumber" value="<%= sCfg.whatsappNumber %>" required class="w-full p-2.5 border border-slate-200 rounded-xl text-xs font-mono font-bold text-slate-900">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1">E-posta Adresi</label>
-                        <input type="email" name="email" value="<%= sCfg.email %>" required class="w-full p-2.5 border border-slate-200 rounded-xl text-xs font-bold text-slate-900">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Telif Hakkı (Footer Altı)</label>
-                        <input type="text" name="copyrightText" value="<%= sCfg.copyrightText %>" class="w-full p-2.5 border border-slate-200 rounded-xl text-xs font-medium text-slate-900">
-                    </div>
-                    <div class="sm:col-span-2 lg:col-span-3">
-                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Footer Açıklama Metni</label>
-                        <input type="text" name="footerAbout" value="<%= sCfg.footerAbout %>" class="w-full p-2.5 border border-slate-200 rounded-xl text-xs font-medium text-slate-900">
-                    </div>
-                    <div class="sm:col-span-2 lg:col-span-3">
-                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Canlı Konsyerj Karşılama Mesajı</label>
-                        <input type="text" name="conciergeWelcome" value="<%= sCfg.conciergeWelcome %>" class="w-full p-2.5 border border-slate-200 rounded-xl text-xs font-medium text-slate-900">
-                    </div>
-                </div>
-                <button type="submit" class="px-5 py-2.5 bg-teal-600 hover:bg-teal-700 text-white rounded-xl font-bold text-xs transition">
-                    Site &amp; İletişim Bilgilerini Kaydet
-                </button>
-            </form>
-
-            <!-- Kalkış Noktaları (Ana Sayfa Arama Menüsü) -->
             <div class="bg-white p-5 sm:p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
-                <div>
-                    <h3 class="font-extrabold text-slate-900 text-base">Kalkış Noktaları (Ana Sayfa Liman Listesi)</h3>
-                    <p class="text-xs text-slate-500 mt-0.5">Giriş ekranındaki <strong>Kalkış Noktası</strong> açılır menüsünde görünen limanları ve açıklamalarını düzenleyin.</p>
-                </div>
-
-                <form action="/admin/departures/add" method="POST" class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                    <input type="text" name="name" placeholder="Liman / Bölge Adı (Örn: Kaş)" required class="p-2.5 border border-slate-200 rounded-xl text-xs font-medium">
-                    <input type="text" name="desc" placeholder="Alt Açıklama (Örn: Kekova & Kaş Marina)" class="p-2.5 border border-slate-200 rounded-xl text-xs font-medium">
-                    <button type="submit" class="bg-[#0B1F3A] hover:bg-sky-900 text-white py-2.5 px-4 rounded-xl font-bold text-xs transition">
-                        + Kalkış Noktası Ekle
-                    </button>
+                <h3 class="font-extrabold text-slate-900 text-base">Ekstra Hizmetler (Kişi Başı Ücret)</h3>
+                <form action="/admin/extras/add" method="POST" class="flex flex-col sm:flex-row gap-2.5">
+                    <input type="text" name="name" placeholder="Ekstra Adı (Örn: Kahvaltı Paketi)" required class="flex-1 p-2.5 border border-slate-200 rounded-xl text-xs font-medium">
+                    <input type="number" name="pricePerGuest" placeholder="Kişi Başı (€)" min="0" required class="w-full sm:w-32 p-2.5 border border-slate-200 rounded-xl text-xs font-medium">
+                    <button type="submit" class="px-4 py-2.5 bg-[#0B1F3A] hover:bg-slate-800 text-white rounded-xl font-bold text-xs">+ Ekle</button>
                 </form>
 
-                <div class="space-y-2.5 border-t border-slate-100 pt-3 text-xs">
-                    <% (typeof departurePoints !== 'undefined' && departurePoints ? departurePoints : []).forEach(function(dp) { %>
-                        <form action="/admin/departures/<%= dp.id %>/update" method="POST" class="p-3 bg-slate-50 rounded-xl border border-slate-200 flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5">
-                            <input type="text" name="name" value="<%= dp.name %>" required class="sm:w-44 p-2 bg-white border border-slate-200 rounded-lg text-xs font-bold text-slate-900">
-                            <input type="text" name="desc" value="<%= dp.desc || '' %>" placeholder="Alt açıklama" class="flex-1 p-2 bg-white border border-slate-200 rounded-lg text-xs text-slate-600">
-                            <div class="flex items-center gap-2 shrink-0 justify-end">
-                                <button type="submit" class="px-3 py-1.5 bg-teal-600 hover:bg-teal-700 text-white rounded-lg font-bold text-[11px]">Kaydet</button>
-                                <button type="submit" formaction="/admin/departures/<%= dp.id %>/delete" class="px-2.5 py-1.5 text-rose-600 hover:bg-rose-50 rounded-lg font-bold text-[11px]">Sil</button>
+                <div class="divide-y divide-slate-100 border-t border-slate-100 pt-2 text-xs">
+                    <% (extras || []).forEach(ex => { %>
+                        <% const safeEid = encodeURIComponent(ex.id); %>
+                        <div class="py-3 flex flex-wrap items-center justify-between gap-2">
+                            <div>
+                                <div class="font-bold text-slate-900"><%= ex.name %></div>
+                                <div class="text-[11px] text-slate-500">Şu an: <strong>€<%= Number(ex.pricePerGuest || 0) %></strong> / kişi</div>
                             </div>
-                        </form>
+                            <div class="flex items-center space-x-2">
+                                <form action="/admin/extras/<%= safeEid %>/update" method="POST" class="inline-flex items-center space-x-1.5">
+                                    <input type="number" name="pricePerGuest" value="<%= Number(ex.pricePerGuest || 0) %>" min="0" class="w-20 px-2 py-1 border border-slate-200 rounded-lg text-xs font-bold">
+                                    <button type="submit" class="px-2.5 py-1 bg-teal-600 text-white rounded-lg font-bold text-[11px]">Kaydet</button>
+                                </form>
+                                <form action="/admin/extras/<%= safeEid %>/delete" method="POST">
+                                    <button type="submit" class="text-rose-600 font-bold text-[11px] px-2 py-1 hover:bg-rose-50 rounded-lg">Sil</button>
+                                </form>
+                            </div>
+                        </div>
                     <% }) %>
                 </div>
             </div>
+        </div>
+    </section>
+</main>
 
-            <!-- Hisseli Ödeme & İndirimli Tam Ödeme Ayar Formu -->
-            <form action="/admin/payment-plan/update" method="POST" class="bg-white p-5 sm:p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
-                <div>
-                    <h3 class="font-extrabold text-slate-900 text-base">Ödeme Planı Oranları (Hisseli Ödeme &amp; İndirimli Tam Ödeme)</h3>
-                    <p class="text-xs text-slate-500 mt-0.5">Sağ özet panelindeki <strong>Şimdi Ödenecek</strong> tutarı bu oranlara göre hesaplanır.</p>
-                </div>
-                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                    <div>
-                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Hisseli Ödeme Oranı (%)</label>
-                        <input type="number" name="installmentPercent" min="1" max="99" step="1" value="<%= planCfg.installmentPercent %>" required class="w-full p-2.5 border border-slate-200 rounded-xl text-xs font-bold text-slate-900">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Hisseli Ödeme Faiz / Fark (%)</label>
-                        <input type="number" name="installmentInterestPercent" min="0" max="100" step="0.1" value="<%= planCfg.installmentInterestPercent %>" required class="w-full p-2.5 border border-slate-200 rounded-xl text-xs font-bold text-slate-900">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Tam Ödeme İndirimi (%)</label>
-                        <input type="number" name="fullPaymentDiscountPercent" min="0" max="90" step="0.1" value="<%= planCfg.fullPaymentDiscountPercent %>" required class="w-full p-2.5 border border-slate-200 rounded-xl text-xs font-bold text-slate-900">
-                    </div>
-                </div>
-                <button type="submit" class="px-5 py-2.5 bg-[#0B1F3A] hover:bg-sky-900 text-white rounded-xl font-bold text-xs transition">
-                    Ödeme Planı Oranlarını Kaydet
-                </button>
-            </form>
+<script>
+    document.querySelectorAll('.dash-progress-bar').forEach(bar => {
+        const w = Math.max(0, Math.min(100, Number(bar.dataset.width) || 0));
+        bar.style.width = w + '%';
+    });
 
-            <!-- Kiralama Sözleşmesi Düzenleme Formu -->
-            <form action="/admin/contract/update" method="POST" class="bg-white p-5 sm:p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
-                <div>
-                    <h3 class="font-extrabold text-slate-900 text-base">Kiralama Sözleşmesi Metni</h3>
-                    <p class="text-xs text-slate-500 mt-0.5">Müşteri ödeme ekranında <strong>kiralama sözleşmesini</strong> butonuna tıklandığında açılan sözleşme metnini buradan düzenleyebilirsiniz.</p>
-                </div>
-                <div>
-                    <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Sözleşme Başlığı</label>
-                    <input type="text" name="contractTitle" value="<%= contractCfg.title %>" required class="w-full p-2.5 border border-slate-200 rounded-xl text-xs font-bold text-slate-900">
-                </div>
-                <div>
-                    <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Sözleşme Maddeleri / Metni</label>
-                    <textarea name="contractBody" rows="8" required class="w-full p-3 border border-slate-200 rounded-xl text-xs leading-relaxed text-slate-800"><%= contractCfg.body %></textarea>
-                </div>
-                <button type="submit" class="px-5 py-2.5 bg-[#0B1F3A] hover:bg-sky-900 text-white rounded-xl font-bold text-xs transition">
-                    Sözleşmeyi Kaydet
-                </button>
-            </form>
+    const tabMeta = {
+        'dashboard': { title: 'Dashboard & Genel Bakış', subtitle: 'Filo, turlar, kategoriler, ödemeler ve rezervasyon yönetimi' },
+        'rezervasyonlar': { title: 'Rezervasyon Yönetimi', subtitle: 'Onayla, Beklet veya İptal et işlemleri ve ödeme/iade durumu' },
+        'filo-listesi': { title: 'Aktif Filo & Kapasite', subtitle: 'Kişi, kabin, mürettebat, günlük fiyat, çoklu fotoğraf ve operasyon takvimi' },
+        'turlar-kategoriler': { title: 'Turlar & Kategoriler', subtitle: 'Fotoğraflı tur paketleri ve yat kategorileri tanımlayın' },
+        'ayarlar': { title: 'Site, Ödeme & Sözleşme', subtitle: 'Yetkililer, marka/iletişim, ödeme planı oranları, sözleşme ve ekstraları yönetin' }
+    };
 
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <!-- Ödeme Seçenekleri -->
-                <div class="bg-white p-5 sm:p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
-                    <h3 class="font-extrabold text-slate-900 text-base">Ödeme Seçenekleri Yönetimi</h3>
-                    <form action="/admin/payments/add" method="POST" class="flex flex-col sm:flex-row gap-2.5">
-                        <input type="text" name="name" placeholder="Ödeme Yöntemi (Örn: Kapıda / Marina POS)" required class="flex-1 p-2.5 border border-slate-200 rounded-xl text-xs font-medium">
-                        <input type="text" name="desc" placeholder="Açıklama" class="flex-1 p-2.5 border border-slate-200 rounded-xl text-xs font-medium">
-                        <button type="submit" class="px-4 py-2.5 bg-teal-600 hover:bg-teal-700 text-white rounded-xl font-bold text-xs">+ Ekle</button>
-                    </form>
+    const mobileBtn = document.getElementById('adminMobileMenuBtn');
+    const mobileDrawer = document.getElementById('adminMobileDrawer');
+    if (mobileBtn && mobileDrawer) {
+        mobileBtn.addEventListener('click', () => mobileDrawer.classList.toggle('hidden'));
+    }
 
-                    <div class="divide-y divide-slate-100 border-t border-slate-100 pt-2 text-xs">
-                        <% (paymentOptions || []).forEach(p => { %>
-                            <div class="py-3 flex items-center justify-between gap-2">
-                                <div>
-                                    <div class="font-bold text-slate-900"><%= p.name %></div>
-                                    <div class="text-[11px] text-slate-500"><%= p.desc || '' %></div>
-                                </div>
-                                <div class="flex items-center space-x-2 shrink-0">
-                                    <form action="/admin/payments/<%= p.id %>/toggle" method="POST">
-                                        <button type="submit" class="px-2.5 py-1 rounded-full font-bold text-[11px] <%= p.active !== false ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-200 text-slate-600' %>">
-                                            <%= p.active !== false ? 'Aktif' : 'Pasif' %>
-                                        </button>
-                                    </form>
-                                    <form action="/admin/payments/<%= p.id %>/delete" method="POST">
-                                        <button type="submit" class="text-rose-600 font-bold text-[11px] px-2 py-1 hover:bg-rose-50 rounded-lg">Sil</button>
-                                    </form>
-                                </div>
-                            </div>
-                        <% }) %>
-                    </div>
-                </div>
-
-                <!-- Kişi Başı Ekstralar -->
-                <div class="bg-white p-5 sm:p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
-                    <h3 class="font-extrabold text-slate-900 text-base">Ekstra Hizmetler (Kişi Başı Ücret)</h3>
-                    <form action="/admin/extras/add" method="POST" class="flex flex-col sm:flex-row gap-2.5">
-                        <input type="text" name="name" placeholder="Ekstra Adı (Örn: Kahvaltı Paketi)" required class="flex-1 p-2.5 border border-slate-200 rounded-xl text-xs font-medium">
-                        <input type="number" name="pricePerGuest" placeholder="Kişi Başı (€)" min="0" required class="w-full sm:w-32 p-2.5 border border-slate-200 rounded-xl text-xs font-medium">
-                        <button type="submit" class="px-4 py-2.5 bg-[#0B1F3A] hover:bg-slate-800 text-white rounded-xl font-bold text-xs">+ Ekle</button>
-                    </form>
-
-                    <div class="divide-y divide-slate-100 border-t border-slate-100 pt-2 text-xs">
-                        <% (extras || []).forEach(ex => { %>
-                            <div class="py-3 flex flex-wrap items-center justify-between gap-2">
-                                <div>
-                                    <div class="font-bold text-slate-900"><%= ex.name %></div>
-                                    <div class="text-[11px] text-slate-500">Şu an: <strong>€<%= Number(ex.pricePerGuest || 0) %></strong> / kişi</div>
-                                </div>
-                                <div class="flex items-center space-x-2">
-                                    <form action="/admin/extras/<%= ex.id %>/update" method="POST" class="inline-flex items-center space-x-1.5">
-                                        <input type="number" name="pricePerGuest" value="<%= Number(ex.pricePerGuest || 0) %>" min="0" class="w-20 px-2 py-1 border border-slate-200 rounded-lg text-xs font-bold">
-                                        <button type="submit" class="px-2.5 py-1 bg-teal-600 text-white rounded-lg font-bold text-[11px]">Kaydet</button>
-                                    </form>
-                                    <form action="/admin/extras/<%= ex.id %>/delete" method="POST">
-                                        <button type="submit" class="text-rose-600 font-bold text-[11px] px-2 py-1 hover:bg-rose-50 rounded-lg">Sil</button>
-                                    </form>
-                                </div>
-                            </div>
-                        <% }) %>
-                    </div>
-                </div>
-            </div>
-        </section>
-    </main>
-
-    <script>
-        const tabMeta = {
-            'dashboard': { title: 'Dashboard & Genel Bakış', subtitle: 'Filo, turlar, kategoriler, ödemeler ve rezervasyon yönetimi' },
-            'rezervasyonlar': { title: 'Rezervasyon Yönetimi', subtitle: 'Onayla, Beklet veya İptal et işlemleri ve ödeme/iade durumu' },
-            'filo-listesi': { title: 'Aktif Filo & Kapasite', subtitle: 'Kişi, kabin, mürettebat, günlük fiyat, çoklu fotoğraf ve operasyon takvimi' },
-            'turlar-kategoriler': { title: 'Turlar & Kategoriler', subtitle: 'Fotoğraflı tur paketleri ve yat kategorileri tanımlayın' },
-            'ayarlar': { title: 'Site, Ödeme & Sözleşme', subtitle: 'Yetkililer, marka/iletişim, ödeme planı oranları, sözleşme ve ekstraları yönetin' }
-        };
-
-        const mobileBtn = document.getElementById('adminMobileMenuBtn');
-        const mobileDrawer = document.getElementById('adminMobileDrawer');
-        if (mobileBtn && mobileDrawer) {
-            mobileBtn.addEventListener('click', () => mobileDrawer.classList.toggle('hidden'));
-        }
-
-        function switchAdminTab(tabKey) {
-            const target = tabMeta[tabKey] ? tabKey : 'dashboard';
-            document.querySelectorAll('.admin-view').forEach(v => v.classList.toggle('hidden', v.id !== 'view-' + target));
-            document.querySelectorAll('#adminSidebarNav .admin-nav-btn').forEach(btn => {
-                const active = btn.dataset.adminTab === target;
-                btn.className = active
-                    ? 'admin-nav-btn w-full text-left flex items-center space-x-3 p-3 bg-teal-600 text-white rounded-xl font-semibold shadow transition'
-                    : 'admin-nav-btn w-full text-left flex items-center space-x-3 p-3 hover:bg-white/10 rounded-xl transition';
-            });
-            document.getElementById('adminPageTitle').innerText = tabMeta[target].title;
-            document.getElementById('adminPageSubtitle').innerText = tabMeta[target].subtitle;
-            if (mobileDrawer) mobileDrawer.classList.add('hidden');
-        }
-
-        document.querySelectorAll('.admin-nav-btn').forEach(btn => {
-            btn.addEventListener('click', () => switchAdminTab(btn.dataset.adminTab));
+    function switchAdminTab(tabKey) {
+        const target = tabMeta[tabKey] ? tabKey : 'dashboard';
+        document.querySelectorAll('.admin-view').forEach(v => v.classList.toggle('hidden', v.id !== 'view-' + target));
+        document.querySelectorAll('#adminSidebarNav .admin-nav-btn').forEach(btn => {
+            const active = btn.dataset.adminTab === target;
+            btn.className = active
+                ? 'admin-nav-btn w-full text-left flex items-center space-x-3 p-3 bg-teal-600 text-white rounded-xl font-semibold shadow transition'
+                : 'admin-nav-btn w-full text-left flex items-center space-x-3 p-3 hover:bg-white/10 rounded-xl transition';
         });
+        document.getElementById('adminPageTitle').innerText = tabMeta[target].title;
+        document.getElementById('adminPageSubtitle').innerText = tabMeta[target].subtitle;
+        if (mobileDrawer) mobileDrawer.classList.add('hidden');
+    }
 
-        const params = new URLSearchParams(window.location.search);
-        switchAdminTab(params.get('tab') || 'dashboard');
+    document.querySelectorAll('.admin-nav-btn').forEach(btn => {
+        btn.addEventListener('click', () => switchAdminTab(btn.dataset.adminTab));
+    });
 
-        let statusFilter = 'all';
-        const bookingSearch = document.getElementById('bookingSearchInput');
-        function filterBookings() {
-            const q = bookingSearch ? bookingSearch.value.trim().toLowerCase() : '';
-            document.querySelectorAll('.booking-row').forEach(row => {
-                const stOk = statusFilter === 'all' || row.dataset.bookingStatus === statusFilter;
-                const txtOk = !q || row.innerText.toLowerCase().includes(q);
-                row.classList.toggle('hidden', !(stOk && txtOk));
+    const params = new URLSearchParams(window.location.search);
+    switchAdminTab(params.get('tab') || 'dashboard');
+
+    let statusFilter = 'all';
+    const bookingSearch = document.getElementById('bookingSearchInput');
+    function filterBookings() {
+        const q = bookingSearch ? bookingSearch.value.trim().toLowerCase() : '';
+        document.querySelectorAll('.booking-row').forEach(row => {
+            const stOk = statusFilter === 'all' || row.dataset.bookingStatus === statusFilter;
+            const txtOk = !q || row.innerText.toLowerCase().includes(q);
+            row.classList.toggle('hidden', !(stOk && txtOk));
+        });
+    }
+    document.querySelectorAll('.status-filter-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            statusFilter = btn.dataset.statusFilter;
+            document.querySelectorAll('.status-filter-btn').forEach(b => {
+                b.className = b.dataset.statusFilter === statusFilter
+                    ? 'status-filter-btn px-3 py-1.5 rounded-lg text-[11px] font-bold bg-[#0B1F3A] text-white'
+                    : 'status-filter-btn px-3 py-1.5 rounded-lg text-[11px] font-bold bg-slate-100 text-slate-700';
             });
+            filterBookings();
+        });
+    });
+    if (bookingSearch) bookingSearch.addEventListener('input', filterBookings);
+
+    const photoInput = document.getElementById('yachtPhotoFileInput');
+    const photoBase64 = document.getElementById('yachtPhotoBase64');
+    const photosJsonInput = document.getElementById('yachtPhotosJson');
+    const newGalleryPreview = document.getElementById('newYachtGalleryPreview');
+    const newPhotoCount = document.getElementById('newYachtPhotoCount');
+    let newYachtImages = [];
+
+    function renderNewYachtGallery() {
+        if (newPhotoCount) {
+            newPhotoCount.innerText = newYachtImages.length + ' fotoğraf seçildi';
         }
-        document.querySelectorAll('.status-filter-btn').forEach(btn => {
-            btn.addEventListener('click', () => {
-                statusFilter = btn.dataset.statusFilter;
-                document.querySelectorAll('.status-filter-btn').forEach(b => {
-                    b.className = b.dataset.statusFilter === statusFilter
-                        ? 'status-filter-btn px-3 py-1.5 rounded-lg text-[11px] font-bold bg-[#0B1F3A] text-white'
-                        : 'status-filter-btn px-3 py-1.5 rounded-lg text-[11px] font-bold bg-slate-100 text-slate-700';
-                });
-                filterBookings();
+        if (photoBase64) {
+            photoBase64.value = newYachtImages[0] || '';
+        }
+        if (photosJsonInput) {
+            photosJsonInput.value = JSON.stringify(newYachtImages);
+        }
+        if (!newGalleryPreview) return;
+        newGalleryPreview.innerHTML = newYachtImages.map((src, idx) =>
+            '<div class="relative w-16 h-12 rounded-lg overflow-hidden border ' + (idx === 0 ? 'border-teal-600 ring-1 ring-teal-600' : 'border-slate-200') + '">' +
+                '<img src="' + src + '" class="w-full h-full object-cover">' +
+                '<button type="button" data-idx="' + idx + '" class="new-gal-del w-4 h-4 rounded-full bg-rose-600 text-white text-[9px] font-bold flex items-center justify-center absolute top-0.5 right-0.5">✕</button>' +
+            '</div>'
+        ).join('');
+
+        newGalleryPreview.querySelectorAll('.new-gal-del').forEach(btn => {
+            btn.addEventListener('click', function () {
+                const i = Number(this.dataset.idx);
+                newYachtImages.splice(i, 1);
+                renderNewYachtGallery();
             });
         });
-        if (bookingSearch) bookingSearch.addEventListener('input', filterBookings);
+    }
 
-        // Yeni Yat Ekle — Çoklu Fotoğraf Önizleme & Payload Hazırlama
-        const photoInput = document.getElementById('yachtPhotoFileInput');
-        const photoBase64 = document.getElementById('yachtPhotoBase64');
-        const photosJsonInput = document.getElementById('yachtPhotosJson');
-        const newGalleryPreview = document.getElementById('newYachtGalleryPreview');
-        const newPhotoCount = document.getElementById('newYachtPhotoCount');
-        let newYachtImages = [];
-
-        function renderNewYachtGallery() {
-            if (newPhotoCount) {
-                newPhotoCount.innerText = newYachtImages.length + ' fotoğraf seçildi';
-            }
-            if (photoBase64) {
-                photoBase64.value = newYachtImages[0] || '';
-            }
-            if (photosJsonInput) {
-                photosJsonInput.value = JSON.stringify(newYachtImages);
-            }
-            if (!newGalleryPreview) return;
-            newGalleryPreview.innerHTML = newYachtImages.map((src, idx) =>
-                '<div class="relative w-16 h-12 rounded-lg overflow-hidden border ' + (idx === 0 ? 'border-teal-600 ring-1 ring-teal-600' : 'border-slate-200') + '">' +
-                    '<img src="' + src + '" class="w-full h-full object-cover">' +
-                    '<button type="button" data-idx="' + idx + '" class="new-gal-del w-4 h-4 rounded-full bg-rose-600 text-white text-[9px] font-bold flex items-center justify-center absolute top-0.5 right-0.5">✕</button>' +
-                '</div>'
-            ).join('');
-
-            newGalleryPreview.querySelectorAll('.new-gal-del').forEach(btn => {
-                btn.addEventListener('click', function () {
-                    const i = Number(this.dataset.idx);
-                    newYachtImages.splice(i, 1);
-                    renderNewYachtGallery();
-                });
+    if (photoInput) {
+        photoInput.addEventListener('change', function () {
+            const files = Array.from(this.files || []);
+            if (!files.length) return;
+            Promise.all(files.map(file => new Promise(resolve => {
+                const reader = new FileReader();
+                reader.onload = ev => resolve(ev.target.result);
+                reader.readAsDataURL(file);
+            }))).then(dataUrls => {
+                newYachtImages = newYachtImages.concat(dataUrls);
+                renderNewYachtGallery();
             });
-        }
+        });
+    }
 
-        if (photoInput) {
-            photoInput.addEventListener('change', function () {
+    function syncCardGallery(card) {
+        if (!card) return;
+        const items = Array.from(card.querySelectorAll('.card-gallery-item'));
+        const urls = items.map(el => {
+            const thumb = el.querySelector('.card-gal-thumb');
+            return (thumb && thumb.getAttribute('src')) || '';
+        }).filter(Boolean);
+        const hiddenInput = card.querySelector('.card-images-hidden');
+        const coverImg = card.querySelector('.card-cover-img');
+        const badge = card.querySelector('.card-photo-badge');
+        const countLabel = card.querySelector('.card-gallery-count');
+
+        if (hiddenInput) hiddenInput.value = JSON.stringify(urls);
+        if (coverImg && urls[0]) coverImg.src = urls[0];
+        if (badge) badge.innerText = urls.length + ' Fotoğraf';
+        if (countLabel) countLabel.innerText = urls.length + ' adet';
+
+        items.forEach((el, idx) => {
+            el.classList.toggle('border-teal-600', idx === 0);
+            el.classList.toggle('ring-1', idx === 0);
+            el.classList.toggle('ring-teal-600', idx === 0);
+            el.classList.toggle('border-slate-200', idx !== 0);
+        });
+    }
+
+    function removeCardGalleryItem(btn) {
+        const item = btn.closest('.card-gallery-item');
+        const card = btn.closest('.yacht-edit-card');
+        if (!item || !card) return;
+        const allItems = card.querySelectorAll('.card-gallery-item');
+        if (allItems.length <= 1) return;
+        item.remove();
+        syncCardGallery(card);
+    }
+
+    document.querySelectorAll('.yacht-edit-card').forEach(card => {
+        syncCardGallery(card);
+        const fileInput = card.querySelector('.card-multi-input');
+        const galleryList = card.querySelector('.card-gallery-list');
+        const form = card.querySelector('form');
+
+        if (fileInput && galleryList) {
+            fileInput.addEventListener('change', function () {
                 const files = Array.from(this.files || []);
                 if (!files.length) return;
                 Promise.all(files.map(file => new Promise(resolve => {
@@ -1095,113 +1144,56 @@
                     reader.onload = ev => resolve(ev.target.result);
                     reader.readAsDataURL(file);
                 }))).then(dataUrls => {
-                    newYachtImages = newYachtImages.concat(dataUrls);
-                    renderNewYachtGallery();
-                });
-            });
-        }
-
-        // Mevcut Yat Kartları — Çoklu Fotoğraf Ekleme, Kaldırma & Kayıt Senkronizasyonu
-        function syncCardGallery(card) {
-            if (!card) return;
-            const items = Array.from(card.querySelectorAll('.card-gallery-item'));
-            const urls = items.map(el => el.dataset.imgUrl).filter(Boolean);
-            const hiddenInput = card.querySelector('.card-images-hidden');
-            const coverImg = card.querySelector('.card-cover-img');
-            const badge = card.querySelector('.card-photo-badge');
-            const countLabel = card.querySelector('.card-gallery-count');
-
-            if (hiddenInput) hiddenInput.value = JSON.stringify(urls);
-            if (coverImg && urls[0]) coverImg.src = urls[0];
-            if (badge) badge.innerText = urls.length + ' Fotoğraf';
-            if (countLabel) countLabel.innerText = urls.length + ' adet';
-
-            items.forEach((el, idx) => {
-                el.classList.toggle('border-teal-600', idx === 0);
-                el.classList.toggle('ring-1', idx === 0);
-                el.classList.toggle('ring-teal-600', idx === 0);
-                el.classList.toggle('border-slate-200', idx !== 0);
-            });
-        }
-
-        function removeCardGalleryItem(btn) {
-            const item = btn.closest('.card-gallery-item');
-            const card = btn.closest('.yacht-edit-card');
-            if (!item || !card) return;
-            const allItems = card.querySelectorAll('.card-gallery-item');
-            if (allItems.length <= 1) return;
-            item.remove();
-            syncCardGallery(card);
-        }
-
-        document.querySelectorAll('.yacht-edit-card').forEach(card => {
-            syncCardGallery(card);
-            const fileInput = card.querySelector('.card-multi-input');
-            const galleryList = card.querySelector('.card-gallery-list');
-            const form = card.querySelector('form');
-
-            if (fileInput && galleryList) {
-                fileInput.addEventListener('change', function () {
-                    const files = Array.from(this.files || []);
-                    if (!files.length) return;
-                    Promise.all(files.map(file => new Promise(resolve => {
-                        const reader = new FileReader();
-                        reader.onload = ev => resolve(ev.target.result);
-                        reader.readAsDataURL(file);
-                    }))).then(dataUrls => {
-                        dataUrls.forEach(src => {
-                            const div = document.createElement('div');
-                            div.className = 'card-gallery-item relative w-12 h-10 rounded-lg overflow-hidden border border-slate-200';
-                            div.dataset.imgUrl = src;
-                            div.innerHTML =
-                                '<img src="' + src + '" alt="Yeni foto" class="w-full h-full object-cover">' +
-                                '<button type="button" onclick="removeCardGalleryItem(this)" title="Fotoğrafı kaldır" class="w-4 h-4 rounded-full bg-rose-600 text-white text-[9px] font-bold flex items-center justify-center absolute top-0.5 right-0.5 opacity-90 hover:opacity-100">✕</button>';
-                            galleryList.appendChild(div);
-                        });
-                        syncCardGallery(card);
+                    dataUrls.forEach(src => {
+                        const div = document.createElement('div');
+                        div.className = 'card-gallery-item relative w-12 h-10 rounded-lg overflow-hidden border border-slate-200';
+                        div.innerHTML =
+                            '<img src="' + src + '" alt="Yeni foto" class="card-gal-thumb w-full h-full object-cover">' +
+                            '<button type="button" onclick="removeCardGalleryItem(this)" title="Fotoğrafı kaldır" class="w-4 h-4 rounded-full bg-rose-600 text-white text-[9px] font-bold flex items-center justify-center absolute top-0.5 right-0.5 opacity-90 hover:opacity-100">✕</button>';
+                        galleryList.appendChild(div);
                     });
-                });
-            }
-
-            if (form) {
-                form.addEventListener('submit', function () {
                     syncCardGallery(card);
                 });
-            }
-        });
-
-        // Yeni Tur Fotoğraf Önizleme
-        function previewNewTourImg(input) {
-            const file = input.files && input.files[0];
-            if (!file) return;
-            const reader = new FileReader();
-            reader.onload = function (ev) {
-                const prev = document.getElementById('newTourPhotoPreview');
-                const hid = document.getElementById('newTourPhotoBase64');
-                if (prev) prev.src = ev.target.result;
-                if (hid) hid.value = ev.target.result;
-            };
-            reader.readAsDataURL(file);
+            });
         }
 
-        // Mevcut Tur Kartları Fotoğraf Önizleme & Base64 Senkronizasyonu
-        document.querySelectorAll('.tour-edit-card').forEach(card => {
-            const fileInput = card.querySelector('.tour-card-file');
-            const prevImg = card.querySelector('.tour-card-preview');
-            const hidInput = card.querySelector('.tour-card-base64');
-            if (fileInput) {
-                fileInput.addEventListener('change', function () {
-                    const file = this.files && this.files[0];
-                    if (!file) return;
-                    const reader = new FileReader();
-                    reader.onload = function (ev) {
-                        if (prevImg) prevImg.src = ev.target.result;
-                        if (hidInput) hidInput.value = ev.target.result;
-                    };
-                    reader.readAsDataURL(file);
-                });
-            }
-        });
-    </script>
+        if (form) {
+            form.addEventListener('submit', function () {
+                syncCardGallery(card);
+            });
+        }
+    });
+
+    function previewNewTourImg(input) {
+        const file = input.files && input.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = function (ev) {
+            const prev = document.getElementById('newTourPhotoPreview');
+            const hid = document.getElementById('newTourPhotoBase64');
+            if (prev) prev.src = ev.target.result;
+            if (hid) hid.value = ev.target.result;
+        };
+        reader.readAsDataURL(file);
+    }
+
+    document.querySelectorAll('.tour-edit-card').forEach(card => {
+        const fileInput = card.querySelector('.tour-card-file');
+        const prevImg = card.querySelector('.tour-card-preview');
+        const hidInput = card.querySelector('.tour-card-base64');
+        if (fileInput) {
+            fileInput.addEventListener('change', function () {
+                const file = this.files && this.files[0];
+                if (!file) return;
+                const reader = new FileReader();
+                reader.onload = function (ev) {
+                    if (prevImg) prevImg.src = ev.target.result;
+                    if (hidInput) hidInput.value = ev.target.result;
+                };
+                reader.readAsDataURL(file);
+            });
+        }
+    });
+</script>
 </body>
 </html>

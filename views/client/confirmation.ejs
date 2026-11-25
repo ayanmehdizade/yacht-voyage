@@ -5,14 +5,16 @@
     brandName: 'YachtVoyage',
     whatsappNumber: '902521234567'
 }; %>
+<% const cleanWaNum = String(cSite.whatsappNumber || '902521234567').replace(/\D/g, '') || '902521234567'; %>
 <% const bTotal = Number(booking.totalAmount || 0); %>
 <% const bPaid = Number(booking.paidAmount || 0); %>
 <% const bRefunded = Number(booking.refundedAmount || 0); %>
 <% const isCancelled = booking.status === 'İptal Edildi' || booking.status === 'İptal' || booking.status === 'Cancelled'; %>
+<% const isPaymentPending = booking.status === 'Ödəniş gözlənilir' || booking.status === 'Ödeme Bekliyor' || booking.status === 'Beklemede' || booking.status === 'Payment Pending'; %>
 <% const remainingBal = isCancelled ? 0 : Math.max(0, bTotal - bPaid); %>
 <% const statusDisplay = confIsEn
-    ? (isCancelled ? 'Cancelled' : (booking.status === 'Onaylandı' ? 'Confirmed' : (booking.status || 'Confirmed')))
-    : (booking.status || 'Onaylandı'); %>
+    ? (isCancelled ? 'Cancelled' : (isPaymentPending ? 'Payment Pending' : (booking.status === 'Onaylandı' ? 'Confirmed' : (booking.status || 'Confirmed'))))
+    : (isCancelled ? 'İptal Edildi' : (isPaymentPending ? 'Ödeme Bekliyor' : (booking.status || 'Onaylandı'))); %>
 <% const charterTypeMap = {
     'Özel Yat Kiralama (Konaklamalı)': 'Private Yacht Charter (Overnight)',
     'Özel Yat Kiralama': 'Private Yacht Charter',
@@ -47,12 +49,13 @@
 }; %>
 <% const daysCount = Number(booking.days || 1); %>
 <% const guestsCount = Number(booking.guests || 1); %>
+<% const confImgSrc = (yacht && Array.isArray(yacht.images) && yacht.images[0]) ? yacht.images[0] : 'https://images.unsplash.com/photo-1567899378494-47b22a2ae96a?auto=format&fit=crop&w=1000&q=80'; %>
 
 <main class="max-w-3xl mx-auto px-4 sm:px-6 py-12">
     <div class="bg-white rounded-3xl border border-slate-200 shadow-xl overflow-hidden">
         <div class="bg-[#0B1F3A] text-white p-8 text-center space-y-3">
-            <div class="w-16 h-16 rounded-full <%= isCancelled ? 'bg-rose-500/20 border-rose-400 text-rose-300' : 'bg-emerald-500/20 border-emerald-400 text-emerald-300' %> border flex items-center justify-center mx-auto text-2xl">
-                <i class="fa-solid <%= isCancelled ? 'fa-ban' : 'fa-check' %>"></i>
+            <div class="w-16 h-16 rounded-full <%= isCancelled ? 'bg-rose-500/20 border-rose-400 text-rose-300' : (isPaymentPending ? 'bg-amber-500/20 border-amber-400 text-amber-300' : 'bg-emerald-500/20 border-emerald-400 text-emerald-300') %> border flex items-center justify-center mx-auto text-2xl">
+                <i class="fa-solid <%= isCancelled ? 'fa-ban' : (isPaymentPending ? 'fa-clock' : 'fa-check') %>"></i>
             </div>
             <span class="inline-block bg-white/10 text-sky-200 text-xs font-bold px-3.5 py-1 rounded-full">
                 <%= confIsEn ? 'Status:' : 'Durum:' %> <%= statusDisplay %>
@@ -60,6 +63,8 @@
             <h1 class="text-2xl md:text-3xl font-extrabold">
                 <% if (isCancelled) { %>
                     <%= confIsEn ? 'Booking Cancelled' : 'Rezervasyon İptal Edildi' %>
+                <% } else if (isPaymentPending) { %>
+                    <%= confIsEn ? 'Booking Received — Payment Pending' : 'Rezervasyon Alındı — Ödeme Bekliyor' %>
                 <% } else { %>
                     <%= confIsEn ? 'Your Booking Is Confirmed!' : 'Rezervasyonunuz Alındı!' %>
                 <% } %>
@@ -69,6 +74,10 @@
                     <%= confIsEn
                         ? 'Your reservation record has been updated to cancelled. You can review your voucher document below.'
                         : 'Rezervasyon kaydınız iptal durumuna güncellendi. Voucher belgenizi aşağıdan inceleyebilirsiniz.' %>
+                <% } else if (isPaymentPending) { %>
+                    <%= confIsEn
+                        ? 'Your booking voucher is ready. Payment is currently pending settlement via your selected payment method.'
+                        : 'Voucher belgeniz hazırdır. Seçtiğiniz ödeme yöntemiyle ödeme şu anda bekleniyor.' %>
                 <% } else { %>
                     <%= confIsEn
                         ? 'Your blue cruise voucher has been generated. You can look up your booking anytime using your PNR code and email address.'
@@ -86,7 +95,7 @@
 
         <div class="p-6 md:p-8 space-y-6">
             <div class="flex flex-col sm:flex-row items-center gap-4 bg-slate-50 p-4 rounded-2xl border border-slate-100">
-                <img src="<%= (yacht && yacht.images && yacht.images[0]) ? yacht.images[0] : 'https://images.unsplash.com/photo-1567899378494-47b22a2ae96a?auto=format&fit=crop&w=1000&q=80' %>" alt="<%= booking.yacht %>" class="w-full sm:w-32 h-24 object-cover rounded-xl">
+                <img id="confYachtImg" src="<%= confImgSrc %>" alt="<%= booking.yacht %>" class="w-full sm:w-32 h-24 object-cover rounded-xl">
                 <div class="flex-1 text-center sm:text-left">
                     <div class="text-xs font-bold text-teal-700 uppercase"><%= charterDisplay %></div>
                     <h2 class="text-xl font-extrabold text-slate-900"><%= booking.yacht %></h2>
@@ -96,11 +105,18 @@
                 </div>
             </div>
 
+            <% if (booking.packageName) { %>
+                <div class="text-xs bg-teal-50/80 border border-teal-200 p-3.5 rounded-xl text-teal-900 font-bold">
+                    <%= confIsEn ? 'Package:' : 'Paket:' %> <%= booking.packageName %>
+                </div>
+            <% } %>
+
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
                 <div class="bg-slate-50 p-4 rounded-xl">
                     <span class="text-slate-400 block"><%= confIsEn ? 'Check-in — Check-out Date' : 'Giriş — Çıkış Tarihi' %></span>
                     <strong class="text-sm text-slate-900">
                         <%= booking.checkIn %> → <%= booking.checkOut %> (<%= daysCount %> <%= confIsEn ? (daysCount === 1 ? 'Day' : 'Days') : 'Gün' %>)
+                        <% if (booking.tourTimeSlot) { %> • <%= booking.tourTimeSlot %><% } %>
                     </strong>
                 </div>
                 <div class="bg-slate-50 p-4 rounded-xl">
@@ -120,6 +136,15 @@
                     <% if (isCancelled) { %>
                         <span class="text-[11px] font-bold text-rose-700 block">
                             <%= confIsEn ? 'Refunded / Cancelled Amount:' : 'İade Edilen / İptal Tutar:' %> €<%= (bRefunded > 0 ? bRefunded : bPaid).toLocaleString() %>
+                        </span>
+                    <% } else if (isPaymentPending) { %>
+                        <span class="text-[11px] font-bold text-amber-700 block">
+                            <%= confIsEn ? 'Status: Payment Pending' : 'Durum: Ödeme Bekliyor' %>
+                        </span>
+                        <span class="text-[11px] font-semibold text-slate-600 block">
+                            <%= confIsEn
+                                ? ('Paid: €' + bPaid.toLocaleString() + ' • Remaining: €' + remainingBal.toLocaleString())
+                                : ('Ödenen: €' + bPaid.toLocaleString() + ' • Kalan: €' + remainingBal.toLocaleString()) %>
                         </span>
                     <% } else { %>
                         <span class="text-[11px] font-semibold text-emerald-700 block">
@@ -156,13 +181,23 @@
                     <a href="/" class="px-4 py-3 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-xl text-xs font-bold transition">
                         <%= confIsEn ? '← Home' : '← Ana Sayfa' %>
                     </a>
-                    <a href="/my-booking?pnr=<%= encodeURIComponent(booking.id) %>&email=<%= encodeURIComponent(booking.email || '') %>" class="px-4 py-3 bg-slate-100 hover:bg-slate-200 text-[#0B1F3A] rounded-xl text-xs font-bold transition">
+                    <a href="/my-booking?pnr=<%= encodeURIComponent(booking.id) %>" class="px-4 py-3 bg-slate-100 hover:bg-slate-200 text-[#0B1F3A] rounded-xl text-xs font-bold transition">
                         <%= confIsEn ? 'Manage Booking' : 'Rezervasyonu Yönet' %>
                     </a>
                 </div>
 
                 <div class="flex flex-wrap gap-2.5">
-                    <a id="waVoucherBtn" href="#" target="_blank" rel="noopener noreferrer" class="px-4 py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition">
+                    <a id="waVoucherBtn"
+                       href="#"
+                       target="_blank"
+                       rel="noopener noreferrer"
+                       data-wa-num="<%= cleanWaNum %>"
+                       data-wa-brand="<%= cSite.brandName || 'YachtVoyage' %>"
+                       data-wa-status="<%= statusDisplay %>"
+                       data-wa-yacht="<%= booking.yacht || '' %>"
+                       data-wa-checkin="<%= booking.checkIn || '' %>"
+                       data-wa-checkout="<%= booking.checkOut || '' %>"
+                       class="px-4 py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition">
                         <i class="fa-brands fa-whatsapp mr-1.5"></i><%= confIsEn ? 'Send via WhatsApp' : "WhatsApp'a Gönder" %>
                     </a>
                     <button type="button" id="printVoucherBtn" class="px-5 py-3 bg-[#0B1F3A] hover:bg-sky-900 text-white rounded-xl text-xs font-bold transition">
@@ -176,9 +211,23 @@
 
 <script>
     const isEnConf = document.documentElement.dataset.yvEn === '1';
-    const pnrText = document.getElementById('pnrCodeText').innerText.trim();
+    const pnrEl = document.getElementById('pnrCodeText');
+    const pnrText = pnrEl ? pnrEl.innerText.trim() : '';
+
+    const confImgEl = document.getElementById('confYachtImg');
+    if (confImgEl) {
+        confImgEl.addEventListener('error', function() {
+            if (typeof fallbackYachtImg === 'function') {
+                fallbackYachtImg(this);
+            } else if (!this.dataset.fallbackApplied) {
+                this.dataset.fallbackApplied = '1';
+                this.src = 'https://images.unsplash.com/photo-1567899378494-47b22a2ae96a?auto=format&fit=crop&w=1000&q=80';
+            }
+        });
+    }
+
     const copyBtn = document.getElementById('copyPnrBtn');
-    if (copyBtn) {
+    if (copyBtn && pnrText) {
         copyBtn.addEventListener('click', function() {
             const btn = this;
             const markCopied = function() {
@@ -215,12 +264,16 @@
 
     const waBtn = document.getElementById('waVoucherBtn');
     if (waBtn) {
-        const waNum = '<%= cSite.whatsappNumber %>';
-        const waStatus = '<%= statusDisplay %>';
+        const waNum = waBtn.dataset.waNum || '902521234567';
+        const waBrand = waBtn.dataset.waBrand || 'YachtVoyage';
+        const waStatus = waBtn.dataset.waStatus || '';
+        const waYacht = waBtn.dataset.waYacht || '';
+        const waCheckIn = waBtn.dataset.waCheckin || '';
+        const waCheckOut = waBtn.dataset.waCheckout || '';
         const waMsg = isEnConf
-            ? ('<%= cSite.brandName %> Booking (' + waStatus + ') — PNR: ' + pnrText + ' | Yacht: <%= booking.yacht %> | Dates: <%= booking.checkIn %> - <%= booking.checkOut %>')
-            : ('<%= cSite.brandName %> Rezervasyon (' + waStatus + ') — PNR: ' + pnrText + ' | Yat: <%= booking.yacht %> | Tarih: <%= booking.checkIn %> - <%= booking.checkOut %>');
-        waBtn.href = 'https://wa.me/' + waNum + '?text=' + encodeURIComponent(waMsg);
+            ? (waBrand + ' Booking (' + waStatus + ') — PNR: ' + pnrText + ' | Yacht: ' + waYacht + ' | Dates: ' + waCheckIn + ' - ' + waCheckOut)
+            : (waBrand + ' Rezervasyon (' + waStatus + ') — PNR: ' + pnrText + ' | Yat: ' + waYacht + ' | Tarih: ' + waCheckIn + ' - ' + waCheckOut);
+        waBtn.href = 'https://wa.me/' + encodeURIComponent(waNum) + '?text=' + encodeURIComponent(waMsg);
     }
 </script>
 
