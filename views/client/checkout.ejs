@@ -97,7 +97,7 @@
             <div id="step1Box" class="bg-white p-6 md:p-8 rounded-2xl border border-slate-200 shadow-sm space-y-6">
                 <div class="flex flex-wrap justify-between items-center gap-2 border-b border-slate-100 pb-4">
                     <h2 class="text-xl font-extrabold text-slate-900"><%= coIsEn ? '1. Booking Details' : '1. Rezervasyon Detayları' %></h2>
-                    <span id="availBadge" class="text-xs font-bold px-3 py-1 rounded-full bg-amber-50 text-amber-800">
+                    <span id="availBadge" data-no-auto-translate="true" class="text-xs font-bold px-3 py-1 rounded-full bg-amber-50 text-amber-800">
                         <i class="fa-solid fa-calendar-day mr-1"></i><%= coIsEn ? 'Select Check-in & Check-out Dates' : 'Giriş ve Çıkış Tarihi Seçin' %>
                     </span>
                 </div>
@@ -241,7 +241,7 @@
                                     <div class="text-xs text-slate-500">€<%= perGuestPrice.toLocaleString() %> <%= coIsEn ? '/ guest' : '/ kişi' %></div>
                                 </div>
                             </div>
-                            <span class="extra-calc-badge font-bold text-sm text-[#0B1F3A]">
+                            <span data-no-auto-translate="true" class="extra-calc-badge font-bold text-sm text-[#0B1F3A]">
                                 +€<%= (perGuestPrice * initGuests).toLocaleString() %> (<%= initGuests %> <%= coIsEn ? (initGuests === 1 ? 'guest' : 'guests') : 'kişi' %>)
                             </span>
                         </label>
@@ -434,12 +434,12 @@
                 </div>
 
                 <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white py-4 rounded-xl font-bold text-sm transition shadow-lg">
-                    <i class="fa-solid fa-lock mr-2"></i><%= coIsEn ? 'Confirm Booking' : 'Rezervasyonu Onayla' %> (<span id="payBtnAmount">€0</span>)
+                    <i class="fa-solid fa-lock mr-2"></i><%= coIsEn ? 'Confirm Booking' : 'Rezervasyonu Onayla' %> (<span id="payBtnAmount" data-no-auto-translate="true">€0</span>)
                 </button>
             </div>
         </div>
 
-        <div id="checkoutSummaryCard" data-rate="<%= yacht.price %>" data-max-guests="<%= yacht.guests %>" class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm h-fit sticky top-28 space-y-5">
+        <div id="checkoutSummaryCard" data-no-auto-translate="true" data-rate="<%= yacht.price %>" data-max-guests="<%= yacht.guests %>" class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm h-fit sticky top-28 space-y-5">
             <img src="<%= primaryImgSrc %>" alt="<%= yacht.name %>" class="checkout-img w-full h-44 object-cover rounded-xl">
             <div>
                 <h3 class="text-lg font-extrabold text-slate-900"><%= yacht.name %></h3>
@@ -657,7 +657,8 @@
     const rawExtrasParams = [
         ...urlParams.getAll('extras'),
         ...urlParams.getAll('extra'),
-        ...((urlParams.get('extras') || '').split(',').map(s => s.trim()).filter(Boolean))
+        ...((urlParams.get('extras') || '').split(',').map(s => s.trim()).filter(Boolean)),
+        ...((urlParams.get('extrasCsv') || '').split(',').map(s => s.trim()).filter(Boolean))
     ].map(s => s.toLowerCase());
 
     if (rawExtrasParams.length) {
@@ -1135,12 +1136,11 @@
 
         const baseLabelEl = document.getElementById('sumBaseLabel');
         if (baseLabelEl) {
-            if (hasFixedPackage) {
-                const pkgTitleText = packageName || (isEnCo ? 'Tour Package' : 'Tur Paketi');
-                baseLabelEl.innerHTML = pkgTitleText + ' (<span id="sumDays">' + effectiveDays + '</span> ' + (isEnCo ? 'days' : 'gün') + ')';
-            } else {
-                baseLabelEl.innerHTML = (isEnCo ? 'Yacht Charter' : 'Yat Kirası') + ' (<span id="sumDays">' + selectedDays + '</span> ' + (isEnCo ? 'days' : 'gün') + ')';
-            }
+            const titlePart = hasFixedPackage
+                ? (packageName || (isEnCo ? 'Tour Package' : 'Tur Paketi'))
+                : (isEnCo ? 'Yacht Charter' : 'Yat Kirası');
+            const dayWord = isEnCo ? (effectiveDays === 1 ? 'day' : 'days') : 'gün';
+            baseLabelEl.textContent = `${titlePart} (${effectiveDays} ${dayWord})`;
         }
 
         document.getElementById('daysInput').value = effectiveDays;
@@ -1149,8 +1149,6 @@
         document.getElementById('totalAmountInput').value = grandTotal;
         document.getElementById('paidAmountInput').value = payNow;
 
-        const sumDaysEl = document.getElementById('sumDays');
-        if (sumDaysEl) sumDaysEl.innerText = effectiveDays;
         document.getElementById('sumGuests').innerText = guestsVal;
         document.getElementById('sumBase').innerText = '€' + baseTotal.toLocaleString();
         document.getElementById('sumExtras').innerText = '€' + extrasTotal.toLocaleString();

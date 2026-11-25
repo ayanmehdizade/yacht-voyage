@@ -248,12 +248,15 @@
         <div class="grid grid-cols-1 md:grid-cols-3 gap-7">
             <% sortedHomeTours.slice(0, 3).forEach((pkg, pIdx) => { %>
                 <% const linkedYacht = (typeof yachts !== 'undefined' && Array.isArray(yachts)) ? (yachts.find(y => Number(y.id) === Number(pkg.yachtId)) || yachts[0]) : null; %>
-                <% const pkgImg = pkg.img || fallbackTourImgs[pIdx % fallbackTourImgs.length]; %>
+                <% const pkgImg = pkg.image || pkg.img || fallbackTourImgs[pIdx % fallbackTourImgs.length]; %>
                 <% const pkgTitle = (homeIsEn && pkg.titleEn) ? pkg.titleEn : pkg.title; %>
                 <% const pkgRegion = (homeIsEn && pkg.regionEn) ? pkg.regionEn : pkg.region; %>
                 <% const meetingSpot = (homeIsEn && pkg.meetingPointEn) ? pkg.meetingPointEn : (pkg.meetingPoint || (pkgRegion + ' Marina')); %>
                 <% const pkgIncluded = (homeIsEn && Array.isArray(pkg.includedEn) && pkg.includedEn.length) ? pkg.includedEn : ((Array.isArray(pkg.included) && pkg.included.length) ? pkg.included : (homeIsEn ? ['Licensed captain and fuel', 'Swimming stops and refreshments'] : ['Lisanslı kaptan ve yakıt', 'Yüzme molaları ve ikramlar'])); %>
                 <% const pkgExcluded = (homeIsEn && Array.isArray(pkg.excludedEn) && pkg.excludedEn.length) ? pkg.excludedEn : ((Array.isArray(pkg.excluded) && pkg.excluded.length) ? pkg.excluded : (homeIsEn ? ['Custom menu & airport transfer'] : ['Özel menü & havalimanı transferi'])); %>
+                <% const pkgDays = Math.max(1, Number(pkg.durationDays || 1)); %>
+                <% const pkgPrice = Math.max(0, Number(pkg.pricePerDay || 0)); %>
+                <% const pkgDurLabel = pkg.durationLabel || (pkgDays + (homeIsEn ? (pkgDays === 1 ? ' Day' : ' Days') : ' Gün')); %>
                 <div class="bg-white rounded-2xl overflow-hidden border border-slate-200 shadow-sm hover:shadow-xl transition flex flex-col justify-between">
                     <div>
                         <div class="relative">
@@ -269,7 +272,7 @@
                             </div>
 
                             <div class="flex flex-wrap gap-3 text-xs text-slate-600 bg-slate-50 p-3 rounded-xl">
-                                <span><i class="fa-regular fa-clock text-teal-600 mr-1"></i><strong><%= homeIsEn ? 'Time:' : 'Saat:' %></strong> <%= pkg.durationLabel || (pkg.durationDays + (homeIsEn ? (Number(pkg.durationDays) === 1 ? ' Day' : ' Days') : ' Gün')) %></span>
+                                <span><i class="fa-regular fa-clock text-teal-600 mr-1"></i><strong><%= homeIsEn ? 'Time:' : 'Saat:' %></strong> <%= pkgDurLabel %></span>
                                 <span><i class="fa-solid fa-location-dot text-teal-600 mr-1"></i><strong><%= homeIsEn ? 'Meeting:' : 'Buluşma Noktası:' %></strong> <%= meetingSpot %></span>
                                 <span><i class="fa-solid fa-users text-teal-600 mr-1"></i><%= pkg.capacityLabel || (linkedYacht ? (homeIsEn ? ('Up to ' + linkedYacht.guests + ' guests') : ('En fazla ' + linkedYacht.guests + ' kişi')) : (homeIsEn ? 'Private Group' : 'Özel Grup')) %></span>
                             </div>
@@ -299,9 +302,9 @@
                     <div class="px-6 py-4 bg-slate-50/70 border-t border-slate-100 flex items-center justify-between">
                         <div>
                             <span class="text-[11px] text-slate-400 block"><%= homeIsEn ? 'Package Price' : 'Paket Fiyatı' %></span>
-                            <span class="font-extrabold text-teal-700 text-lg"><%= Number(pkg.pricePerDay || 0).toLocaleString() %> €</span>
+                            <span class="font-extrabold text-teal-700 text-lg">€<%= pkgPrice.toLocaleString() %></span>
                         </div>
-                        <a href="/checkout?yachtId=<%= linkedYacht ? linkedYacht.id : 1 %>&tourId=<%= pkg.id %>" class="bg-[#0B1F3A] hover:bg-sky-900 text-white text-xs font-bold px-4 py-2.5 rounded-xl transition">
+                        <a href="/checkout?yachtId=<%= linkedYacht ? linkedYacht.id : 1 %>&packageId=<%= encodeURIComponent(pkg.id) %>&packageName=<%= encodeURIComponent(pkgTitle) %>&packagePrice=<%= pkgPrice %>&packageDays=<%= pkgDays %>&duration=<%= encodeURIComponent(pkgDurLabel) %>" class="bg-[#0B1F3A] hover:bg-sky-900 text-white text-xs font-bold px-4 py-2.5 rounded-xl transition">
                             <%= homeIsEn ? 'Select Package →' : 'Paketi Seç →' %>
                         </a>
                     </div>
@@ -786,11 +789,15 @@
                 });
                 this.className = 'route-tab px-4 py-2 rounded-xl text-xs font-bold bg-[#0B1F3A] text-white transition';
 
+                const routeImgEl = document.getElementById('routeImg');
+                if (routeImgEl) {
+                    delete routeImgEl.dataset.fallbackApplied;
+                    routeImgEl.src = data.img;
+                }
                 document.getElementById('routeTitle').innerText = data.title;
                 document.getElementById('routeBadge').innerText = data.badge;
                 document.getElementById('routeDuration').innerHTML = '<i class="fa-regular fa-compass mr-1"></i>' + data.duration;
                 document.getElementById('routeDesc').innerText = data.desc;
-                document.getElementById('routeImg').src = data.img;
                 document.getElementById('routeLink').href = data.link;
                 const recPrefix = isEnHome ? 'Recommended Yacht Type: ' : 'Önerilen Tekne Tipi: ';
                 document.getElementById('routeRec').innerHTML = recPrefix + '<strong class="text-slate-800">' + data.rec + '</strong>';

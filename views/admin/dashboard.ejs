@@ -22,27 +22,39 @@
     </style>
 </head>
 <body class="bg-slate-100 text-slate-900 min-h-screen flex flex-col md:flex-row">
-    <% const planCfg = (typeof paymentPlanSettings !== 'undefined' && paymentPlanSettings) ? paymentPlanSettings : {
-        installmentPercent: 50,
-        installmentInterestPercent: 0,
-        fullPaymentDiscountPercent: 10
-    }; %>
-    <% const contractCfg = (typeof rentalContract !== 'undefined' && rentalContract) ? rentalContract : {
-        title: 'YachtVoyage Tekne Kiralama ve İptal Sözleşmesi',
-        body: ''
-    }; %>
-    <% const sCfg = (typeof siteSettings !== 'undefined' && siteSettings) ? siteSettings : {
-        brandName: 'YachtVoyage',
-        brandSubtext: 'Yacht Charter',
-        phone: '+90 252 123 45 67',
-        whatsappNumber: '902521234567',
-        email: 'hello@yachtvoyage.com',
-        footerAbout: 'Göcek, Marmaris, Fethiye ve Bodrum koylarında lisanslı kaptanlar ve özel filo ile yat kiralama ve günlük tur platformu.',
-        copyrightText: '© 2026 YachtVoyage. Tüm hakları saklıdır.',
-        conciergeWelcome: 'Merhaba! Rota planlaması, özel menü veya tekne müsaitliği için hızlıca yazabilirsiniz.'
-    }; %>
+    <%
+        const safeBookings = (typeof bookings !== 'undefined' && Array.isArray(bookings)) ? bookings : [];
+        const safeYachts = (typeof yachts !== 'undefined' && Array.isArray(yachts)) ? yachts : [];
+        const safeTours = (typeof tours !== 'undefined' && Array.isArray(tours)) ? tours : [];
+        const safeCategories = (typeof categories !== 'undefined' && Array.isArray(categories)) ? categories : [];
+        const safeExtras = (typeof extras !== 'undefined' && Array.isArray(extras)) ? extras : [];
+        const safePayments = (typeof paymentOptions !== 'undefined' && Array.isArray(paymentOptions)) ? paymentOptions : [];
+        const safeDepartures = (typeof departurePoints !== 'undefined' && Array.isArray(departurePoints)) ? departurePoints : [];
+        const safeAdminUsers = (typeof adminUsers !== 'undefined' && Array.isArray(adminUsers)) ? adminUsers : [];
 
-<!-- MOBİL ÜST BAR (SADECE İKONLAR) -->
+        const planCfg = (typeof paymentPlanSettings !== 'undefined' && paymentPlanSettings) ? paymentPlanSettings : {
+            installmentPercent: 50,
+            installmentInterestPercent: 0,
+            fullPaymentDiscountPercent: 10
+        };
+        const contractCfg = (typeof rentalContract !== 'undefined' && rentalContract) ? rentalContract : {
+            title: 'YachtVoyage Tekne Kiralama ve İptal Sözleşmesi',
+            body: ''
+        };
+        const sCfg = (typeof siteSettings !== 'undefined' && siteSettings) ? siteSettings : {
+            brandName: 'YachtVoyage',
+            brandSubtext: 'Yacht Charter',
+            phone: '+90 252 123 45 67',
+            whatsappNumber: '902521234567',
+            email: 'hello@yachtvoyage.com',
+            footerAbout: 'Göcek, Marmaris, Fethiye ve Bodrum koylarında lisanslı kaptanlar ve özel filo ile yat kiralama ve günlük tur platformu.',
+            copyrightText: '© 2026 YachtVoyage. Tüm hakları saklıdır.',
+            conciergeWelcome: 'Merhaba! Rota planlaması, özel menü veya tekne müsaitliği için hızlıca yazabilirsiniz.'
+        };
+        const isAdminEn = (typeof isEn !== 'undefined' && Boolean(isEn)) || (typeof lang !== 'undefined' && lang === 'en');
+    %>
+
+<!-- MOBİL ÜST BAR -->
 <div class="md:hidden sticky top-0 z-40 bg-[#0B1F3A] text-white px-4 py-3 flex items-center justify-between shadow-md">
     <div class="flex items-center space-x-2.5">
         <div class="w-9 h-9 rounded-xl bg-white/10 flex items-center justify-center">
@@ -69,7 +81,6 @@
 </div>
 
 <!-- MOBİL MENÜ -->
-<% const isAdminEn = (typeof isEn !== 'undefined' && Boolean(isEn)) || (typeof lang !== 'undefined' && lang === 'en'); %>
 <div id="adminMobileDrawer" class="hidden md:hidden bg-[#08172E] text-slate-200 border-b border-white/10 px-4 py-3 space-y-1.5 text-xs z-30">
     <button type="button" data-admin-tab="dashboard" class="admin-nav-btn w-full text-left flex items-center space-x-2.5 px-3.5 py-2.5 rounded-xl bg-teal-600 text-white font-bold">
         <i class="fa-solid fa-chart-pie w-4"></i><span>Dashboard</span>
@@ -166,36 +177,29 @@
     <!-- 1. DASHBOARD -->
     <section id="view-dashboard" class="admin-view space-y-6">
         <%
-            const rawBookings = (typeof bookings !== 'undefined' && Array.isArray(bookings)) ? bookings : [];
-            const rawYachts = (typeof yachts !== 'undefined' && Array.isArray(yachts)) ? yachts : [];
-            const rawTours = (typeof tours !== 'undefined' && Array.isArray(tours)) ? tours : [];
-            const rawCats = (typeof categories !== 'undefined' && Array.isArray(categories)) ? categories : [];
-            const rawExtras = (typeof extras !== 'undefined' && Array.isArray(extras)) ? extras : [];
-            const rawPayments = (typeof paymentOptions !== 'undefined' && Array.isArray(paymentOptions)) ? paymentOptions : [];
-
-            const isCancelled = b => b.status === 'İptal Edildi' || b.status === 'İptal';
-            const activeBookings = rawBookings.filter(b => !isCancelled(b));
-            const cancelledBookings = rawBookings.filter(b => isCancelled(b));
-            const approvedCount = rawBookings.filter(b => b.status === 'Onaylandı').length;
-            const pendingCount = rawBookings.filter(b => b.status === 'Beklemede' || b.status === 'Ödeme Bekliyor').length;
+            const isCancelled = b => b && (b.status === 'İptal Edildi' || b.status === 'İptal');
+            const activeBookings = safeBookings.filter(b => !isCancelled(b));
+            const cancelledBookings = safeBookings.filter(b => isCancelled(b));
+            const approvedCount = safeBookings.filter(b => b && b.status === 'Onaylandı').length;
+            const pendingCount = safeBookings.filter(b => b && (b.status === 'Beklemede' || b.status === 'Ödeme Bekliyor')).length;
             const cancelledCount = cancelledBookings.length;
 
             const grossVolume = activeBookings.reduce((sum, b) => sum + Number(b.totalAmount || 0), 0);
             const collectedRevenue = activeBookings.reduce((sum, b) => sum + Number(b.paidAmount || 0), 0);
             const refundedTotal = cancelledBookings.reduce((sum, b) => {
-                const ref = b.refundedAmount !== undefined ? Number(b.refundedAmount || 0) : Number(b.paidAmount || 0);
+                const ref = (b.refundedAmount !== undefined && b.refundedAmount !== null) ? Number(b.refundedAmount || 0) : Number(b.paidAmount || 0);
                 return sum + ref;
             }, 0);
             const remainingBalance = Math.max(0, grossVolume - collectedRevenue);
             const collectionRate = grossVolume > 0 ? Math.min(100, Math.round((collectedRevenue / grossVolume) * 100)) : 0;
 
-            const avgDailyPrice = rawYachts.length
-                ? Math.round(rawYachts.reduce((sum, y) => sum + Number(y.price || 0), 0) / rawYachts.length)
+            const avgDailyPrice = safeYachts.length
+                ? Math.round(safeYachts.reduce((sum, y) => sum + Number(y.price || 0), 0) / safeYachts.length)
                 : 0;
-            const totalGuestCapacity = rawYachts.reduce((sum, y) => sum + Number(y.guests || 0), 0);
+            const totalGuestCapacity = safeYachts.reduce((sum, y) => sum + Number(y.guests || 0), 0);
 
             const locationStatsMap = {};
-            rawYachts.forEach(y => {
+            safeYachts.forEach(y => {
                 const loc = (y.location || 'Diğer').trim();
                 if (!locationStatsMap[loc]) locationStatsMap[loc] = { name: loc, count: 0, totalCapacity: 0 };
                 locationStatsMap[loc].count += 1;
@@ -204,7 +208,7 @@
             const locationStats = Object.values(locationStatsMap).sort((a, b) => b.count - a.count);
 
             const categoryStatsMap = {};
-            rawYachts.forEach(y => {
+            safeYachts.forEach(y => {
                 const catLabel = (y.categoryTr || y.category || 'Diğer').trim();
                 if (!categoryStatsMap[catLabel]) categoryStatsMap[catLabel] = { name: catLabel, count: 0 };
                 categoryStatsMap[catLabel].count += 1;
@@ -220,7 +224,7 @@
                         <i class="fa-solid fa-calendar-check"></i>
                     </span>
                 </div>
-                <h3 class="text-3xl font-extrabold text-[#0B1F3A] mt-2"><%= rawBookings.length %></h3>
+                <h3 class="text-3xl font-extrabold text-[#0B1F3A] mt-2"><%= safeBookings.length %></h3>
                 <div class="mt-2 flex flex-wrap gap-1.5 text-[11px] font-semibold">
                     <span class="text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md"><%= approvedCount %> onaylı</span>
                     <span class="text-amber-700 bg-amber-50 px-2 py-0.5 rounded-md"><%= pendingCount %> beklemede</span>
@@ -248,9 +252,9 @@
                         <i class="fa-solid fa-ship"></i>
                     </span>
                 </div>
-                <h3 class="text-3xl font-extrabold text-[#0B1F3A] mt-2"><%= rawYachts.length %> Yat / <%= rawTours.length %> Tur</h3>
+                <h3 class="text-3xl font-extrabold text-[#0B1F3A] mt-2"><%= safeYachts.length %> Yat / <%= safeTours.length %> Tur</h3>
                 <span class="text-[11px] text-slate-500 mt-2 block">
-                    <%= rawCats.length %> kategori • Toplam <strong class="text-slate-700"><%= totalGuestCapacity %></strong> kişi kapasite
+                    <%= safeCategories.length %> kategori • Toplam <strong class="text-slate-700"><%= totalGuestCapacity %></strong> kişi kapasite
                 </span>
             </div>
 
@@ -263,7 +267,7 @@
                 </div>
                 <h3 class="text-3xl font-extrabold text-amber-600 mt-2">€<%= avgDailyPrice.toLocaleString() %></h3>
                 <span class="text-[11px] text-slate-500 mt-2 block">
-                    <%= rawExtras.filter(e => e.active !== false).length %> aktif ekstra • <%= rawPayments.filter(p => p.active !== false).length %> ödeme yöntemi
+                    <%= safeExtras.filter(e => e && e.active !== false).length %> aktif ekstra • <%= safePayments.filter(p => p && p.active !== false).length %> ödeme yöntemi
                 </span>
             </div>
         </div>
@@ -306,7 +310,7 @@
                 <% } else { %>
                     <div class="space-y-3 text-xs">
                         <% locationStats.forEach(loc => { %>
-                            <% const pct = rawYachts.length ? Math.round((loc.count / rawYachts.length) * 100) : 0; %>
+                            <% const pct = safeYachts.length ? Math.round((loc.count / safeYachts.length) * 100) : 0; %>
                             <div class="space-y-1">
                                 <div class="flex items-center justify-between">
                                     <span class="font-bold text-slate-800"><%= loc.name %></span>
@@ -328,7 +332,7 @@
                 <% } else { %>
                     <div class="space-y-3 text-xs">
                         <% categoryStats.forEach(cat => { %>
-                            <% const catPct = rawYachts.length ? Math.round((cat.count / rawYachts.length) * 100) : 0; %>
+                            <% const catPct = safeYachts.length ? Math.round((cat.count / safeYachts.length) * 100) : 0; %>
                             <div class="space-y-1">
                                 <div class="flex items-center justify-between">
                                     <span class="font-bold text-slate-800"><%= cat.name %></span>
@@ -367,12 +371,12 @@
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-slate-100">
-                        <% if (rawBookings.length === 0) { %>
+                        <% if (safeBookings.length === 0) { %>
                             <tr>
                                 <td colspan="6" class="p-6 text-center text-slate-400">Henüz rezervasyon kaydı bulunmuyor.</td>
                             </tr>
                         <% } else { %>
-                            <% rawBookings.slice(0, 5).forEach(b => { %>
+                            <% safeBookings.slice(0, 5).forEach(b => { %>
                                 <% const st = (b.status === 'İptal') ? 'İptal Edildi' : ((b.status === 'Ödeme Bekliyor') ? 'Beklemede' : (b.status || 'Beklemede')); %>
                                 <% const isRef = st === 'İptal Edildi'; %>
                                 <tr class="hover:bg-slate-50/70">
@@ -409,7 +413,7 @@
     <section id="view-rezervasyonlar" class="admin-view hidden bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
         <div class="p-4 sm:p-5 border-b border-slate-100 flex flex-col lg:flex-row lg:items-center justify-between gap-3">
             <div class="flex flex-wrap items-center gap-2">
-                <span class="font-extrabold text-slate-900 text-sm sm:text-base mr-1">Rezervasyonlar (<%= bookings.length %>)</span>
+                <span class="font-extrabold text-slate-900 text-sm sm:text-base mr-1">Rezervasyonlar (<%= safeBookings.length %>)</span>
                 <button type="button" data-status-filter="all" class="status-filter-btn px-3 py-1.5 rounded-lg text-[11px] font-bold bg-[#0B1F3A] text-white">Tümü</button>
                 <button type="button" data-status-filter="Onaylandı" class="status-filter-btn px-3 py-1.5 rounded-lg text-[11px] font-bold bg-slate-100 text-slate-700">Onaylandı</button>
                 <button type="button" data-status-filter="Beklemede" class="status-filter-btn px-3 py-1.5 rounded-lg text-[11px] font-bold bg-slate-100 text-slate-700">Beklemede</button>
@@ -432,12 +436,12 @@
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-slate-100">
-                    <% bookings.forEach(b => { %>
+                    <% safeBookings.forEach(b => { %>
                         <% const normStatus = (b.status === 'İptal') ? 'İptal Edildi' : ((b.status === 'Ödeme Bekliyor') ? 'Beklemede' : (b.status || 'Beklemede')); %>
                         <% const isCanc = normStatus === 'İptal Edildi'; %>
                         <% const payAmt = Number(b.paidAmount || 0); %>
                         <% const totAmt = Number(b.totalAmount || 0); %>
-                        <% const refAmt = isCanc ? (b.refundedAmount !== undefined ? Number(b.refundedAmount || 0) : payAmt) : Number(b.refundedAmount || 0); %>
+                        <% const refAmt = isCanc ? ((b.refundedAmount !== undefined && b.refundedAmount !== null) ? Number(b.refundedAmount || 0) : payAmt) : Number(b.refundedAmount || 0); %>
                         <% const payBadge = b.paymentStatus || (isCanc ? (refAmt > 0 ? 'İade Edildi / İptal' : 'Ödeme İptal') : (payAmt >= totAmt ? 'Tam Ödendi' : (payAmt > 0 ? 'Ön Ödeme Alındı' : 'Ödeme Bekliyor'))); %>
                         <% const safeBid = encodeURIComponent(b.id); %>
                         <tr class="booking-row hover:bg-slate-50/70" data-booking-status="<%= normStatus %>">
@@ -499,7 +503,7 @@
     <section id="view-filo-listesi" class="admin-view hidden space-y-5">
         <div class="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-wrap items-center justify-between gap-3">
             <div>
-                <h3 class="font-extrabold text-slate-900 text-sm sm:text-base">Aktif Yat Filosu (<%= yachts.length %>)</h3>
+                <h3 class="font-extrabold text-slate-900 text-sm sm:text-base">Aktif Yat Filosu (<%= safeYachts.length %>)</h3>
                 <p class="text-xs text-slate-500 mt-0.5">Yeni tekne ekleyin, birden fazla fotoğraf yükleyin, kapasite/fiyat güncelleyin ve aktif rezervasyon takvimini inceleyin</p>
             </div>
             <button type="button" onclick="document.getElementById('newYachtInlineBox').classList.toggle('hidden')" class="px-4 py-2 bg-[#0B1F3A] hover:bg-sky-900 text-white rounded-xl text-xs font-bold transition">
@@ -515,7 +519,7 @@
             <form id="newYachtForm" action="/admin/add-yacht" method="POST" enctype="multipart/form-data" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
                 <input type="text" name="name" placeholder="Yat Adı (Örn: Azimut 60)" required class="p-2.5 border border-slate-200 rounded-xl text-xs font-medium">
                 <select name="category" class="p-2.5 border border-slate-200 rounded-xl text-xs font-medium bg-white">
-                    <% (categories || []).forEach(cat => { %>
+                    <% safeCategories.forEach(cat => { %>
                         <option value="<%= cat.key %>"><%= cat.nameTr %> (<%= cat.key %>)</option>
                     <% }) %>
                 </select>
@@ -545,18 +549,26 @@
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-            <% yachts.forEach(y => { %>
-                <% const yImages = (Array.isArray(y.images) && y.images.length) ? y.images : ['https://images.unsplash.com/photo-1567899378494-47b22a2ae96a?auto=format&fit=crop&w=600&q=80']; %>
-                <% const currentImg = yImages[0]; %>
-                <% const ySchedules = (bookings || []).filter(b => (Number(b.yachtId) === Number(y.id) || String(b.yacht || '').toLowerCase() === String(y.name || '').toLowerCase()) && b.status !== 'İptal Edildi' && b.status !== 'İptal'); %>
-                <% const safeYid = encodeURIComponent(y.id); %>
+            <% safeYachts.forEach(y => { %>
+                <%
+                    const yImages = (Array.isArray(y.images) && y.images.length)
+                        ? y.images
+                        : ['https://images.unsplash.com/photo-1567899378494-47b22a2ae96a?auto=format&fit=crop&w=600&q=80'];
+                    const currentImg = yImages[0];
+                    const ySchedules = safeBookings.filter(b =>
+                        (Number(b.yachtId) === Number(y.id) || String(b.yacht || '').toLowerCase() === String(y.name || '').toLowerCase()) &&
+                        b.status !== 'İptal Edildi' &&
+                        b.status !== 'İptal'
+                    );
+                    const safeYid = encodeURIComponent(y.id);
+                %>
                 <div class="yacht-edit-card bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden flex flex-col justify-between" data-yacht-id="<%= y.id %>">
                     <form id="yacht-form-<%= y.id %>" action="/admin/yachts/<%= safeYid %>/update" method="POST" enctype="multipart/form-data" class="flex-1 flex flex-col">
                         <div class="relative h-44 bg-slate-100 group">
                             <img src="<%= currentImg %>" alt="<%= y.name %>" class="card-cover-img w-full h-full object-cover">
                             <div class="absolute inset-0 bg-gradient-to-t from-slate-950/60 via-transparent to-transparent"></div>
                             <span class="absolute top-3 left-3 px-2.5 py-1 rounded-lg bg-white/95 text-[#0B1F3A] text-[11px] font-extrabold shadow-sm">
-                                <%= y.categoryTr %>
+                                <%= y.categoryTr || y.category || 'Yat' %>
                             </span>
                             <span class="card-photo-badge absolute top-3 right-3 px-2.5 py-1 rounded-lg bg-[#0B1F3A]/85 text-white text-[10px] font-bold">
                                 <%= yImages.length %> Fotoğraf
@@ -677,7 +689,7 @@
                 <input type="number" name="durationDays" placeholder="Süre (Gün)" min="1" value="1" required class="p-2.5 border border-slate-200 rounded-xl text-xs font-medium">
                 <input type="number" name="pricePerDay" placeholder="Günlük Tur Ücreti (€)" min="1" required class="p-2.5 border border-slate-200 rounded-xl text-xs font-medium">
                 <select name="yachtId" class="p-2.5 border border-slate-200 rounded-xl text-xs font-medium bg-white">
-                    <% yachts.forEach(y => { %>
+                    <% safeYachts.forEach(y => { %>
                         <option value="<%= y.id %>"><%= y.name %> (<%= y.location %>)</option>
                     <% }) %>
                 </select>
@@ -696,7 +708,7 @@
             </form>
 
             <div class="space-y-3 border-t border-slate-100 pt-4 text-xs">
-                <% (tours || []).forEach(t => { %>
+                <% safeTours.forEach(t => { %>
                     <% const tImg = t.image || t.img || (Array.isArray(t.images) && t.images[0]) || 'https://images.unsplash.com/photo-1544551763-46a013bb70d5?auto=format&fit=crop&w=320&q=60'; %>
                     <% const safeTid = encodeURIComponent(t.id); %>
                     <form action="/admin/tours/<%= safeTid %>/update" method="POST" enctype="multipart/form-data" class="tour-edit-card p-3 bg-slate-50 rounded-xl border border-slate-200 space-y-2.5">
@@ -743,7 +755,7 @@
             </form>
 
             <div class="space-y-3 border-t border-slate-100 pt-4 text-xs">
-                <% (categories || []).forEach(c => { %>
+                <% safeCategories.forEach(c => { %>
                     <% const safeCid = encodeURIComponent(c.id); %>
                     <form action="/admin/categories/<%= safeCid %>/update" method="POST" class="p-3 bg-slate-50 rounded-xl border border-slate-200 space-y-2">
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
@@ -782,7 +794,7 @@
             </form>
 
             <div class="divide-y divide-slate-100 border-t border-slate-100 pt-2 text-xs">
-                <% (typeof adminUsers !== 'undefined' && adminUsers ? adminUsers : []).forEach(function(u) { %>
+                <% safeAdminUsers.forEach(function(u) { %>
                     <div class="py-2.5 flex items-center justify-between gap-2">
                         <div>
                             <span class="font-bold text-slate-900"><%= u.name %></span>
@@ -791,7 +803,7 @@
                                 <%= u.role === 'admin' ? 'Yönetici' : 'Personel' %>
                             </span>
                         </div>
-                        <% if (adminUsers.length > 1) { %>
+                        <% if (safeAdminUsers.length > 1) { %>
                             <form action="/admin/staff/<%= encodeURIComponent(u.id) %>/delete" method="POST">
                                 <button type="submit" class="text-rose-600 font-bold text-[11px] px-2 py-1 hover:bg-rose-50 rounded-lg">Sil</button>
                             </form>
@@ -860,7 +872,7 @@
             </form>
 
             <div class="space-y-2.5 border-t border-slate-100 pt-3 text-xs">
-                <% (typeof departurePoints !== 'undefined' && departurePoints ? departurePoints : []).forEach(function(dp) { %>
+                <% safeDepartures.forEach(function(dp) { %>
                     <% const safeDid = encodeURIComponent(dp.id); %>
                     <form action="/admin/departures/<%= safeDid %>/update" method="POST" class="p-3 bg-slate-50 rounded-xl border border-slate-200 flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5">
                         <input type="text" name="name" value="<%= dp.name %>" required class="sm:w-44 p-2 bg-white border border-slate-200 rounded-lg text-xs font-bold text-slate-900">
@@ -926,7 +938,7 @@
                 </form>
 
                 <div class="divide-y divide-slate-100 border-t border-slate-100 pt-2 text-xs">
-                    <% (paymentOptions || []).forEach(p => { %>
+                    <% safePayments.forEach(p => { %>
                         <% const safePid = encodeURIComponent(p.id); %>
                         <div class="py-3 flex items-center justify-between gap-2">
                             <div>
@@ -957,7 +969,7 @@
                 </form>
 
                 <div class="divide-y divide-slate-100 border-t border-slate-100 pt-2 text-xs">
-                    <% (extras || []).forEach(ex => { %>
+                    <% safeExtras.forEach(ex => { %>
                         <% const safeEid = encodeURIComponent(ex.id); %>
                         <div class="py-3 flex flex-wrap items-center justify-between gap-2">
                             <div>
@@ -1010,8 +1022,10 @@
                 ? 'admin-nav-btn w-full text-left flex items-center space-x-3 p-3 bg-teal-600 text-white rounded-xl font-semibold shadow transition'
                 : 'admin-nav-btn w-full text-left flex items-center space-x-3 p-3 hover:bg-white/10 rounded-xl transition';
         });
-        document.getElementById('adminPageTitle').innerText = tabMeta[target].title;
-        document.getElementById('adminPageSubtitle').innerText = tabMeta[target].subtitle;
+        const titleEl = document.getElementById('adminPageTitle');
+        const subEl = document.getElementById('adminPageSubtitle');
+        if (titleEl) titleEl.innerText = tabMeta[target].title;
+        if (subEl) subEl.innerText = tabMeta[target].subtitle;
         if (mobileDrawer) mobileDrawer.classList.add('hidden');
     }
 

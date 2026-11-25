@@ -70,7 +70,7 @@
     <div class="space-y-3">
         <div class="relative rounded-2xl overflow-hidden h-[320px] md:h-[450px] bg-slate-200">
             <img id="mainPhoto" src="<%= yImages[0] %>" alt="<%= yacht.name %>" class="detail-img w-full h-full object-cover">
-            <span id="photoCounterBadge" class="absolute bottom-4 left-4 bg-[#0B1F3A]/85 text-white text-xs font-bold px-3 py-1.5 rounded-lg">
+            <span id="photoCounterBadge" data-no-auto-translate="true" class="absolute bottom-4 left-4 bg-[#0B1F3A]/85 text-white text-xs font-bold px-3 py-1.5 rounded-lg">
                 1 / <%= yImages.length %> <%= ydIsEn ? 'Photos' : 'Fotoğraf' %>
             </span>
         </div>
@@ -317,11 +317,12 @@
                     <span class="text-3xl font-extrabold text-[#0B1F3A]">€<%= Number(yacht.price || 0).toLocaleString() %></span>
                     <span class="text-xs text-slate-400"><%= ydIsEn ? '/ day' : '/ gün' %></span>
                 </div>
-                <span id="detailAvailStatus" class="text-[11px] font-bold px-2.5 py-1 rounded-full bg-amber-50 text-amber-800"><%= ydIsEn ? 'Select Dates' : 'Tarih Seçin' %></span>
+                <span id="detailAvailStatus" data-no-auto-translate="true" class="text-[11px] font-bold px-2.5 py-1 rounded-full bg-amber-50 text-amber-800"><%= ydIsEn ? 'Select Dates' : 'Tarih Seçin' %></span>
             </div>
 
             <form id="detailBookingForm" action="/checkout" method="GET" class="space-y-4">
                 <input type="hidden" name="yachtId" value="<%= yacht.id %>">
+                <input type="hidden" id="detailExtrasCsvInput" name="extrasCsv" value="">
                 <div class="grid grid-cols-2 gap-3">
                     <div>
                         <label class="block text-[11px] font-bold text-slate-500 uppercase mb-1"><%= ydIsEn ? 'CHECK-IN *' : 'Giriş *' %></label>
@@ -365,7 +366,7 @@
                     <% }) %>
                 </div>
 
-                <div class="bg-slate-50 p-4 rounded-xl space-y-1.5 text-xs">
+                <div id="detailSummaryBox" data-no-auto-translate="true" class="bg-slate-50 p-4 rounded-xl space-y-1.5 text-xs">
                     <div class="flex justify-between text-slate-600">
                         <span><%= ydIsEn ? 'Yacht Charter' : 'Yat Kirası' %> (<span id="dayCount">0</span> <%= ydIsEn ? 'days' : 'gün' %>)</span>
                         <span id="baseRentTotal" class="font-semibold text-slate-800">€0</span>
@@ -485,6 +486,7 @@
         const guestInput = document.getElementById('guestNum');
         const statusBadge = document.getElementById('detailAvailStatus');
         const submitBtn = document.getElementById('detailSubmitBtn');
+        const extrasCsvEl = document.getElementById('detailExtrasCsvInput');
 
         let guests = Math.max(1, Number(guestInput.value) || 1);
         if (guests > maxGuests) {
@@ -529,6 +531,7 @@
 
         let extrasSum = 0;
         const selectedExtras = [];
+        const rawSelectedExtras = [];
         document.querySelectorAll('.detail-extra-cb').forEach(function(cb) {
             const perGuest = Number(cb.dataset.perGuest || 0);
             const itemTotal = perGuest * guests;
@@ -537,8 +540,10 @@
             if (cb.checked) {
                 extrasSum += itemTotal;
                 selectedExtras.push(cb.dataset.displayLabel || cb.value);
+                rawSelectedExtras.push(cb.value);
             }
         });
+        if (extrasCsvEl) extrasCsvEl.value = rawSelectedExtras.join(',');
 
         const rentTotal = diff * dailyRate;
         const autoDisc = diff >= 5 ? Math.round(rentTotal * 0.05) : 0;
