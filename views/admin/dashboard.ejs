@@ -42,49 +42,59 @@
         conciergeWelcome: 'Merhaba! Rota planlaması, özel menü veya tekne müsaitliği için hızlıca yazabilirsiniz.'
     }; %>
 
-    <!-- MOBİL ÜST BAR -->
-    <div class="md:hidden sticky top-0 z-40 bg-[#0B1F3A] text-white px-4 py-3 flex items-center justify-between shadow-md">
-        <div class="flex items-center space-x-2.5">
-            <div class="w-9 h-9 rounded-xl bg-white/10 flex items-center justify-center">
-                <i class="fa-solid fa-sailboat text-sky-400"></i>
-            </div>
-            <div>
-                <span class="font-extrabold text-sm block leading-none">Yacht CRM</span>
-                <span class="text-[10px] text-sky-300 tracking-[0.18em]">OPERATIONS</span>
-            </div>
+<!-- MOBİL ÜST BAR (SADECE İKONLAR) -->
+<div class="md:hidden sticky top-0 z-40 bg-[#0B1F3A] text-white px-4 py-3 flex items-center justify-between shadow-md">
+    <div class="flex items-center space-x-2.5">
+        <div class="w-9 h-9 rounded-xl bg-white/10 flex items-center justify-center">
+            <i class="fa-solid fa-sailboat text-sky-400"></i>
         </div>
-        <div class="flex items-center space-x-2">
-            <a href="/" class="px-2.5 py-1.5 rounded-lg bg-white/10 text-xs font-semibold">Site</a>
-            <button id="adminMobileMenuBtn" type="button" class="w-9 h-9 rounded-xl bg-teal-600 text-white flex items-center justify-center">
-                <i class="fa-solid fa-bars text-sm"></i>
+        <div>
+            <span class="font-extrabold text-sm block leading-none">Yacht CRM</span>
+            <span class="text-[10px] text-sky-300 tracking-[0.18em]">OPERATIONS</span>
+        </div>
+    </div>
+    <div class="flex items-center space-x-2">
+        <a href="/" aria-label="Site" title="Site" class="w-9 h-9 rounded-xl bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition">
+            <i class="fa-solid fa-globe text-sm"></i>
+        </a>
+        <button id="adminMobileMenuBtn" type="button" aria-label="Menu" title="Menu" class="w-9 h-9 rounded-xl bg-teal-600 hover:bg-teal-700 text-white flex items-center justify-center transition">
+            <i class="fa-solid fa-bars text-sm"></i>
+        </button>
+        <form action="/admin/logout" method="POST" class="inline">
+            <button type="submit" aria-label="Logout" title="Logout" class="w-9 h-9 rounded-xl bg-white/10 hover:bg-rose-600/80 text-white flex items-center justify-center transition">
+                <i class="fa-solid fa-right-from-bracket text-sm"></i>
             </button>
-        </div>
+        </form>
     </div>
+</div>
 
-    <!-- MOBİL MENÜ -->
-    <div id="adminMobileDrawer" class="hidden md:hidden bg-[#08172E] text-slate-200 border-b border-white/10 px-4 py-3 space-y-1.5 text-xs z-30">
-        <button type="button" data-admin-tab="dashboard" class="admin-nav-btn w-full text-left flex items-center space-x-2.5 px-3.5 py-2.5 rounded-xl bg-teal-600 text-white font-bold">
-            <i class="fa-solid fa-chart-pie w-4"></i><span>Dashboard</span>
-        </button>
-        <button type="button" data-admin-tab="rezervasyonlar" class="admin-nav-btn w-full text-left flex items-center space-x-2.5 px-3.5 py-2.5 rounded-xl hover:bg-white/10 font-semibold">
-            <i class="fa-solid fa-calendar-check w-4"></i><span>Rezervasyonlar</span>
-        </button>
-        <button type="button" data-admin-tab="filo-listesi" class="admin-nav-btn w-full text-left flex items-center space-x-2.5 px-3.5 py-2.5 rounded-xl hover:bg-white/10 font-semibold">
-            <i class="fa-solid fa-ship w-4"></i><span>Aktif Filo &amp; Kapasite</span>
-        </button>
-        <button type="button" data-admin-tab="turlar-kategoriler" class="admin-nav-btn w-full text-left flex items-center space-x-2.5 px-3.5 py-2.5 rounded-xl hover:bg-white/10 font-semibold">
-            <i class="fa-solid fa-compass w-4"></i><span>Turlar &amp; Kategoriler</span>
-        </button>
-        <button type="button" data-admin-tab="ayarlar" class="admin-nav-btn w-full text-left flex items-center space-x-2.5 px-3.5 py-2.5 rounded-xl hover:bg-white/10 font-semibold">
-            <i class="fa-solid fa-sliders w-4"></i><span>Site, Ödeme &amp; Sözleşme</span>
-        </button>
-        <div class="pt-2 border-t border-white/10 flex items-center justify-between text-[11px] text-slate-400">
-            <span><%= (typeof adminUser !== 'undefined' && adminUser && adminUser.name) ? adminUser.name : 'CRM Panel' %> • CRM v3</span>
-            <form action="/admin/logout" method="POST">
-                <button type="submit" class="px-3 py-1.5 rounded-lg bg-rose-600 text-white font-bold">Çıkış Yap</button>
-            </form>
-        </div>
+<!-- MOBİL MENÜ -->
+<% const isAdminEn = (typeof isEn !== 'undefined' && Boolean(isEn)) || (typeof lang !== 'undefined' && lang === 'en'); %>
+<div id="adminMobileDrawer" class="hidden md:hidden bg-[#08172E] text-slate-200 border-b border-white/10 px-4 py-3 space-y-1.5 text-xs z-30">
+    <button type="button" data-admin-tab="dashboard" class="admin-nav-btn w-full text-left flex items-center space-x-2.5 px-3.5 py-2.5 rounded-xl bg-teal-600 text-white font-bold">
+        <i class="fa-solid fa-chart-pie w-4"></i><span>Dashboard</span>
+    </button>
+    <button type="button" data-admin-tab="rezervasyonlar" class="admin-nav-btn w-full text-left flex items-center space-x-2.5 px-3.5 py-2.5 rounded-xl hover:bg-white/10 font-semibold">
+        <i class="fa-solid fa-calendar-check w-4"></i><span><%= isAdminEn ? 'Bookings' : 'Rezervasyonlar' %></span>
+    </button>
+    <button type="button" data-admin-tab="filo-listesi" class="admin-nav-btn w-full text-left flex items-center space-x-2.5 px-3.5 py-2.5 rounded-xl hover:bg-white/10 font-semibold">
+        <i class="fa-solid fa-ship w-4"></i><span><%= isAdminEn ? 'Active Fleet & Capacity' : 'Aktif Filo & Kapasite' %></span>
+    </button>
+    <button type="button" data-admin-tab="turlar-kategoriler" class="admin-nav-btn w-full text-left flex items-center space-x-2.5 px-3.5 py-2.5 rounded-xl hover:bg-white/10 font-semibold">
+        <i class="fa-solid fa-compass w-4"></i><span><%= isAdminEn ? 'Tours & Categories' : 'Turlar & Kategoriler' %></span>
+    </button>
+    <button type="button" data-admin-tab="ayarlar" class="admin-nav-btn w-full text-left flex items-center space-x-2.5 px-3.5 py-2.5 rounded-xl hover:bg-white/10 font-semibold">
+        <i class="fa-solid fa-sliders w-4"></i><span><%= isAdminEn ? 'Site, Payment & Contract' : 'Site, Ödeme & Sözleşme' %></span>
+    </button>
+    <div class="pt-2 border-t border-white/10 flex items-center justify-between text-[11px] text-slate-400">
+        <span><%= (typeof adminUser !== 'undefined' && adminUser && adminUser.name) ? adminUser.name : 'CRM Panel' %></span>
+        <form action="/admin/logout" method="POST">
+            <button type="submit" class="px-3 py-1.5 rounded-lg bg-rose-600 text-white font-bold">
+                <%= isAdminEn ? 'Log Out' : 'Çıkış Yap' %>
+            </button>
+        </form>
     </div>
+</div>
 
     <!-- MASAÜSTÜ SIDEBAR -->
     <aside class="admin-sidebar hidden md:flex w-64 bg-[#0B1F3A] text-slate-300 p-6 flex-col justify-between shrink-0">

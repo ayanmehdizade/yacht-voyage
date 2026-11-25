@@ -50,21 +50,34 @@ const idleTabClass = 'text-slate-200 hover:text-white';
         .flatpickr-days,
         .dayContainer {
             width: 100% !important;
-            min-width: 100% !important;
+            min-width: 0 !important;
             max-width: 100% !important;
             box-sizing: border-box !important;
+            overflow: hidden !important;
         }
         .flatpickr-weekdaycontainer {
             display: grid !important;
             grid-template-columns: repeat(7, minmax(0, 1fr)) !important;
+            gap: 4px !important;
             width: 100% !important;
+            min-width: 0 !important;
         }
         span.flatpickr-weekday {
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
             width: 100% !important;
+            min-width: 0 !important;
             max-width: 100% !important;
+            white-space: nowrap !important;
+            overflow: hidden !important;
+            text-overflow: ellipsis !important;
+            padding: 0 2px !important;
             color: #64748b !important;
             font-weight: 700 !important;
             font-size: 11px !important;
+            line-height: 1.2 !important;
+            box-sizing: border-box !important;
         }
         .dayContainer {
             display: grid !important;
