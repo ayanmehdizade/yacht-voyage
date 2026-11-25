@@ -1,5 +1,10 @@
 <%- include('../partials/header') %>
 
+<% const cSite = (typeof siteSettings !== 'undefined' && siteSettings) ? siteSettings : {
+    brandName: 'YachtVoyage',
+    whatsappNumber: '902521234567'
+}; %>
+
 <main class="max-w-3xl mx-auto px-4 sm:px-6 py-12">
     <div class="bg-white rounded-3xl border border-slate-200 shadow-xl overflow-hidden">
         <div class="bg-[#0B1F3A] text-white p-8 text-center space-y-3">
@@ -74,7 +79,7 @@
                 </a>
 
                 <div class="flex flex-wrap gap-2.5">
-                    <a id="waVoucherBtn" href="#" target="_blank" class="px-4 py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition">
+                    <a id="waVoucherBtn" href="#" target="_blank" rel="noopener noreferrer" class="px-4 py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition">
                         <i class="fa-brands fa-whatsapp mr-1.5"></i>WhatsApp'a Gönder
                     </a>
                     <button type="button" id="printVoucherBtn" class="px-5 py-3 bg-[#0B1F3A] hover:bg-sky-900 text-white rounded-xl text-xs font-bold transition">
@@ -105,8 +110,9 @@
 
     const waBtn = document.getElementById('waVoucherBtn');
     if (waBtn) {
-        const msg = encodeURIComponent('YachtVoyage Rezervasyon Onayım — PNR: ' + pnrText + ' | Yat: <%= booking.yacht %> | Tarih: <%= booking.checkIn %> - <%= booking.checkOut %>');
-        waBtn.href = 'https://wa.me/902521234567?text=' + msg;
+        const waNum = '<%= cSite.whatsappNumber %>';
+        const msg = encodeURIComponent('<%= cSite.brandName %> Rezervasyon Onayım — PNR: ' + pnrText + ' | Yat: <%= booking.yacht %> | Tarih: <%= booking.checkIn %> - <%= booking.checkOut %>');
+        waBtn.href = 'https://wa.me/' + waNum + '?text=' + msg;
     }
 </script>
 

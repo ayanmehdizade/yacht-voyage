@@ -3,7 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>YachtVoyage — Yat Kiralama &amp; Tur Paketleri</title>
+    <% const sCfg = (typeof siteSettings !== 'undefined' && siteSettings) ? siteSettings : {
+        brandName: 'YachtVoyage',
+        brandSubtext: 'Yacht Charter',
+        phone: '+90 252 123 45 67',
+        whatsappNumber: '902521234567',
+        email: 'hello@yachtvoyage.com'
+    }; %>
+    <title><%= sCfg.brandName %> — Yat Kiralama &amp; Tur Paketleri</title>
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%230B1F3A'/%3E%3Cpath d='M16 42h32l-4 7H20l-4-7z' fill='%2338BDF8'/%3E%3Cpath d='M33 14v24H19l14-24zm2 4l11 20H35V18z' fill='%23FFFFFF'/%3E%3C/svg%3E">
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
@@ -12,7 +19,7 @@
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
     <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/tr.js"></script>
     <style>
-        body { font-family: 'Plus Jakarta Sans', sans-serif; }
+        body { font-family: 'Plus Jakarta Sans', sans-serif; overflow-x: hidden; }
         @media print { .no-print { display: none !important; } }
         .yv-dd-menu {
             transform-origin: top center;
@@ -27,7 +34,35 @@
             border-radius: 18px !important;
             border: 1px solid #e2e8f0 !important;
             box-shadow: 0 20px 45px -10px rgba(11, 31, 58, 0.22) !important;
-            padding: 10px !important;
+            padding: 12px !important;
+            width: 340px !important;
+            max-width: 92vw !important;
+            box-sizing: border-box !important;
+        }
+        .flatpickr-rContainer,
+        .flatpickr-days,
+        .dayContainer {
+            width: 100% !important;
+            min-width: 100% !important;
+            max-width: 100% !important;
+            box-sizing: border-box !important;
+        }
+        .flatpickr-weekdaycontainer {
+            display: grid !important;
+            grid-template-columns: repeat(7, minmax(0, 1fr)) !important;
+            width: 100% !important;
+        }
+        span.flatpickr-weekday {
+            width: 100% !important;
+            max-width: 100% !important;
+            color: #64748b !important;
+            font-weight: 700 !important;
+            font-size: 11px !important;
+        }
+        .dayContainer {
+            display: grid !important;
+            grid-template-columns: repeat(7, minmax(0, 1fr)) !important;
+            gap: 4px !important;
         }
         .flatpickr-months .flatpickr-month {
             color: #0B1F3A !important;
@@ -40,30 +75,70 @@
             font-size: 14px !important;
             color: #0B1F3A !important;
         }
-        span.flatpickr-weekday {
-            color: #64748b !important;
-            font-weight: 700 !important;
-            font-size: 11px !important;
-        }
         .flatpickr-day {
-            border-radius: 10px !important;
-            font-weight: 600 !important;
+            width: 100% !important;
+            max-width: none !important;
+            height: 34px !important;
+            line-height: 34px !important;
+            margin: 0 !important;
+            border-radius: 8px !important;
+            font-weight: 700 !important;
             font-size: 12px !important;
-            color: #1e293b !important;
+            background: #dcfce7 !important;
+            border-color: #bbf7d0 !important;
+            color: #166534 !important;
+            box-sizing: border-box !important;
         }
-        .flatpickr-day:hover {
-            background: #f1f5f9 !important;
-            border-color: #f1f5f9 !important;
+        .flatpickr-day:hover:not(.yv-booked-day):not(.prevMonthDay):not(.nextMonthDay) {
+            background: #10b981 !important;
+            border-color: #10b981 !important;
+            color: #ffffff !important;
         }
-        .flatpickr-day.today {
-            border-color: #0d9488 !important;
-            color: #0d9488 !important;
+        .flatpickr-day.prevMonthDay,
+        .flatpickr-day.nextMonthDay {
+            background: transparent !important;
+            border-color: transparent !important;
+            color: #cbd5e1 !important;
+            font-weight: 500 !important;
         }
-        .flatpickr-day.selected,
-        .flatpickr-day.selected:hover {
+        .flatpickr-day.yv-booked-day,
+        .flatpickr-day.yv-booked-day:hover,
+        .flatpickr-day.flatpickr-disabled,
+        .flatpickr-day.flatpickr-disabled:hover {
+            background: #f43f5e !important;
+            border-color: #f43f5e !important;
+            color: #ffffff !important;
+            font-weight: 800 !important;
+            opacity: 1 !important;
+            cursor: not-allowed !important;
+        }
+        .flatpickr-day.selected:not(.yv-booked-day),
+        .flatpickr-day.selected:hover:not(.yv-booked-day) {
             background: #0B1F3A !important;
             border-color: #0B1F3A !important;
             color: #ffffff !important;
+        }
+        .yv-cal-legend {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px solid #f1f5f9;
+            font-size: 11px;
+            font-weight: 700;
+        }
+        .yv-legend-item {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .yv-legend-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 9999px;
+            display: inline-block;
+            flex-shrink: 0;
         }
     </style>
     <script>
@@ -72,6 +147,93 @@
             imgEl.dataset.fallbackApplied = '1';
             const svg = encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="800" height="500" viewBox="0 0 800 500"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#0B1F3A"/><stop offset="100%" stop-color="#0F766E"/></linearGradient></defs><rect width="800" height="500" fill="url(#g)"/></svg>`);
             imgEl.src = `data:image/svg+xml;charset=utf-8,${svg}`;
+        }
+
+        function getBookedRangesFromDom() {
+            const seen = new Set();
+            const ranges = [];
+
+            function addRange(checkIn, checkOut) {
+                if (!checkIn || !checkOut) return;
+                const key = `${checkIn}__${checkOut}`;
+                if (seen.has(key)) return;
+                seen.add(key);
+                ranges.push({ checkIn: checkIn, checkOut: checkOut });
+            }
+
+            document.querySelectorAll('.booked-range').forEach(function (el) {
+                addRange(el.dataset.in, el.dataset.out);
+            });
+            if (Array.isArray(window.YACHT_BOOKED_RANGES)) {
+                window.YACHT_BOOKED_RANGES.forEach(function (r) {
+                    if (r) addRange(r.checkIn, r.checkOut);
+                });
+            }
+            if (Array.isArray(window.HOME_BOOKED_RANGES)) {
+                window.HOME_BOOKED_RANGES.forEach(function (r) {
+                    if (r) addRange(r.checkIn, r.checkOut);
+                });
+            }
+            return ranges;
+        }
+
+        function formatLocalYMD(dateObj) {
+            const y = dateObj.getFullYear();
+            const m = String(dateObj.getMonth() + 1).padStart(2, '0');
+            const d = String(dateObj.getDate()).padStart(2, '0');
+            return `${y}-${m}-${d}`;
+        }
+
+        function detectInputRole(inputEl) {
+            const id = (inputEl.id || '').toLowerCase();
+            const name = (inputEl.name || '').toLowerCase();
+            if (id.includes('out') || name.includes('out')) return 'checkout';
+            if (id.includes('in') || name.includes('in')) return 'checkin';
+            return 'general';
+        }
+
+        function isYmdBookedForRole(ymd, ranges, role) {
+            return ranges.some(function (r) {
+                if (role === 'checkout') {
+                    return ymd > r.checkIn && ymd <= r.checkOut;
+                }
+                return ymd >= r.checkIn && ymd < r.checkOut;
+            });
+        }
+
+        function attachLegendToCalendar(instance) {
+            const cal = instance && instance.calendarContainer;
+            if (!cal || cal.querySelector('.yv-cal-legend')) return;
+
+            const legend = document.createElement('div');
+            legend.className = 'yv-cal-legend';
+            legend.innerHTML = `
+                <span class="yv-legend-item text-emerald-700">
+                    <span class="yv-legend-dot bg-emerald-500"></span>
+                    <span>Yeşil: Boş</span>
+                </span>
+                <span class="yv-legend-item text-rose-700">
+                    <span class="yv-legend-dot bg-rose-500"></span>
+                    <span>Kırmızı: Dolu</span>
+                </span>
+            `;
+            cal.appendChild(legend);
+        }
+
+        function decorateCalendarDays(instance, role) {
+            const cal = instance && instance.calendarContainer;
+            if (!cal) return;
+            const ranges = getBookedRangesFromDom();
+
+            cal.querySelectorAll('.flatpickr-day').forEach(function (dayEl) {
+                dayEl.classList.remove('yv-booked-day');
+                if (!dayEl.dateObj) return;
+                if (dayEl.classList.contains('prevMonthDay') || dayEl.classList.contains('nextMonthDay')) return;
+                const ymd = formatLocalYMD(dayEl.dateObj);
+                if (isYmdBookedForRole(ymd, ranges, role)) {
+                    dayEl.classList.add('yv-booked-day');
+                }
+            });
         }
 
         document.addEventListener('DOMContentLoaded', function () {
@@ -84,17 +246,45 @@
             }
 
             if (typeof flatpickr !== 'undefined') {
-                document.querySelectorAll('input[type="date"]').forEach(function (inp) {
-                    flatpickr(inp, {
+                const instances = [];
+
+                document.querySelectorAll('input[type="date"]:not([data-no-flatpickr="true"])').forEach(function (inp) {
+                    const role = detectInputRole(inp);
+
+                    const fp = flatpickr(inp, {
                         locale: 'tr',
                         dateFormat: 'Y-m-d',
                         altInput: true,
                         altFormat: 'd M Y',
                         disableMobile: true,
-                        onChange: function () {
+                        disable: [
+                            function (dateObj) {
+                                return isYmdBookedForRole(formatLocalYMD(dateObj), getBookedRangesFromDom(), role);
+                            }
+                        ],
+                        onReady: function (_, __, instance) {
+                            attachLegendToCalendar(instance);
+                            decorateCalendarDays(instance, role);
+                        },
+                        onOpen: function (_, __, instance) {
+                            attachLegendToCalendar(instance);
+                            decorateCalendarDays(instance, role);
+                        },
+                        onMonthChange: function (_, __, instance) {
+                            decorateCalendarDays(instance, role);
+                        },
+                        onYearChange: function (_, __, instance) {
+                            decorateCalendarDays(instance, role);
+                        },
+                        onChange: function (_, __, instance) {
+                            instances.forEach(function (item) {
+                                decorateCalendarDays(item.fp, item.role);
+                            });
                             inp.dispatchEvent(new Event('change', { bubbles: true }));
                         }
                     });
+
+                    instances.push({ fp: fp, role: role });
                 });
             }
 
@@ -202,8 +392,8 @@
     <div class="no-print bg-[#08172E] text-slate-300 text-xs py-2 px-4 border-b border-white/10">
         <div class="max-w-7xl mx-auto flex justify-between items-center">
             <div class="flex items-center space-x-4">
-                <span><i class="fa-solid fa-phone text-amber-400 mr-1.5"></i>+90 252 123 45 67</span>
-                <span class="hidden sm:inline"><i class="fa-solid fa-envelope text-amber-400 mr-1.5"></i>hello@yachtvoyage.com</span>
+                <span><i class="fa-solid fa-phone text-amber-400 mr-1.5"></i><%= sCfg.phone %></span>
+                <span class="hidden sm:inline"><i class="fa-solid fa-envelope text-amber-400 mr-1.5"></i><%= sCfg.email %></span>
             </div>
             <div class="flex items-center space-x-4">
                 <a href="/my-booking" class="hover:text-white transition"><i class="fa-solid fa-ticket text-sky-400 mr-1"></i>PNR Sorgula</a>
@@ -219,8 +409,8 @@
                     <i class="fa-solid fa-sailboat text-sky-400 text-lg"></i>
                 </div>
                 <div>
-                    <span class="text-xl font-extrabold tracking-tight block leading-none">YachtVoyage</span>
-                    <span class="text-[10px] text-sky-300 tracking-[0.2em] uppercase">Yacht Charter</span>
+                    <span class="text-xl font-extrabold tracking-tight block leading-none"><%= sCfg.brandName %></span>
+                    <span class="text-[10px] text-sky-300 tracking-[0.2em] uppercase"><%= sCfg.brandSubtext %></span>
                 </div>
             </a>
 

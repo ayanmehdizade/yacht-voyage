@@ -1,5 +1,18 @@
 <%- include('../partials/header') %>
 
+<% const dSite = (typeof siteSettings !== 'undefined' && siteSettings) ? siteSettings : {
+    brandName: 'YachtVoyage',
+    whatsappNumber: '902521234567'
+}; %>
+
+<div id="detailBookedDates" class="hidden">
+    <% if (yachtBookings && yachtBookings.length) { %>
+        <% for (let i = 0; i < yachtBookings.length; i++) { %>
+            <span class="booked-range" data-in="<%= yachtBookings[i].checkIn %>" data-out="<%= yachtBookings[i].checkOut %>"></span>
+        <% } %>
+    <% } %>
+</div>
+
 <main id="yachtDetailRoot" data-yacht-id="<%= yacht.id %>" data-daily-rate="<%= yacht.price %>" data-yacht-title="<%= yacht.name %> (<%= yacht.location %>)" class="max-w-7xl mx-auto px-4 sm:px-6 py-8 space-y-8">
     <% if (reviewSaved) { %>
         <div class="bg-emerald-50 border border-emerald-200 text-emerald-800 px-5 py-3.5 rounded-2xl text-sm font-semibold">
@@ -135,7 +148,6 @@
                 </div>
             <% } %>
 
-            <!-- DOĞRULANMIŞ MİSAFİR YORUMLARI VE YORUM EKLEME -->
             <div id="reviewsSection" class="bg-white rounded-2xl border border-slate-200 p-6 space-y-6">
                 <div class="flex justify-between items-center border-b border-slate-100 pb-4">
                     <div>
@@ -176,7 +188,6 @@
             </div>
         </div>
 
-        <!-- SAĞ REZERVASYON KARTI + CANLI EKSTRA KALKÜLATÖR -->
         <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-xl h-fit sticky top-24 space-y-5">
             <div>
                 <span class="text-xs text-slate-400 block">Günlük Fiyat</span>
@@ -202,7 +213,6 @@
                     <input type="number" id="guestNum" name="guests" min="1" max="<%= yacht.guests %>" value="6" class="w-full p-2.5 text-sm font-semibold border border-slate-200 rounded-xl">
                 </div>
 
-                <!-- CANLI EKSTRA HİZMET KALKÜLATÖRÜ -->
                 <div class="space-y-2 pt-1">
                     <label class="block text-[11px] font-bold text-slate-500 uppercase">Ekstra Hizmetler (Canlı Hesap)</label>
                     <label class="flex items-center justify-between p-2.5 border border-slate-200 rounded-xl cursor-pointer hover:bg-slate-50 text-xs">
@@ -249,7 +259,7 @@
                 </button>
             </form>
 
-            <a id="waLink" href="#" target="_blank" class="w-full bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 py-3 rounded-xl font-bold text-xs transition flex items-center justify-center space-x-2">
+            <a id="waLink" href="#" target="_blank" rel="noopener noreferrer" class="w-full bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 py-3 rounded-xl font-bold text-xs transition flex items-center justify-center space-x-2">
                 <i class="fa-brands fa-whatsapp text-base text-emerald-600"></i>
                 <span>WhatsApp ile Hızlı Bilgi Al</span>
             </a>
@@ -306,9 +316,10 @@
         document.getElementById('grandTotal').innerText = '€' + total.toLocaleString();
         document.getElementById('multiDayBadge').classList.toggle('hidden', diff < 3);
 
+        const waNum = '<%= dSite.whatsappNumber %>';
         const extraNote = selectedExtras.length > 0 ? ' | Ekstralar: ' + selectedExtras.join(', ') : '';
-        const msg = encodeURIComponent('Merhaba YachtVoyage, ' + yachtTitle + ' için ' + inVal + ' - ' + outVal + ' tarihleri (' + diff + ' gün, ' + guests + ' misafir' + extraNote + ', tahmini €' + total.toLocaleString() + ') hakkında bilgi almak istiyorum.');
-        document.getElementById('waLink').href = 'https://wa.me/902521234567?text=' + msg;
+        const msg = encodeURIComponent('Merhaba <%= dSite.brandName %>, ' + yachtTitle + ' için ' + inVal + ' - ' + outVal + ' tarihleri (' + diff + ' gün, ' + guests + ' misafir' + extraNote + ', tahmini €' + total.toLocaleString() + ') hakkında bilgi almak istiyorum.');
+        document.getElementById('waLink').href = 'https://wa.me/' + waNum + '?text=' + msg;
     }
 
     document.getElementById('inDate').addEventListener('change', calcPrice);

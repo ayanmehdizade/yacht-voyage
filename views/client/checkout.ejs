@@ -1,7 +1,23 @@
 <%- include('../partials/header') %>
 
-<main class="max-w-6xl mx-auto px-4 sm:px-6 py-10">
-    <div class="flex items-center justify-center space-x-3 md:space-x-8 mb-10 text-xs md:text-sm">
+<% const planCfg = (typeof paymentPlanSettings !== 'undefined' && paymentPlanSettings) ? paymentPlanSettings : {
+    installmentPercent: 50,
+    installmentInterestPercent: 0,
+    fullPaymentDiscountPercent: 10
+}; %>
+<% const contractCfg = (typeof rentalContract !== 'undefined' && rentalContract) ? rentalContract : {
+    title: 'YachtVoyage Tekne Kiralama ve İptal Sözleşmesi',
+    body: ''
+}; %>
+
+<div id="paymentPlanConfig"
+     data-installment-pct="<%= planCfg.installmentPercent %>"
+     data-interest-pct="<%= planCfg.installmentInterestPercent %>"
+     data-full-discount-pct="<%= planCfg.fullPaymentDiscountPercent %>"
+     class="hidden"></div>
+
+<main class="max-w-6xl mx-auto px-4 sm:px-6 pt-8 pb-12">
+    <div class="flex items-center justify-center space-x-3 md:space-x-8 mb-8 text-xs md:text-sm">
         <div id="stepIndicator1" class="flex items-center space-x-2 font-bold text-[#0B1F3A]">
             <span class="w-8 h-8 rounded-full bg-[#0B1F3A] text-white flex items-center justify-center text-xs">1</span>
             <span>Tur &amp; Ekstralar</span>
@@ -25,6 +41,11 @@
         </div>
     <% } %>
 
+    <div id="dateOrderWarning" class="hidden mb-6 bg-amber-50 border border-amber-200 text-amber-800 px-5 py-3.5 rounded-2xl text-xs font-bold flex items-center space-x-2.5">
+        <i class="fa-solid fa-triangle-exclamation text-base text-amber-600"></i>
+        <span id="dateOrderWarningText">Devam etmek için geçerli bir çıkış tarihi seçmelisiniz (1 gün için ertesi günü seçin).</span>
+    </div>
+
     <div id="bookedDatesData" class="hidden">
         <% if (yachtBookings && yachtBookings.length) { %>
             <% for (let i = 0; i < yachtBookings.length; i++) { %>
@@ -33,34 +54,34 @@
         <% } %>
     </div>
 
-    <form id="bookingForm" action="/checkout/confirm" method="POST" class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+    <form id="bookingForm" action="/checkout/confirm" method="POST" autocomplete="off" class="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <input type="hidden" name="yachtId" value="<%= yacht.id %>">
-        <input type="hidden" id="daysInput" name="days" value="3">
+        <input type="hidden" id="daysInput" name="days" value="0">
         <input type="hidden" id="discountInput" name="discount" value="0">
-        <input type="hidden" id="totalAmountInput" name="totalAmount" value="<%= yacht.price * 3 %>">
-        <input type="hidden" id="paidAmountInput" name="paidAmount" value="<%= Math.round(yacht.price * 3 * 0.3) %>">
+        <input type="hidden" id="totalAmountInput" name="totalAmount" value="0">
+        <input type="hidden" id="paidAmountInput" name="paidAmount" value="0">
 
         <div class="lg:col-span-2 space-y-6">
             <div id="step1Box" class="bg-white p-6 md:p-8 rounded-2xl border border-slate-200 shadow-sm space-y-6">
                 <div class="flex flex-wrap justify-between items-center gap-2 border-b border-slate-100 pb-4">
                     <h2 class="text-xl font-extrabold text-slate-900">1. Rezervasyon Detayları</h2>
-                    <span id="availBadge" class="text-xs font-bold px-3 py-1 rounded-full bg-emerald-50 text-emerald-700">
-                        <i class="fa-solid fa-circle-check mr-1"></i>Seçilen Tarihler Müsait
+                    <span id="availBadge" class="text-xs font-bold px-3 py-1 rounded-full bg-amber-50 text-amber-800">
+                        <i class="fa-solid fa-calendar-day mr-1"></i>Giriş ve Çıkış Tarihi Seçin
                     </span>
                 </div>
 
                 <div>
                     <label class="block text-xs font-bold text-slate-500 uppercase mb-2">Kiralama / Tur Tipi</label>
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                        <label class="p-3.5 border-2 border-[#0B1F3A] bg-slate-50 rounded-xl cursor-pointer flex items-center space-x-3">
-                            <input type="radio" name="charterType" value="Özel Yat Kiralama (Konaklamalı)" checked class="text-[#0B1F3A]">
+                    <div id="charterTypeGroup" class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <label class="charter-card p-3.5 border-2 border-[#0B1F3A] bg-slate-50 rounded-xl cursor-pointer flex items-center space-x-3 transition">
+                            <input type="radio" name="charterType" value="Özel Yat Kiralama (Konaklamalı)" checked class="charter-type-radio text-[#0B1F3A]">
                             <div>
                                 <div class="font-bold text-xs text-slate-900">Özel Yat Kiralama</div>
                                 <div class="text-[11px] text-slate-500">Tam gün ve çok günlük özel rota</div>
                             </div>
                         </label>
-                        <label class="p-3.5 border border-slate-200 rounded-xl cursor-pointer flex items-center space-x-3 hover:bg-slate-50">
-                            <input type="radio" name="charterType" value="Günlük VIP Koy Turu" class="text-[#0B1F3A]">
+                        <label class="charter-card p-3.5 border border-slate-200 bg-white rounded-xl cursor-pointer flex items-center space-x-3 hover:bg-slate-50 transition">
+                            <input type="radio" name="charterType" value="Günlük VIP Koy Turu" class="charter-type-radio text-[#0B1F3A]">
                             <div>
                                 <div class="font-bold text-xs text-slate-900">Günlük VIP Koy Turu</div>
                                 <div class="text-[11px] text-slate-500">10:00 - 18:00 arası kaptanlı tur</div>
@@ -70,63 +91,89 @@
                 </div>
 
                 <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                    <div>
-                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Giriş Tarihi</label>
-                        <input type="date" id="cIn" name="checkIn" value="<%= checkIn %>" required class="calc-trigger w-full p-3 text-sm font-semibold border border-slate-200 rounded-xl">
+                    <div class="relative">
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Giriş Tarihi *</label>
+                        <input type="text" id="cIn" name="checkIn" readonly data-no-flatpickr="true" value="" required placeholder="Tarih seçin" class="calc-trigger w-full p-3 text-sm font-semibold border border-slate-200 rounded-xl bg-white cursor-pointer">
+                        <div id="pickerIn" class="hidden absolute left-0 top-full mt-2 z-[60] w-[340px] max-w-[92vw] bg-white border border-slate-200 rounded-2xl shadow-2xl p-4 space-y-3 overflow-hidden">
+                            <div class="flex items-center justify-between">
+                                <button type="button" data-picker="in" data-dir="-1" class="cal-nav-btn w-8 h-8 rounded-lg bg-slate-100 text-xs font-bold hover:bg-slate-200 flex items-center justify-center shrink-0">‹</button>
+                                <span id="labelIn" class="text-xs font-extrabold text-[#0B1F3A] text-center"></span>
+                                <button type="button" data-picker="in" data-dir="1" class="cal-nav-btn w-8 h-8 rounded-lg bg-slate-100 text-xs font-bold hover:bg-slate-200 flex items-center justify-center shrink-0">›</button>
+                            </div>
+                            <div class="grid grid-cols-[repeat(7,minmax(0,1fr))] gap-1 text-center text-[10px] font-bold text-slate-400">
+                                <div>Pzt</div><div>Sal</div><div>Çar</div><div>Per</div><div>Cum</div><div>Cmt</div><div>Paz</div>
+                            </div>
+                            <div id="gridIn" class="grid grid-cols-[repeat(7,minmax(0,1fr))] gap-1 text-center text-xs"></div>
+                            <div class="pt-2.5 border-t border-slate-100 flex items-center justify-between text-[11px] font-bold px-1">
+                                <span class="inline-flex items-center gap-1.5 text-emerald-700">
+                                    <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 inline-block shrink-0"></span>
+                                    <span>Yeşil: Boş</span>
+                                </span>
+                                <span class="inline-flex items-center gap-1.5 text-rose-700">
+                                    <span class="w-2.5 h-2.5 rounded-full bg-rose-500 inline-block shrink-0"></span>
+                                    <span>Kırmızı: Dolu</span>
+                                </span>
+                            </div>
+                        </div>
                     </div>
-                    <div>
-                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Çıkış Tarihi</label>
-                        <input type="date" id="cOut" name="checkOut" value="<%= checkOut %>" required class="calc-trigger w-full p-3 text-sm font-semibold border border-slate-200 rounded-xl">
+
+                    <div class="relative">
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Çıkış Tarihi *</label>
+                        <input type="text" id="cOut" name="checkOut" readonly data-no-flatpickr="true" value="" required placeholder="Tarih seçin" class="calc-trigger w-full p-3 text-sm font-semibold border border-slate-200 rounded-xl bg-white cursor-pointer">
+                        <div id="pickerOut" class="hidden absolute left-0 sm:left-auto sm:right-0 top-full mt-2 z-[60] w-[340px] max-w-[92vw] bg-white border border-slate-200 rounded-2xl shadow-2xl p-4 space-y-3 overflow-hidden">
+                            <div class="flex items-center justify-between">
+                                <button type="button" data-picker="out" data-dir="-1" class="cal-nav-btn w-8 h-8 rounded-lg bg-slate-100 text-xs font-bold hover:bg-slate-200 flex items-center justify-center shrink-0">‹</button>
+                                <span id="labelOut" class="text-xs font-extrabold text-[#0B1F3A] text-center"></span>
+                                <button type="button" data-picker="out" data-dir="1" class="cal-nav-btn w-8 h-8 rounded-lg bg-slate-100 text-xs font-bold hover:bg-slate-200 flex items-center justify-center shrink-0">›</button>
+                            </div>
+                            <div class="grid grid-cols-[repeat(7,minmax(0,1fr))] gap-1 text-center text-[10px] font-bold text-slate-400">
+                                <div>Pzt</div><div>Sal</div><div>Çar</div><div>Per</div><div>Cum</div><div>Cmt</div><div>Paz</div>
+                            </div>
+                            <div id="gridOut" class="grid grid-cols-[repeat(7,minmax(0,1fr))] gap-1 text-center text-xs"></div>
+                            <div class="pt-2.5 border-t border-slate-100 flex items-center justify-between text-[11px] font-bold px-1">
+                                <span class="inline-flex items-center gap-1.5 text-emerald-700">
+                                    <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 inline-block shrink-0"></span>
+                                    <span>Yeşil: Boş</span>
+                                </span>
+                                <span class="inline-flex items-center gap-1.5 text-rose-700">
+                                    <span class="w-2.5 h-2.5 rounded-full bg-rose-500 inline-block shrink-0"></span>
+                                    <span>Kırmızı: Dolu</span>
+                                </span>
+                            </div>
+                        </div>
                     </div>
+
                     <div>
                         <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Misafir (Maks. <%= yacht.guests %>)</label>
-                        <input type="number" name="guests" min="1" max="<%= yacht.guests %>" value="<%= guests %>" required class="w-full p-3 text-sm font-semibold border border-slate-200 rounded-xl">
+                        <input type="number" id="guestsCountInput" name="guests" min="1" max="<%= yacht.guests %>" value="<%= guests || 1 %>" required class="calc-trigger w-full p-3 text-sm font-semibold border border-slate-200 rounded-xl">
                     </div>
                 </div>
 
-                <% if (yachtBookings && yachtBookings.length > 0) { %>
-                    <div class="bg-amber-50 border border-amber-200 rounded-xl p-3 text-xs text-amber-800">
-                        <strong>Dolu Tarihler:</strong>
-                        <% for (let i = 0; i < yachtBookings.length; i++) { %>
-                            <span class="inline-block bg-white px-2 py-0.5 rounded border border-amber-200 ml-1"><%= yachtBookings[i].checkIn %> → <%= yachtBookings[i].checkOut %></span>
-                        <% } %>
-                    </div>
-                <% } %>
-
                 <div class="space-y-2.5">
-                    <label class="block text-xs font-bold text-slate-500 uppercase">Ekstra VIP Hizmetler</label>
-                    <label class="flex items-center justify-between p-3.5 border border-slate-200 rounded-xl cursor-pointer hover:bg-slate-50">
-                        <div class="flex items-center space-x-3">
-                            <input type="checkbox" name="extras" value="Özel Şef & Gurme Menü" data-price="450" class="calc-trigger extra-cb rounded text-[#0B1F3A]">
-                            <div>
-                                <div class="font-bold text-sm text-slate-900">Özel Şef &amp; Gurme Menü</div>
-                                <div class="text-xs text-slate-500">Akdeniz mutfağı, taze deniz ürünleri ve özel servis</div>
-                            </div>
-                        </div>
-                        <span class="font-bold text-sm text-[#0B1F3A]">+€450</span>
-                    </label>
+                    <div class="flex items-center justify-between">
+                        <label class="block text-xs font-bold text-slate-500 uppercase">Ekstra VIP Hizmetler (Kişi Başı)</label>
+                        <span class="text-[11px] font-bold text-teal-700">Seçili kişi sayısına göre hesaplanır</span>
+                    </div>
 
-                    <label class="flex items-center justify-between p-3.5 border border-slate-200 rounded-xl cursor-pointer hover:bg-slate-50">
-                        <div class="flex items-center space-x-3">
-                            <input type="checkbox" name="extras" value="VIP Havalimanı Transferi" data-price="200" class="calc-trigger extra-cb rounded text-[#0B1F3A]">
-                            <div>
-                                <div class="font-bold text-sm text-slate-900">VIP Havalimanı Transferi</div>
-                                <div class="text-xs text-slate-500">Dalaman / Bodrum Havalimanı - Marina çift yön Mercedes Vito</div>
-                            </div>
-                        </div>
-                        <span class="font-bold text-sm text-[#0B1F3A]">+€200</span>
-                    </label>
+                    <% const activeExtras = (typeof extrasList !== 'undefined' && Array.isArray(extrasList) && extrasList.length) ? extrasList : [
+                        { name: 'Özel Şef & Gurme Menü', pricePerGuest: 120 },
+                        { name: 'VIP Havalimanı Transferi', pricePerGuest: 45 },
+                        { name: 'Jet Ski & Seabob Paketi', pricePerGuest: 85 }
+                    ]; %>
 
-                    <label class="flex items-center justify-between p-3.5 border border-slate-200 rounded-xl cursor-pointer hover:bg-slate-50">
-                        <div class="flex items-center space-x-3">
-                            <input type="checkbox" name="extras" value="Jet Ski & Seabob Paketi" data-price="350" class="calc-trigger extra-cb rounded text-[#0B1F3A]">
-                            <div>
-                                <div class="font-bold text-sm text-slate-900">Jet Ski &amp; Seabob Paketi</div>
-                                <div class="text-xs text-slate-500">Tam gün su sporları ekipman paketi</div>
+                    <% activeExtras.forEach(function(ex) { %>
+                        <% const perGuestPrice = Number(ex.pricePerGuest || 0); %>
+                        <label class="flex items-center justify-between p-3.5 border border-slate-200 rounded-xl cursor-pointer hover:bg-slate-50 transition">
+                            <div class="flex items-center space-x-3">
+                                <input type="checkbox" name="extras" value="<%= ex.name %>" data-per-guest="<%= perGuestPrice %>" class="calc-trigger extra-cb rounded text-[#0B1F3A]">
+                                <div>
+                                    <div class="font-bold text-sm text-slate-900"><%= ex.name %></div>
+                                    <div class="text-xs text-slate-500">€<%= perGuestPrice.toLocaleString() %> / kişi</div>
+                                </div>
                             </div>
-                        </div>
-                        <span class="font-bold text-sm text-[#0B1F3A]">+€350</span>
-                    </label>
+                            <span class="extra-calc-badge font-bold text-sm text-[#0B1F3A]">+€<%= (perGuestPrice * Number(guests || 1)).toLocaleString() %></span>
+                        </label>
+                    <% }) %>
                 </div>
 
                 <div class="space-y-4 pt-2 border-t border-slate-100">
@@ -164,49 +211,54 @@
                 <div>
                     <label class="block text-xs font-bold text-slate-500 uppercase mb-2">Ödeme Planı Seçin</label>
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <label class="p-4 border-2 border-[#0B1F3A] bg-slate-50 rounded-xl cursor-pointer">
+                        <label class="pay-plan-card p-4 border-2 border-[#0B1F3A] bg-slate-50 rounded-xl cursor-pointer transition">
                             <div class="flex items-center space-x-2">
-                                <input type="radio" name="paymentType" value="%30 Kapora" checked class="calc-trigger pay-plan text-[#0B1F3A]">
-                                <span class="font-bold text-sm text-slate-900">%30 Kapora ile Ön Rezervasyon</span>
+                                <input type="radio" name="paymentType" value="Hisseli Ödeme" checked class="calc-trigger pay-plan text-[#0B1F3A]">
+                                <span class="font-bold text-sm text-slate-900">Hisseli Ödeme (%<%= planCfg.installmentPercent %> Şimdi)</span>
                             </div>
-                            <p class="text-xs text-slate-500 mt-1.5">Kalan %70 tutar biniş günü marinada nakit veya POS ile ödenir.</p>
+                            <p class="text-xs text-slate-500 mt-1.5">
+                                %<%= planCfg.installmentPercent %> tutar şimdi ödenir<% if (Number(planCfg.installmentInterestPercent) > 0) { %>, +%<%= planCfg.installmentInterestPercent %> faiz/fark uygulanır<% } %>; kalan bakiye biniş günü marinada tahsil edilir.
+                            </p>
                         </label>
 
-                        <label class="p-4 border border-slate-200 rounded-xl cursor-pointer hover:bg-slate-50">
+                        <label class="pay-plan-card p-4 border border-slate-200 bg-white rounded-xl cursor-pointer hover:bg-slate-50 transition">
                             <div class="flex items-center space-x-2">
-                                <input type="radio" name="paymentType" value="Tam Ödeme (%100)" class="calc-trigger pay-plan text-[#0B1F3A]">
-                                <span class="font-bold text-sm text-slate-900">Tamamını Şimdi Öde (%100)</span>
+                                <input type="radio" name="paymentType" value="Tam Ödeme (İndirimli)" class="calc-trigger pay-plan text-[#0B1F3A]">
+                                <span class="font-bold text-sm text-slate-900">Tam Ödeme (<% if (Number(planCfg.fullPaymentDiscountPercent) > 0) { %>%<%= planCfg.fullPaymentDiscountPercent %> İndirimli<% } else { %>%100 Peşin<% } %>)</span>
                             </div>
-                            <p class="text-xs text-slate-500 mt-1.5">Marinada ek ödeme olmadan hızlı biniş avantajı.</p>
+                            <p class="text-xs text-slate-500 mt-1.5">
+                                <% if (Number(planCfg.fullPaymentDiscountPercent) > 0) { %>
+                                    Toplam tutarda %<%= planCfg.fullPaymentDiscountPercent %> indirim avantajıyla tamamı şimdi ödenir.
+                                <% } else { %>
+                                    Marinada ek ödeme olmadan tamamı şimdi ödenir.
+                                <% } %>
+                            </p>
                         </label>
                     </div>
                 </div>
 
                 <div>
                     <label class="block text-xs font-bold text-slate-500 uppercase mb-2">Ödeme Yöntemi</label>
-                    <div class="grid grid-cols-3 gap-2.5 text-xs font-bold">
-                        <label class="p-3 border-2 border-[#0B1F3A] bg-slate-50 rounded-xl text-center cursor-pointer">
-                            <input type="radio" name="paymentMethod" value="Kredi / Banka Kartı" checked class="pay-method-radio hidden">
-                            <i class="fa-regular fa-credit-card block text-base mb-1 text-[#0B1F3A]"></i>
-                            Kredi / Banka Kartı
-                        </label>
-                        <label class="p-3 border border-slate-200 rounded-xl text-center cursor-pointer hover:bg-slate-50">
-                            <input type="radio" name="paymentMethod" value="Havale / EFT" class="pay-method-radio hidden">
-                            <i class="fa-solid fa-building-columns block text-base mb-1 text-teal-600"></i>
-                            Havale / EFT
-                        </label>
-                        <label class="p-3 border border-slate-200 rounded-xl text-center cursor-pointer hover:bg-slate-50">
-                            <input type="radio" name="paymentMethod" value="Marinada Ödeme" class="pay-method-radio hidden">
-                            <i class="fa-solid fa-anchor block text-base mb-1 text-amber-600"></i>
-                            Marinada Ödeme
-                        </label>
+                    <% const activePayments = (typeof paymentOptions !== 'undefined' && Array.isArray(paymentOptions) && paymentOptions.length) ? paymentOptions : [
+                        { name: 'Kredi / Banka Kartı' },
+                        { name: 'Havale / EFT' },
+                        { name: 'Marinada Ödeme' }
+                    ]; %>
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5 text-xs font-bold">
+                        <% activePayments.forEach(function(po, idx) { %>
+                            <label class="p-3 border-2 <%= idx === 0 ? 'border-[#0B1F3A] bg-slate-50' : 'border-slate-200' %> rounded-xl text-center cursor-pointer hover:bg-slate-50">
+                                <input type="radio" name="paymentMethod" value="<%= po.name %>" <%= idx === 0 ? 'checked' : '' %> class="pay-method-radio hidden">
+                                <i class="fa-regular fa-credit-card block text-base mb-1 text-[#0B1F3A]"></i>
+                                <span><%= po.name %></span>
+                            </label>
+                        <% }) %>
                     </div>
                 </div>
 
                 <div id="cardSection" class="space-y-4 bg-slate-50 p-5 rounded-2xl border border-slate-200">
                     <div class="bg-gradient-to-r from-[#0B1F3A] to-teal-800 text-white p-5 rounded-2xl shadow-md space-y-4 max-w-sm">
                         <div class="flex justify-between items-center text-xs text-sky-200">
-                            <span>YachtVoyage Secure Pay</span>
+                            <span><%= (typeof siteSettings !== 'undefined' && siteSettings && siteSettings.brandName) ? siteSettings.brandName : 'YachtVoyage' %> Secure Pay</span>
                             <i class="fa-brands fa-cc-visa text-2xl"></i>
                         </div>
                         <div id="previewCardNum" class="font-mono text-lg tracking-widest">•••• •••• •••• ••••</div>
@@ -254,18 +306,22 @@
                     <p>Operasyon ekibimiz telefon numaranız üzerinden sizinle iletişime geçerek ön onayınızı tamamlayacaktır.</p>
                 </div>
 
-                <label class="flex items-start space-x-2.5 text-xs text-slate-600 cursor-pointer">
-                    <input type="checkbox" required checked class="mt-0.5 rounded text-[#0B1F3A]">
-                    <span><strong>Ücretsiz iptal politikasını</strong> (tura 7 gün kalaya kadar %100 iade) ve kiralama sözleşmesini okudum, onaylıyorum.</span>
-                </label>
+                <div class="flex items-start space-x-2.5 text-xs text-slate-600">
+                    <input type="checkbox" id="contractAgreeCb" required class="mt-0.5 rounded text-[#0B1F3A] cursor-pointer">
+                    <label for="contractAgreeCb" class="cursor-pointer select-none">
+                        <strong>Ücretsiz iptal politikasını</strong> (tura 7 gün kalaya kadar %100 iade) ve
+                        <button type="button" id="openContractModalBtn" class="font-extrabold text-[#0B1F3A] underline hover:text-teal-700">kiralama sözleşmesini</button>
+                        okudum, onaylıyorum.
+                    </label>
+                </div>
 
                 <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white py-4 rounded-xl font-bold text-sm transition shadow-lg">
-                    <i class="fa-solid fa-lock mr-2"></i>Rezervasyonu Onayla (<span id="payBtnAmount">€3,150</span>)
+                    <i class="fa-solid fa-lock mr-2"></i>Rezervasyonu Onayla (<span id="payBtnAmount">€0</span>)
                 </button>
             </div>
         </div>
 
-        <div id="checkoutSummaryCard" data-rate="<%= yacht.price %>" class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm h-fit sticky top-24 space-y-5">
+        <div id="checkoutSummaryCard" data-rate="<%= yacht.price %>" data-max-guests="<%= yacht.guests %>" class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm h-fit sticky top-28 space-y-5">
             <img src="<%= yacht.images[0] %>" alt="<%= yacht.name %>" class="checkout-img w-full h-44 object-cover rounded-xl">
             <div>
                 <h3 class="text-lg font-extrabold text-slate-900"><%= yacht.name %></h3>
@@ -283,45 +339,204 @@
 
             <div class="border-t border-slate-100 pt-4 space-y-2.5 text-xs">
                 <div class="flex justify-between text-slate-600">
-                    <span>Yat Kirası (<span id="sumDays">3</span> gün)</span>
-                    <span id="sumBase" class="font-bold text-slate-900">€<%= (yacht.price * 3).toLocaleString() %></span>
+                    <span>Yat Kirası (<span id="sumDays">0</span> gün)</span>
+                    <span id="sumBase" class="font-bold text-slate-900">€0</span>
                 </div>
                 <div class="flex justify-between text-slate-600">
-                    <span>Ekstra Hizmetler</span>
+                    <span>Ekstra Hizmetler (<span id="sumGuests"><%= guests || 1 %></span> kişi)</span>
                     <span id="sumExtras" class="font-bold text-slate-900">€0</span>
                 </div>
-                <div id="autoDiscountRow" class="flex justify-between text-teal-700 font-bold">
-                    <span>Çok Günlük İndirim (%5)</span>
+                <div id="autoDiscountRow" class="hidden flex justify-between text-teal-700 font-bold">
+                    <span>Çok Günlük İndirim (5+ Gün %5)</span>
                     <span id="sumAutoDiscount">-€0</span>
                 </div>
                 <div id="discountRow" class="hidden flex justify-between text-emerald-600 font-bold">
                     <span>Promo İndirimi (%10)</span>
                     <span id="sumDiscount">-€0</span>
                 </div>
+                <div id="planAdjustmentRow" class="hidden flex justify-between font-bold">
+                    <span id="planAdjustmentLabel">Plan Farkı / İndirimi</span>
+                    <span id="sumPlanAdjustment">€0</span>
+                </div>
                 <div class="flex justify-between text-sm font-extrabold text-slate-900 pt-2 border-t border-slate-100">
                     <span>Toplam Tutar</span>
-                    <span id="sumTotal">€<%= (yacht.price * 3).toLocaleString() %></span>
+                    <span id="sumTotal">€0</span>
                 </div>
                 <div class="flex justify-between text-sky-800 font-bold bg-sky-50 p-3 rounded-xl">
                     <span>Şimdi Ödenecek</span>
-                    <span id="sumPayNow">€<%= Math.round(yacht.price * 3 * 0.3).toLocaleString() %></span>
+                    <span id="sumPayNow">€0</span>
                 </div>
                 <div class="flex justify-between text-slate-400 text-[11px]">
                     <span>Marinada Kalan Bakiye</span>
-                    <span id="sumRemaining">€<%= Math.round(yacht.price * 3 * 0.7).toLocaleString() %></span>
+                    <span id="sumRemaining">€0</span>
                 </div>
             </div>
         </div>
     </form>
 </main>
 
+<!-- KİRALAMA SÖZLEŞMESİ MODAL (PUSH ONAY) -->
+<div id="contractModal" class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
+    <div class="bg-white w-full max-w-2xl rounded-3xl border border-slate-200 shadow-2xl overflow-hidden flex flex-col max-h-[88vh]">
+        <div class="px-6 py-4 bg-[#0B1F3A] text-white flex items-center justify-between">
+            <div>
+                <h3 class="font-extrabold text-base"><%= contractCfg.title %></h3>
+                <p class="text-[11px] text-sky-200">Onaylamak için metni inceleyip alttaki butona tıklayın</p>
+            </div>
+            <button type="button" id="closeContractModalBtn" class="w-8 h-8 rounded-lg bg-white/10 hover:bg-white/20 flex items-center justify-center text-sm">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+
+        <div class="p-6 overflow-y-auto space-y-4 text-xs text-slate-600 leading-relaxed whitespace-pre-line">
+            <%= contractCfg.body %>
+        </div>
+
+        <div class="px-6 py-4 bg-slate-50 border-t border-slate-200 flex flex-wrap items-center justify-end gap-2.5">
+            <button type="button" id="cancelContractModalBtn" class="px-4 py-2.5 rounded-xl border border-slate-300 text-xs font-bold text-slate-700 hover:bg-slate-100">
+                Vazgeç
+            </button>
+            <button type="button" id="acceptContractPushBtn" class="px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold shadow">
+                <i class="fa-solid fa-check mr-1.5"></i>Okudum, Sözleşmeyi Onaylıyorum
+            </button>
+        </div>
+    </div>
+</div>
+
 <script>
     const summaryCard = document.getElementById('checkoutSummaryCard');
     const rate = Number(summaryCard.dataset.rate) || 2000;
+    const maxGuests = Number(summaryCard.dataset.maxGuests) || 12;
     const existingBookings = Array.from(document.querySelectorAll('.booked-range')).map(function(el) {
         return { checkIn: el.dataset.in, checkOut: el.dataset.out };
     });
+
+    const planCfgEl = document.getElementById('paymentPlanConfig');
+    const installmentPct = Number(planCfgEl && planCfgEl.dataset.installmentPct) || 50;
+    const installmentInterestPct = Number(planCfgEl && planCfgEl.dataset.interestPct) || 0;
+    const fullPaymentDiscountPct = Number(planCfgEl && planCfgEl.dataset.fullDiscountPct) || 0;
+
     let discountPercent = 0;
+
+    const cInEl = document.getElementById('cIn');
+    const cOutEl = document.getElementById('cOut');
+    const guestsEl = document.getElementById('guestsCountInput');
+    const dateWarnBox = document.getElementById('dateOrderWarning');
+    const dateWarnText = document.getElementById('dateOrderWarningText');
+
+    cInEl.value = '';
+    cOutEl.value = '';
+
+    const contractModal = document.getElementById('contractModal');
+    const contractAgreeCb = document.getElementById('contractAgreeCb');
+    const openContractBtn = document.getElementById('openContractModalBtn');
+    const closeContractBtn = document.getElementById('closeContractModalBtn');
+    const cancelContractBtn = document.getElementById('cancelContractModalBtn');
+    const acceptContractPushBtn = document.getElementById('acceptContractPushBtn');
+
+    if (openContractBtn && contractModal) {
+        openContractBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            contractModal.classList.remove('hidden');
+        });
+    }
+    [closeContractBtn, cancelContractBtn].forEach(function(btn) {
+        if (btn && contractModal) {
+            btn.addEventListener('click', function() {
+                contractModal.classList.add('hidden');
+            });
+        }
+    });
+    if (acceptContractPushBtn && contractModal && contractAgreeCb) {
+        acceptContractPushBtn.addEventListener('click', function() {
+            contractAgreeCb.checked = true;
+            contractModal.classList.add('hidden');
+        });
+    }
+
+    function syncCharterTypeCards() {
+        document.querySelectorAll('.charter-type-radio').forEach(function(radio) {
+            const card = radio.closest('.charter-card');
+            if (!card) return;
+            const active = radio.checked;
+            card.classList.toggle('border-2', active);
+            card.classList.toggle('border-[#0B1F3A]', active);
+            card.classList.toggle('bg-slate-50', active);
+            card.classList.toggle('border', !active);
+            card.classList.toggle('border-slate-200', !active);
+            card.classList.toggle('bg-white', !active);
+        });
+    }
+
+    function syncPayPlanCards() {
+        document.querySelectorAll('.pay-plan').forEach(function(radio) {
+            const card = radio.closest('.pay-plan-card');
+            if (!card) return;
+            const active = radio.checked;
+            card.classList.toggle('border-2', active);
+            card.classList.toggle('border-[#0B1F3A]', active);
+            card.classList.toggle('bg-slate-50', active);
+            card.classList.toggle('border', !active);
+            card.classList.toggle('border-slate-200', !active);
+            card.classList.toggle('bg-white', !active);
+        });
+    }
+
+    document.querySelectorAll('.charter-type-radio').forEach(function(radio) {
+        radio.addEventListener('change', syncCharterTypeCards);
+    });
+
+    document.querySelectorAll('.pay-plan').forEach(function(radio) {
+        radio.addEventListener('change', function() {
+            syncPayPlanCards();
+            recalculate();
+        });
+    });
+
+    function toYMD(dateObj) {
+        const y = dateObj.getFullYear();
+        const m = String(dateObj.getMonth() + 1).padStart(2, '0');
+        const d = String(dateObj.getDate()).padStart(2, '0');
+        return `${y}-${m}-${d}`;
+    }
+
+    function isDateSelectionValid(notifyUser) {
+        if (!cInEl.value) {
+            if (notifyUser && dateWarnBox) {
+                dateWarnText.innerText = 'Lütfen önce giriş tarihini seçin.';
+                dateWarnBox.classList.remove('hidden');
+            }
+            return false;
+        }
+
+        const dIn = new Date(cInEl.value + 'T00:00:00');
+        if (!isNaN(dIn.getTime())) {
+            const minOutDate = new Date(dIn.getTime() + 86400000);
+            cOutEl.min = toYMD(minOutDate);
+        }
+
+        if (!cOutEl.value) {
+            if (notifyUser && dateWarnBox) {
+                dateWarnText.innerText = 'Çıkış tarihini seçmeden devam edemezsiniz. 1 gün için ertesi günü seçin.';
+                dateWarnBox.classList.remove('hidden');
+            }
+            return false;
+        }
+
+        if (cOutEl.value <= cInEl.value) {
+            if (notifyUser && dateWarnBox) {
+                dateWarnText.innerText = 'Çıkış tarihi giriş tarihinden en az 1 gün sonra olmalıdır.';
+                dateWarnBox.classList.remove('hidden');
+            }
+            return false;
+        }
+
+        if (dateWarnBox) {
+            dateWarnBox.classList.add('hidden');
+        }
+        return true;
+    }
 
     document.querySelectorAll('.checkout-img').forEach(function(img) {
         img.addEventListener('error', function() {
@@ -354,10 +569,21 @@
 
     document.querySelectorAll('.pay-method-radio').forEach(function(radio) {
         radio.addEventListener('change', function() {
+            document.querySelectorAll('.pay-method-radio').forEach(function(r) {
+                const box = r.closest('label');
+                if (!box) return;
+                const active = r.checked;
+                box.classList.toggle('border-2', active);
+                box.classList.toggle('border-[#0B1F3A]', active);
+                box.classList.toggle('bg-slate-50', active);
+                box.classList.toggle('border', !active);
+                box.classList.toggle('border-slate-200', !active);
+            });
+
             const method = this.value;
-            document.getElementById('cardSection').classList.toggle('hidden', method !== 'Kredi / Banka Kartı');
-            document.getElementById('ibanSection').classList.toggle('hidden', method !== 'Havale / EFT');
-            document.getElementById('marinaSection').classList.toggle('hidden', method !== 'Marinada Ödeme');
+            document.getElementById('cardSection').classList.toggle('hidden', method.indexOf('Kart') === -1);
+            document.getElementById('ibanSection').classList.toggle('hidden', method.indexOf('Havale') === -1 && method.indexOf('EFT') === -1);
+            document.getElementById('marinaSection').classList.toggle('hidden', method.indexOf('Marina') === -1 && method.indexOf('Nakit') === -1);
         });
     });
 
@@ -378,10 +604,27 @@
     });
 
     function checkAvailability() {
-        const cIn = document.getElementById('cIn').value;
-        const cOut = document.getElementById('cOut').value;
+        const cIn = cInEl.value;
+        const cOut = cOutEl.value;
         const badge = document.getElementById('availBadge');
         const btn = document.getElementById('nextStepBtn');
+
+        if (!cIn || !cOut) {
+            badge.className = 'text-xs font-bold px-3 py-1 rounded-full bg-amber-50 text-amber-800';
+            badge.innerHTML = '<i class="fa-solid fa-calendar-day mr-1"></i>Giriş ve Çıkış Tarihi Seçin';
+            btn.disabled = true;
+            btn.classList.add('opacity-50', 'cursor-not-allowed');
+            return;
+        }
+
+        if (cOut <= cIn) {
+            badge.className = 'text-xs font-bold px-3 py-1 rounded-full bg-amber-50 text-amber-800';
+            badge.innerHTML = '<i class="fa-solid fa-triangle-exclamation mr-1"></i>Çıkış tarihi girişten sonra olmalı';
+            btn.disabled = true;
+            btn.classList.add('opacity-50', 'cursor-not-allowed');
+            return;
+        }
+
         const conflict = existingBookings.find(function(b) {
             return cIn < b.checkOut && cOut > b.checkIn;
         });
@@ -401,33 +644,78 @@
 
     function recalculate() {
         checkAvailability();
-        const d1 = new Date(document.getElementById('cIn').value);
-        const d2 = new Date(document.getElementById('cOut').value);
-        let days = Math.round((d2 - d1) / (1000 * 60 * 60 * 24));
-        if (isNaN(days) || days < 1) days = 1;
+
+        let guestsVal = Math.max(1, Number(guestsEl.value) || 1);
+        if (guestsVal > maxGuests) {
+            guestsVal = maxGuests;
+            guestsEl.value = maxGuests;
+        }
+
+        let days = 0;
+        if (cInEl.value && cOutEl.value && cOutEl.value > cInEl.value) {
+            const d1 = new Date(cInEl.value + 'T00:00:00');
+            const d2 = new Date(cOutEl.value + 'T00:00:00');
+            const diff = Math.round((d2 - d1) / (1000 * 60 * 60 * 24));
+            if (!isNaN(diff) && diff >= 1) days = diff;
+        }
 
         let extrasTotal = 0;
-        document.querySelectorAll('.extra-cb:checked').forEach(function(cb) {
-            extrasTotal += Number(cb.dataset.price);
+        document.querySelectorAll('.extra-cb').forEach(function(cb) {
+            const perGuest = Number(cb.dataset.perGuest || 0);
+            const itemSum = perGuest * guestsVal;
+            const badge = cb.closest('label') ? cb.closest('label').querySelector('.extra-calc-badge') : null;
+            if (badge) {
+                badge.innerText = '+€' + itemSum.toLocaleString() + ' (' + guestsVal + ' kişi)';
+            }
+            if (cb.checked) {
+                extrasTotal += itemSum;
+            }
         });
 
         const baseTotal = days * rate;
-        const autoDisc = days >= 3 ? Math.round(baseTotal * 0.05) : 0;
-        const subTotal = baseTotal - autoDisc + extrasTotal;
-        const promoDisc = Math.round(subTotal * (discountPercent / 100));
-        const totalDiscount = autoDisc + promoDisc;
-        const grandTotal = subTotal - promoDisc;
+        const autoDisc = days >= 5 ? Math.round(baseTotal * 0.05) : 0;
+        const subBeforePromo = baseTotal - autoDisc + extrasTotal;
+        const promoDisc = Math.round(subBeforePromo * (discountPercent / 100));
+        const subTotal = Math.max(0, subBeforePromo - promoDisc);
 
-        const plan = document.querySelector('.pay-plan:checked').value;
-        const payNow = plan === '%30 Kapora' ? Math.round(grandTotal * 0.3) : grandTotal;
-        const remaining = grandTotal - payNow;
+        const planEl = document.querySelector('.pay-plan:checked');
+        const selectedPlan = planEl ? planEl.value : 'Hisseli Ödeme';
+        const isFullPayment = selectedPlan === 'Tam Ödeme (İndirimli)';
+
+        let grandTotal = subTotal;
+        let planDelta = 0;
+        const adjRow = document.getElementById('planAdjustmentRow');
+        const adjLabel = document.getElementById('planAdjustmentLabel');
+        const adjVal = document.getElementById('sumPlanAdjustment');
+
+        if (isFullPayment && fullPaymentDiscountPct > 0) {
+            planDelta = -Math.round(subTotal * (fullPaymentDiscountPct / 100));
+            grandTotal = Math.max(0, subTotal + planDelta);
+            adjRow.className = 'flex justify-between text-emerald-700 font-bold';
+            adjLabel.innerText = 'Tam Ödeme İndirimi (%' + fullPaymentDiscountPct + ')';
+            adjVal.innerText = '-€' + Math.abs(planDelta).toLocaleString();
+        } else if (!isFullPayment && installmentInterestPct > 0) {
+            planDelta = Math.round(subTotal * (installmentInterestPct / 100));
+            grandTotal = Math.max(0, subTotal + planDelta);
+            adjRow.className = 'flex justify-between text-amber-700 font-bold';
+            adjLabel.innerText = 'Hisseli Ödeme Farkı (%' + installmentInterestPct + ')';
+            adjVal.innerText = '+€' + planDelta.toLocaleString();
+        } else {
+            adjRow.classList.add('hidden');
+        }
+
+        const payNow = isFullPayment
+            ? grandTotal
+            : Math.round(grandTotal * (installmentPct / 100));
+        const remaining = Math.max(0, grandTotal - payNow);
 
         document.getElementById('daysInput').value = days;
-        document.getElementById('discountInput').value = totalDiscount;
+        document.getElementById('discountInput').value = autoDisc + promoDisc;
         document.getElementById('totalAmountInput').value = grandTotal;
         document.getElementById('paidAmountInput').value = payNow;
 
         document.getElementById('sumDays').innerText = days;
+        document.getElementById('sumGuests').innerText = guestsVal;
         document.getElementById('sumBase').innerText = '€' + baseTotal.toLocaleString();
         document.getElementById('sumExtras').innerText = '€' + extrasTotal.toLocaleString();
 
@@ -453,11 +741,147 @@
         document.getElementById('payBtnAmount').innerText = '€' + payNow.toLocaleString();
     }
 
+    const monthNamesTr = ['Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran', 'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık'];
+    const nowRef = new Date();
+    const pickerState = {
+        in: { year: nowRef.getFullYear(), month: nowRef.getMonth() },
+        out: { year: nowRef.getFullYear(), month: nowRef.getMonth() }
+    };
+
+    function isDayBooked(ymd) {
+        return existingBookings.some(function(b) {
+            return ymd >= b.checkIn && ymd < b.checkOut;
+        });
+    }
+
+    function renderMiniPicker(target) {
+        const state = pickerState[target];
+        const gridEl = document.getElementById(target === 'in' ? 'gridIn' : 'gridOut');
+        const labelEl = document.getElementById(target === 'in' ? 'labelIn' : 'labelOut');
+        if (!gridEl || !labelEl) return;
+
+        labelEl.innerText = monthNamesTr[state.month] + ' ' + state.year;
+        gridEl.innerHTML = '';
+
+        const firstDay = new Date(state.year, state.month, 1);
+        let offset = firstDay.getDay() - 1;
+        if (offset < 0) offset = 6;
+        const totalDays = new Date(state.year, state.month + 1, 0).getDate();
+
+        for (let i = 0; i < offset; i++) {
+            const emptyDiv = document.createElement('div');
+            emptyDiv.className = 'h-7';
+            gridEl.appendChild(emptyDiv);
+        }
+
+        for (let d = 1; d <= totalDays; d++) {
+            const ymd = state.year + '-' + String(state.month + 1).padStart(2, '0') + '-' + String(d).padStart(2, '0');
+            const booked = isDayBooked(ymd);
+            const beforeOrSameCheckIn = (target === 'out' && cInEl.value && ymd <= cInEl.value);
+            const btn = document.createElement('button');
+            btn.type = 'button';
+            btn.innerText = d;
+
+            if (booked) {
+                btn.className = 'w-full h-7 rounded-md font-extrabold bg-rose-500 text-white cursor-not-allowed flex items-center justify-center';
+            } else if (beforeOrSameCheckIn) {
+                btn.className = 'w-full h-7 rounded-md font-semibold bg-slate-100 text-slate-300 cursor-not-allowed flex items-center justify-center';
+            } else {
+                btn.className = 'w-full h-7 rounded-md font-bold bg-emerald-100 text-emerald-800 hover:bg-emerald-500 hover:text-white transition flex items-center justify-center';
+                btn.addEventListener('click', function() {
+                    if (target === 'in') {
+                        cInEl.value = ymd;
+                        if (cOutEl.value && cOutEl.value <= cInEl.value) {
+                            cOutEl.value = '';
+                        }
+                    } else {
+                        cOutEl.value = ymd;
+                    }
+                    isDateSelectionValid(false);
+                    recalculate();
+                    document.getElementById(target === 'in' ? 'pickerIn' : 'pickerOut').classList.add('hidden');
+                });
+            }
+            gridEl.appendChild(btn);
+        }
+    }
+
+    function openPicker(target, inputEl) {
+        const otherId = target === 'in' ? 'pickerOut' : 'pickerIn';
+        const targetId = target === 'in' ? 'pickerIn' : 'pickerOut';
+        document.getElementById(otherId).classList.add('hidden');
+        const pEl = document.getElementById(targetId);
+        const refStr = inputEl.value || cInEl.value;
+        const curVal = refStr ? new Date(refStr + 'T00:00:00') : null;
+        if (curVal && !isNaN(curVal.getTime())) {
+            pickerState[target].year = curVal.getFullYear();
+            pickerState[target].month = curVal.getMonth();
+        }
+        renderMiniPicker(target);
+        pEl.classList.remove('hidden');
+    }
+
+    cInEl.addEventListener('mousedown', function(e) {
+        e.preventDefault();
+        openPicker('in', cInEl);
+    });
+
+    cOutEl.addEventListener('mousedown', function(e) {
+        e.preventDefault();
+        openPicker('out', cOutEl);
+    });
+
+    document.querySelectorAll('.cal-nav-btn').forEach(function(navBtn) {
+        navBtn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            const target = this.dataset.picker;
+            const dir = Number(this.dataset.dir) || 1;
+            pickerState[target].month += dir;
+            if (pickerState[target].month < 0) {
+                pickerState[target].month = 11;
+                pickerState[target].year--;
+            } else if (pickerState[target].month > 11) {
+                pickerState[target].month = 0;
+                pickerState[target].year++;
+            }
+            renderMiniPicker(target);
+        });
+    });
+
+    document.addEventListener('click', function(e) {
+        const pIn = document.getElementById('pickerIn');
+        const pOut = document.getElementById('pickerOut');
+        if (pIn && !pIn.contains(e.target) && e.target !== cInEl) {
+            pIn.classList.add('hidden');
+        }
+        if (pOut && !pOut.contains(e.target) && e.target !== cOutEl) {
+            pOut.classList.add('hidden');
+        }
+    });
+
+    cInEl.addEventListener('change', function() {
+        if (cOutEl.value && cOutEl.value <= cInEl.value) {
+            cOutEl.value = '';
+        }
+        isDateSelectionValid(true);
+        recalculate();
+    });
+
+    cOutEl.addEventListener('change', function() {
+        isDateSelectionValid(true);
+        recalculate();
+    });
+
+    guestsEl.addEventListener('input', recalculate);
     document.querySelectorAll('.calc-trigger').forEach(function(el) {
         el.addEventListener('change', recalculate);
     });
 
     document.getElementById('nextStepBtn').addEventListener('click', function() {
+        if (!isDateSelectionValid(true)) {
+            recalculate();
+            return;
+        }
         const name = document.getElementById('custName').value.trim();
         const email = document.getElementById('custEmail').value.trim();
         const phone = document.getElementById('custPhone').value.trim();
@@ -470,6 +894,7 @@
         document.getElementById('stepIndicator2').classList.replace('text-slate-400', 'text-[#0B1F3A]');
         document.getElementById('stepCircle2').classList.replace('bg-slate-200', 'bg-[#0B1F3A]');
         document.getElementById('stepCircle2').classList.replace('text-slate-600', 'text-white');
+        recalculate();
     });
 
     document.getElementById('backStepBtn').addEventListener('click', function() {
@@ -477,6 +902,20 @@
         document.getElementById('step1Box').classList.remove('hidden');
     });
 
+    document.getElementById('bookingForm').addEventListener('submit', function(e) {
+        if (!isDateSelectionValid(true)) {
+            e.preventDefault();
+            recalculate();
+            return;
+        }
+        if (contractAgreeCb && !contractAgreeCb.checked) {
+            e.preventDefault();
+            if (contractModal) contractModal.classList.remove('hidden');
+        }
+    });
+
+    syncCharterTypeCards();
+    syncPayPlanCards();
     recalculate();
 </script>
 

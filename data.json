@@ -332,6 +332,55 @@
   ],
   "bookings": [
     {
+      "id": "YV2026-9445",
+      "customer": "Ayan Mehdizada",
+      "email": "ayanmehdizade859@gmail.com",
+      "phone": "+34666113183",
+      "yachtId": 1,
+      "yacht": "Princess 72",
+      "checkIn": "2026-10-29",
+      "checkOut": "2026-11-14",
+      "days": 16,
+      "guests": 6,
+      "charterType": "Günlük VIP Koy Turu",
+      "extras": [
+        "Seabob & Su Sporları Paketi"
+      ],
+      "extrasTotal": 510,
+      "notes": "",
+      "discount": 5600,
+      "totalAmount": 50910,
+      "paidAmount": 25455,
+      "paymentType": "Hisseli Ödeme",
+      "paymentMethod": "Kredi / Banka Kartı",
+      "status": "Onaylandı"
+    },
+    {
+      "id": "YV2026-7369",
+      "customer": "Ayan Mehdizada",
+      "email": "ayanmehdizade859@gmail.com",
+      "phone": "+34666113183",
+      "yachtId": 1,
+      "yacht": "Princess 72",
+      "checkIn": "2026-07-17",
+      "checkOut": "2026-07-17",
+      "days": 1,
+      "guests": 6,
+      "charterType": "Özel Yat Kiralama (Konaklamalı)",
+      "extras": [
+        "Özel Şef & Gurme Menü",
+        "VIP Havalimanı Transferi",
+        "Jet Ski & Seabob Paketi"
+      ],
+      "notes": "",
+      "discount": 0,
+      "totalAmount": 4500,
+      "paidAmount": 1350,
+      "paymentType": "%30 Kapora",
+      "paymentMethod": "Marinada Ödeme",
+      "status": "Onaylandı"
+    },
+    {
       "id": "YV2026-2643",
       "customer": "Ayan Mehdizada",
       "email": "ayanmehdizade859@gmail.com",
@@ -418,6 +467,103 @@
       "paymentType": "%30 Kapora",
       "paymentMethod": "Kredi / Banka Kartı",
       "status": "Onaylandı"
+    }
+  ],
+  "categories": [
+    {
+      "id": 1,
+      "key": "Motor Yachts",
+      "nameTr": "Motor Yat",
+      "desc": "Yüksek hız ve modern güverte konforu"
+    },
+    {
+      "id": 2,
+      "key": "Gulets",
+      "nameTr": "Gulet",
+      "desc": "Geleneksel ahşap zarafet ve geniş aile kabinleri"
+    },
+    {
+      "id": 3,
+      "key": "Sailing Yachts",
+      "nameTr": "Yelkenli Yat",
+      "desc": "Rüzgarla özgür ve dengeli körfez seyri"
+    },
+    {
+      "id": 4,
+      "key": "Catamarans",
+      "nameTr": "Katamaran",
+      "desc": "Çift gövdeli geniş yaşam alanı ve denge"
+    },
+    {
+      "id": 5,
+      "key": "Superyachts",
+      "nameTr": "Süperyat",
+      "desc": "Özel şef ve VIP mürettebatla üst düzey lüks"
+    }
+  ],
+  "tours": [
+    {
+      "id": 1,
+      "title": "Göcek 12 Adalar Mavi Tur",
+      "region": "Göcek",
+      "durationDays": 1,
+      "pricePerDay": 2800,
+      "yachtId": 1,
+      "summary": "Yassıca Adaları, Bedri Rahmi Koyu ve Tersane Adası duraklarıyla tam gün özel tekne turu."
+    },
+    {
+      "id": 2,
+      "title": "Bodrum Yalıkavak & Türkbükü VIP Rota",
+      "region": "Bodrum",
+      "durationDays": 2,
+      "pricePerDay": 6500,
+      "yachtId": 5,
+      "summary": "Cennet Koyu, Türkbükü ve Orak Adası arasında lüks konaklamalı özel rota."
+    }
+  ],
+  "paymentOptions": [
+    {
+      "id": 1,
+      "name": "Kredi / Banka Kartı",
+      "desc": "Anında onay ve kapora/tam ödeme seçeneği",
+      "active": true
+    },
+    {
+      "id": 2,
+      "name": "Havale / EFT",
+      "desc": "IBAN üzerinden banka transferi ile ödeme",
+      "active": true
+    },
+    {
+      "id": 3,
+      "name": "Nakit / Marina Ödemesi",
+      "desc": "Tekne binişinde veya ofisimizde nakit ödeme",
+      "active": true
+    }
+  ],
+  "paymentPlanSettings": {
+    "installmentPercent": 50,
+    "installmentInterestPercent": 0,
+    "fullPaymentDiscountPercent": 10
+  },
+  "extras": [
+    {
+      "id": 1,
+      "name": "VIP Havalimanı Transferi",
+      "pricePerGuest": 45,
+      "active": true
+    },
+    {
+      "id": 2,
+      "name": "Özel Şef & Gurme Menü",
+      "pricePerGuest": 120,
+      "active": true
+    },
+    {
+      "id": 3,
+      "name": "Seabob & Su Sporları Paketi",
+      "pricePerGuest": 85,
+      "active": true
     }
   ]
 }
