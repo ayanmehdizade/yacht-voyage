@@ -353,8 +353,9 @@ Tekne kapasitesi yasal maksimum misafir sayısını aşamaz. Kaptan, hava ve den
 
 function loadDB() {
     if (!fs.existsSync(DB_PATH)) {
-        const seedSource = (!IS_VERCEL && fs.existsSync(path.join(__dirname, 'data.json')))
-            ? JSON.parse(fs.readFileSync(path.join(__dirname, 'data.json'), 'utf8'))
+        const bundledDbPath = path.join(__dirname, 'data.json');
+        const seedSource = fs.existsSync(bundledDbPath)
+            ? JSON.parse(fs.readFileSync(bundledDbPath, 'utf8'))
             : structuredClone(initialData);
         fs.writeFileSync(DB_PATH, JSON.stringify(seedSource, null, 2));
         return seedSource;
