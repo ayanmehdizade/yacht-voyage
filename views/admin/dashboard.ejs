@@ -762,6 +762,35 @@
                 </button>
             </form>
 
+            <!-- Kalkış Noktaları (Ana Sayfa Arama Menüsü) -->
+            <div class="bg-white p-5 sm:p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+                <div>
+                    <h3 class="font-extrabold text-slate-900 text-base">Kalkış Noktaları (Ana Sayfa Liman Listesi)</h3>
+                    <p class="text-xs text-slate-500 mt-0.5">Giriş ekranındaki <strong>Kalkış Noktası</strong> açılır menüsünde görünen limanları ve açıklamalarını düzenleyin.</p>
+                </div>
+
+                <form action="/admin/departures/add" method="POST" class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    <input type="text" name="name" placeholder="Liman / Bölge Adı (Örn: Kaş)" required class="p-2.5 border border-slate-200 rounded-xl text-xs font-medium">
+                    <input type="text" name="desc" placeholder="Alt Açıklama (Örn: Kekova & Kaş Marina)" class="p-2.5 border border-slate-200 rounded-xl text-xs font-medium">
+                    <button type="submit" class="bg-[#0B1F3A] hover:bg-sky-900 text-white py-2.5 px-4 rounded-xl font-bold text-xs transition">
+                        + Kalkış Noktası Ekle
+                    </button>
+                </form>
+
+                <div class="space-y-2.5 border-t border-slate-100 pt-3 text-xs">
+                    <% (typeof departurePoints !== 'undefined' && departurePoints ? departurePoints : []).forEach(function(dp) { %>
+                        <form action="/admin/departures/<%= dp.id %>/update" method="POST" class="p-3 bg-slate-50 rounded-xl border border-slate-200 flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5">
+                            <input type="text" name="name" value="<%= dp.name %>" required class="sm:w-44 p-2 bg-white border border-slate-200 rounded-lg text-xs font-bold text-slate-900">
+                            <input type="text" name="desc" value="<%= dp.desc || '' %>" placeholder="Alt açıklama" class="flex-1 p-2 bg-white border border-slate-200 rounded-lg text-xs text-slate-600">
+                            <div class="flex items-center gap-2 shrink-0 justify-end">
+                                <button type="submit" class="px-3 py-1.5 bg-teal-600 hover:bg-teal-700 text-white rounded-lg font-bold text-[11px]">Kaydet</button>
+                                <button type="submit" formaction="/admin/departures/<%= dp.id %>/delete" class="px-2.5 py-1.5 text-rose-600 hover:bg-rose-50 rounded-lg font-bold text-[11px]">Sil</button>
+                            </div>
+                        </form>
+                    <% }) %>
+                </div>
+            </div>
+
             <!-- Hisseli Ödeme & İndirimli Tam Ödeme Ayar Formu -->
             <form action="/admin/payment-plan/update" method="POST" class="bg-white p-5 sm:p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
                 <div>

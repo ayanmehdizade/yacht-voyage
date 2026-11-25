@@ -50,6 +50,12 @@ const initialData = {
             role: 'admin'
         }
     ],
+    departurePoints: [
+        { id: 1, name: 'Göcek', desc: 'Koylar & D-Marin kalkış' },
+        { id: 2, name: 'Marmaris', desc: 'Netsel Marina & Hisarönü' },
+        { id: 3, name: 'Fethiye', desc: 'Ece Marina & Ölüdeniz' },
+        { id: 4, name: 'Bodrum', desc: 'Yalıkavak & Türkbükü' }
+    ],
     rentalContract: {
         title: 'YachtVoyage Tekne Kiralama ve İptal Sözleşmesi',
         body: `1. Taraflar ve Konu
@@ -377,6 +383,9 @@ function loadDB() {
         parsed.rentalContract || {}
     );
     parsed.categories = parsed.categories || structuredClone(initialData.categories);
+    parsed.departurePoints = (parsed.departurePoints && parsed.departurePoints.length)
+        ? parsed.departurePoints
+        : structuredClone(initialData.departurePoints);
     parsed.tours = parsed.tours || structuredClone(initialData.tours);
     parsed.paymentOptions = parsed.paymentOptions || structuredClone(initialData.paymentOptions);
     parsed.paymentPlanSettings = Object.assign(
@@ -600,6 +609,7 @@ app.get('/', (req, res) => {
     res.render('client/home', {
         yachts: db.yachts,
         categories: db.categories,
+        departurePoints: db.departurePoints,
         tours: db.tours,
         homeBookings
     });
@@ -756,6 +766,24 @@ app.post('/checkout/confirm', (req, res) => {
         return res.redirect(`/checkout?yachtId=${yacht.id}&checkIn=${range.checkIn}&checkOut=${range.checkOut}&guests=${guestCount}&error=${encodeURIComponent(`Seçilen tarihler (${conflict.checkIn} - ${conflict.checkOut}) dolu. Lütfen boş bir tarih seçin.`)}`);
     }
 
+    const selectedMethod = String(paymentMethod || 'Kredi / Banka Kartı').trim();
+    if (selectedMethod.toLowerCase().includes('kart')) {
+        const cardHolder = String(req.body.cardHolder || '').trim();
+        const cardNumber = String(req.body.cardNumber || '').replace(/\s+/g, '');
+        const cardExpiry = String(req.body.cardExpiry || '').trim();
+        const cardCvv = String(req.body.cardCvv || '').trim();
+
+        const validCard =
+            cardHolder.length >= 3 &&
+            /^\d{13,19}$/.test(cardNumber) &&
+            /^(0[1-9]|1[0-2])\/\d{2}$/.test(cardExpiry) &&
+            /^\d{3,4}$/.test(cardCvv);
+
+        if (!validCard) {
+            return res.redirect(`/checkout?yachtId=${yacht.id}&checkIn=${range.checkIn}&checkOut=${range.checkOut}&guests=${guestCount}&error=${encodeURIComponent('Kredi / Banka Kartı ile ödeme için kart bilgilerini eksiksiz ve doğru girmelisiniz.')}`);
+        }
+    }
+
     const selectedExtraNames = extras ? (Array.isArray(extras) ? extras : [extras]) : [];
     const extrasPerGuestTotal = (db.extras || [])
         .filter(e => e.active !== false && selectedExtraNames.includes(e.name))
@@ -888,6 +916,7 @@ app.get('/admin', requireAdmin, (req, res) => {
         yachts: db.yachts,
         bookings: db.bookings,
         categories: db.categories,
+        departurePoints: db.departurePoints,
         tours: db.tours,
         paymentOptions: db.paymentOptions,
         paymentPlanSettings: db.paymentPlanSettings,
@@ -898,6 +927,41 @@ app.get('/admin', requireAdmin, (req, res) => {
         totalRevenue,
         notice: req.query.notice || ''
     });
+});
+
+app.post('/admin/departures/add', requireAdmin, (req, res) => {
+    const db = loadDB();
+    const name = (req.body.name || '').trim();
+    const desc = (req.body.desc || '').trim();
+    if (name) {
+        db.departurePoints = db.departurePoints || [];
+        const nextId = db.departurePoints.reduce((max, d) => Math.max(max, Number(d.id) || 0), 0) + 1;
+        db.departurePoints.push({
+            id: nextId,
+            name,
+            desc: desc || 'Özel marina kalkış noktası'
+        });
+        saveDB(db);
+    }
+    res.redirect('/admin?tab=ayarlar&notice=' + encodeURIComponent('Yeni kalkış noktası eklendi.'));
+});
+
+app.post('/admin/departures/:id/update', requireAdmin, (req, res) => {
+    const db = loadDB();
+    const item = (db.departurePoints || []).find(d => Number(d.id) === Number(req.params.id));
+    if (item) {
+        if (req.body.name && req.body.name.trim()) item.name = req.body.name.trim();
+        if (typeof req.body.desc === 'string') item.desc = req.body.desc.trim();
+        saveDB(db);
+    }
+    res.redirect('/admin?tab=ayarlar&notice=' + encodeURIComponent('Kalkış noktası güncellendi.'));
+});
+
+app.post('/admin/departures/:id/delete', requireAdmin, (req, res) => {
+    const db = loadDB();
+    db.departurePoints = (db.departurePoints || []).filter(d => Number(d.id) !== Number(req.params.id));
+    saveDB(db);
+    res.redirect('/admin?tab=ayarlar&notice=' + encodeURIComponent('Kalkış noktası silindi.'));
 });
 
 app.post('/admin/staff/add', requireAdmin, (req, res) => {

@@ -39,35 +39,22 @@
                     <i class="yv-dd-chevron fa-solid fa-chevron-down text-xs text-slate-400 transition-transform duration-200"></i>
                 </button>
 
+                <% const depList = (typeof departurePoints !== 'undefined' && Array.isArray(departurePoints) && departurePoints.length) ? departurePoints : [
+                    { name: 'Göcek', desc: 'Koylar & D-Marin kalkış' },
+                    { name: 'Marmaris', desc: 'Netsel Marina & Hisarönü' },
+                    { name: 'Fethiye', desc: 'Ece Marina & Ölüdeniz' },
+                    { name: 'Bodrum', desc: 'Yalıkavak & Türkbükü' }
+                ]; %>
                 <div class="yv-dd-menu hidden max-h-60 overflow-y-auto left-0 right-0 top-[calc(100%+8px)] absolute bg-white rounded-2xl shadow-2xl border border-slate-100 p-1.5 z-50">
-                    <button type="button" data-value="Göcek" data-label="Göcek" class="yv-dd-option w-full px-3.5 py-2.5 rounded-xl flex items-center justify-between text-left bg-slate-100 font-bold text-[#0B1F3A] hover:bg-slate-50 transition">
-                        <div>
-                            <div class="text-xs">Göcek</div>
-                            <div class="text-[10px] font-normal text-slate-400">Koylar &amp; D-Marin kalkış</div>
-                        </div>
-                        <i class="yv-dd-check fa-solid fa-check text-xs text-teal-600"></i>
-                    </button>
-                    <button type="button" data-value="Marmaris" data-label="Marmaris" class="yv-dd-option w-full px-3.5 py-2.5 rounded-xl flex items-center justify-between text-left text-slate-700 hover:bg-slate-50 transition">
-                        <div>
-                            <div class="text-xs font-semibold">Marmaris</div>
-                            <div class="text-[10px] font-normal text-slate-400">Netsel Marina &amp; Hisarönü</div>
-                        </div>
-                        <i class="yv-dd-check hidden fa-solid fa-check text-xs text-teal-600"></i>
-                    </button>
-                    <button type="button" data-value="Fethiye" data-label="Fethiye" class="yv-dd-option w-full px-3.5 py-2.5 rounded-xl flex items-center justify-between text-left text-slate-700 hover:bg-slate-50 transition">
-                        <div>
-                            <div class="text-xs font-semibold">Fethiye</div>
-                            <div class="text-[10px] font-normal text-slate-400">Ece Marina &amp; Ölüdeniz</div>
-                        </div>
-                        <i class="yv-dd-check hidden fa-solid fa-check text-xs text-teal-600"></i>
-                    </button>
-                    <button type="button" data-value="Bodrum" data-label="Bodrum" class="yv-dd-option w-full px-3.5 py-2.5 rounded-xl flex items-center justify-between text-left text-slate-700 hover:bg-slate-50 transition">
-                        <div>
-                            <div class="text-xs font-semibold">Bodrum</div>
-                            <div class="text-[10px] font-normal text-slate-400">Yalıkavak &amp; Türkbükü</div>
-                        </div>
-                        <i class="yv-dd-check hidden fa-solid fa-check text-xs text-teal-600"></i>
-                    </button>
+                    <% depList.forEach(function(dp, idx) { %>
+                        <button type="button" data-value="<%= dp.name %>" data-label="<%= dp.name %>" class="yv-dd-option w-full px-3.5 py-2.5 rounded-xl flex items-center justify-between text-left <%= idx === 0 ? 'bg-slate-100 font-bold text-[#0B1F3A]' : 'text-slate-700' %> hover:bg-slate-50 transition">
+                            <div>
+                                <div class="text-xs <%= idx === 0 ? '' : 'font-semibold' %>"><%= dp.name %></div>
+                                <div class="text-[10px] font-normal text-slate-400"><%= dp.desc || '' %></div>
+                            </div>
+                            <i class="yv-dd-check <%= idx === 0 ? '' : 'hidden' %> fa-solid fa-check text-xs text-teal-600"></i>
+                        </button>
+                    <% }) %>
                     <button type="button" data-value="all" data-label="Tüm Noktalar" class="yv-dd-option w-full px-3.5 py-2.5 rounded-xl flex items-center justify-between text-left text-slate-700 hover:bg-slate-50 transition">
                         <div>
                             <div class="text-xs font-semibold">Tüm Noktalar</div>

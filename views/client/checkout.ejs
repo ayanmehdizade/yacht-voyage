@@ -274,22 +274,24 @@
                         </div>
                     </div>
 
+                    <p id="cardErrorMsg" class="hidden text-xs font-bold text-rose-600 bg-rose-50 border border-rose-200 px-3.5 py-2.5 rounded-xl"></p>
+
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div class="sm:col-span-2">
-                            <label class="block text-[11px] font-bold text-slate-500 uppercase mb-1">Kart Üzerindeki İsim</label>
-                            <input type="text" id="cardHolderInput" placeholder="Ad Soyad" class="w-full p-3 text-sm bg-white border border-slate-200 rounded-xl">
+                            <label class="block text-[11px] font-bold text-slate-500 uppercase mb-1">Kart Üzerindeki İsim *</label>
+                            <input type="text" id="cardHolderInput" name="cardHolder" placeholder="Ad Soyad" class="card-required-field w-full p-3 text-sm bg-white border border-slate-200 rounded-xl">
                         </div>
                         <div class="sm:col-span-2">
-                            <label class="block text-[11px] font-bold text-slate-500 uppercase mb-1">Kart Numarası</label>
-                            <input type="text" id="cardNumberInput" maxlength="19" placeholder="4543 •••• •••• 1234" class="w-full p-3 text-sm font-mono bg-white border border-slate-200 rounded-xl">
+                            <label class="block text-[11px] font-bold text-slate-500 uppercase mb-1">Kart Numarası *</label>
+                            <input type="text" id="cardNumberInput" name="cardNumber" maxlength="19" placeholder="4543 •••• •••• 1234" class="card-required-field w-full p-3 text-sm font-mono bg-white border border-slate-200 rounded-xl">
                         </div>
                         <div>
-                            <label class="block text-[11px] font-bold text-slate-500 uppercase mb-1">Son Kullanma (AA/YY)</label>
-                            <input type="text" id="cardExpInput" maxlength="5" placeholder="08/29" class="w-full p-3 text-sm bg-white border border-slate-200 rounded-xl">
+                            <label class="block text-[11px] font-bold text-slate-500 uppercase mb-1">Son Kullanma (AA/YY) *</label>
+                            <input type="text" id="cardExpInput" name="cardExpiry" maxlength="5" placeholder="08/29" class="card-required-field w-full p-3 text-sm bg-white border border-slate-200 rounded-xl">
                         </div>
                         <div>
-                            <label class="block text-[11px] font-bold text-slate-500 uppercase mb-1">CVV Güvenlik Kodu</label>
-                            <input type="password" maxlength="3" placeholder="•••" class="w-full p-3 text-sm bg-white border border-slate-200 rounded-xl">
+                            <label class="block text-[11px] font-bold text-slate-500 uppercase mb-1">CVV Güvenlik Kodu *</label>
+                            <input type="password" id="cardCvvInput" name="cardCvv" maxlength="4" placeholder="•••" class="card-required-field w-full p-3 text-sm bg-white border border-slate-200 rounded-xl">
                         </div>
                     </div>
                 </div>
@@ -545,25 +547,105 @@
     });
 
     const cardHolderInput = document.getElementById('cardHolderInput');
+    const cardNumberInput = document.getElementById('cardNumberInput');
+    const cardExpInput = document.getElementById('cardExpInput');
+    const cardCvvInput = document.getElementById('cardCvvInput');
+    const cardErrorMsg = document.getElementById('cardErrorMsg');
+
+    function hideCardError() {
+        if (cardErrorMsg) {
+            cardErrorMsg.textContent = '';
+            cardErrorMsg.classList.add('hidden');
+        }
+    }
+
+    function showCardError(msg) {
+        if (cardErrorMsg) {
+            cardErrorMsg.textContent = msg;
+            cardErrorMsg.classList.remove('hidden');
+            cardErrorMsg.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+    }
+
+    function isCardMethodSelected() {
+        const checkedMethod = document.querySelector('.pay-method-radio:checked');
+        const methodVal = checkedMethod ? checkedMethod.value : '';
+        return methodVal.toLowerCase().indexOf('kart') !== -1;
+    }
+
+    function syncCardFieldsRequired() {
+        const needCard = isCardMethodSelected();
+        document.querySelectorAll('.card-required-field').forEach(function(inp) {
+            inp.required = needCard;
+        });
+        if (!needCard) hideCardError();
+    }
+
+    function validateCardDetails() {
+        if (!isCardMethodSelected()) return true;
+
+        const holderVal = cardHolderInput ? cardHolderInput.value.trim() : '';
+        const numDigits = cardNumberInput ? cardNumberInput.value.replace(/\D/g, '') : '';
+        const expVal = cardExpInput ? cardExpInput.value.trim() : '';
+        const cvvDigits = cardCvvInput ? cardCvvInput.value.replace(/\D/g, '') : '';
+
+        if (!holderVal) {
+            showCardError('Lütfen kart üzerindeki adı soyadı girin.');
+            if (cardHolderInput) cardHolderInput.focus();
+            return false;
+        }
+        if (numDigits.length < 13 || numDigits.length > 19) {
+            showCardError('Lütfen geçerli bir kart numarası (13-19 hane) girin.');
+            if (cardNumberInput) cardNumberInput.focus();
+            return false;
+        }
+        if (!/^(0[1-9]|1[0-2])\/\d{2}$/.test(expVal)) {
+            showCardError('Lütfen son kullanma tarihini AA/YY formatında (ör. 08/29) girin.');
+            if (cardExpInput) cardExpInput.focus();
+            return false;
+        }
+        if (cvvDigits.length < 3 || cvvDigits.length > 4) {
+            showCardError('Lütfen 3 veya 4 haneli CVV güvenlik kodunu girin.');
+            if (cardCvvInput) cardCvvInput.focus();
+            return false;
+        }
+
+        hideCardError();
+        return true;
+    }
+
     if (cardHolderInput) {
         cardHolderInput.addEventListener('input', function() {
+            hideCardError();
             document.getElementById('previewCardName').innerText = this.value || 'AD SOYAD';
         });
     }
 
-    const cardNumberInput = document.getElementById('cardNumberInput');
     if (cardNumberInput) {
         cardNumberInput.addEventListener('input', function() {
+            hideCardError();
             const val = this.value.replace(/\D/g, '').substring(0, 16);
             this.value = val.replace(/(.{4})/g, '$1 ').trim();
             document.getElementById('previewCardNum').innerText = this.value || '•••• •••• •••• ••••';
         });
     }
 
-    const cardExpInput = document.getElementById('cardExpInput');
     if (cardExpInput) {
         cardExpInput.addEventListener('input', function() {
+            hideCardError();
+            let digits = this.value.replace(/\D/g, '').substring(0, 4);
+            if (digits.length >= 3) {
+                digits = digits.slice(0, 2) + '/' + digits.slice(2);
+            }
+            this.value = digits;
             document.getElementById('previewCardExp').innerText = this.value || 'AA/YY';
+        });
+    }
+
+    if (cardCvvInput) {
+        cardCvvInput.addEventListener('input', function() {
+            hideCardError();
+            this.value = this.value.replace(/\D/g, '').substring(0, 4);
         });
     }
 
@@ -584,6 +666,7 @@
             document.getElementById('cardSection').classList.toggle('hidden', method.indexOf('Kart') === -1);
             document.getElementById('ibanSection').classList.toggle('hidden', method.indexOf('Havale') === -1 && method.indexOf('EFT') === -1);
             document.getElementById('marinaSection').classList.toggle('hidden', method.indexOf('Marina') === -1 && method.indexOf('Nakit') === -1);
+            syncCardFieldsRequired();
         });
     });
 
@@ -894,6 +977,7 @@
         document.getElementById('stepIndicator2').classList.replace('text-slate-400', 'text-[#0B1F3A]');
         document.getElementById('stepCircle2').classList.replace('bg-slate-200', 'bg-[#0B1F3A]');
         document.getElementById('stepCircle2').classList.replace('text-slate-600', 'text-white');
+        syncCardFieldsRequired();
         recalculate();
     });
 
@@ -908,6 +992,10 @@
             recalculate();
             return;
         }
+        if (!validateCardDetails()) {
+            e.preventDefault();
+            return;
+        }
         if (contractAgreeCb && !contractAgreeCb.checked) {
             e.preventDefault();
             if (contractModal) contractModal.classList.remove('hidden');
@@ -916,6 +1004,7 @@
 
     syncCharterTypeCards();
     syncPayPlanCards();
+    syncCardFieldsRequired();
     recalculate();
 </script>
 
