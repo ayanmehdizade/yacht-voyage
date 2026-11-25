@@ -66,9 +66,6 @@
         <button type="button" data-admin-tab="dashboard" class="admin-nav-btn w-full text-left flex items-center space-x-2.5 px-3.5 py-2.5 rounded-xl bg-teal-600 text-white font-bold">
             <i class="fa-solid fa-chart-pie w-4"></i><span>Dashboard</span>
         </button>
-        <button type="button" data-admin-tab="yeni-yat" class="admin-nav-btn w-full text-left flex items-center space-x-2.5 px-3.5 py-2.5 rounded-xl hover:bg-white/10 font-semibold">
-            <i class="fa-solid fa-plus-circle w-4"></i><span>Yeni Yat Ekle</span>
-        </button>
         <button type="button" data-admin-tab="rezervasyonlar" class="admin-nav-btn w-full text-left flex items-center space-x-2.5 px-3.5 py-2.5 rounded-xl hover:bg-white/10 font-semibold">
             <i class="fa-solid fa-calendar-check w-4"></i><span>Rezervasyonlar</span>
         </button>
@@ -104,9 +101,6 @@
             <nav class="space-y-1.5 text-sm" id="adminSidebarNav">
                 <button type="button" data-admin-tab="dashboard" class="admin-nav-btn w-full text-left flex items-center space-x-3 p-3 bg-teal-600 text-white rounded-xl font-semibold shadow transition">
                     <i class="fa-solid fa-chart-pie w-4"></i><span>Dashboard</span>
-                </button>
-                <button type="button" data-admin-tab="yeni-yat" class="admin-nav-btn w-full text-left flex items-center space-x-3 p-3 hover:bg-white/10 rounded-xl transition">
-                    <i class="fa-solid fa-plus-circle w-4"></i><span>Yeni Yat Ekle</span>
                 </button>
                 <button type="button" data-admin-tab="rezervasyonlar" class="admin-nav-btn w-full text-left flex items-center space-x-3 p-3 hover:bg-white/10 rounded-xl transition">
                     <i class="fa-solid fa-calendar-check w-4"></i><span>Rezervasyonlar</span>
@@ -401,38 +395,7 @@
     });
 </script>
 
-        <!-- 2. YENİ YAT EKLE -->
-        <section id="view-yeni-yat" class="admin-view hidden bg-white p-5 sm:p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
-            <h3 class="font-extrabold text-slate-900 text-base">Sisteme Yeni Yat Ekle (Fotoğraf Yükleme)</h3>
-            <form action="/admin/add-yacht" method="POST" enctype="multipart/form-data" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
-                <input type="text" name="name" placeholder="Yat Adı (Örn: Azimut 60)" required class="p-2.5 border border-slate-200 rounded-xl text-xs font-medium">
-                <select name="category" class="p-2.5 border border-slate-200 rounded-xl text-xs font-medium bg-white">
-                    <% (categories || []).forEach(cat => { %>
-                        <option value="<%= cat.key %>"><%= cat.nameTr %> (<%= cat.key %>)</option>
-                    <% }) %>
-                </select>
-                <input type="text" name="location" placeholder="Liman (Göcek, Marmaris, Bodrum...)" required class="p-2.5 border border-slate-200 rounded-xl text-xs font-medium">
-                <input type="text" name="length" placeholder="Uzunluk (Örn: 19 m)" class="p-2.5 border border-slate-200 rounded-xl text-xs font-medium">
-                <input type="number" name="price" placeholder="Günlük Fiyat (€)" required min="1" class="p-2.5 border border-slate-200 rounded-xl text-xs font-medium">
-                <input type="number" name="guests" placeholder="Kişi Kapasitesi" required min="1" class="p-2.5 border border-slate-200 rounded-xl text-xs font-medium">
-                <input type="number" name="cabins" placeholder="Kabin Sayısı" min="1" class="p-2.5 border border-slate-200 rounded-xl text-xs font-medium">
-                <input type="number" name="crew" placeholder="Mürettebat Sayısı" min="1" class="p-2.5 border border-slate-200 rounded-xl text-xs font-medium">
-
-                <div class="sm:col-span-2 p-3 border border-dashed border-slate-300 rounded-xl bg-slate-50 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                    <div class="space-y-1">
-                        <label class="block text-[11px] font-bold text-slate-700">Yat Fotoğrafı Yükle (JPG, PNG, WEBP)</label>
-                        <input id="yachtPhotoFileInput" type="file" name="imageFile" accept="image/*" class="text-xs text-slate-600 file:mr-2 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-[#0B1F3A] file:text-white">
-                        <input id="yachtPhotoBase64" type="hidden" name="imageData">
-                    </div>
-                    <img id="yachtPhotoPreview" src="https://images.unsplash.com/photo-1567899378494-47b22a2ae96a?auto=format&fit=crop&w=240&q=60" alt="Önizleme" class="w-16 h-12 object-cover rounded-lg border border-slate-200 shrink-0">
-                </div>
-
-                <input type="text" name="description" placeholder="Kısa yat açıklaması" class="sm:col-span-2 p-2.5 border border-slate-200 rounded-xl text-xs font-medium">
-                <button type="submit" class="admin-action-btn bg-teal-600 hover:bg-teal-700 text-white py-2.5 px-4 rounded-xl font-bold text-xs transition shadow">
-                    + Yat ve Fotoğrafı Kaydet
-                </button>
-            </form>
-        </section>
+        
 
         <!-- 3. REZERVASYONLAR -->
         <section id="view-rezervasyonlar" class="admin-view hidden bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
@@ -512,17 +475,55 @@
         </section>
 
         <!-- 4. AKTİF FİLO & KAPASİTE DÜZENLEME (KART GÖRÜNÜMÜ) -->
+        <!-- 4. AKTİF FİLO & KAPASİTE DÜZENLEME (YENİ YAT EKLE + KART GÖRÜNÜMÜ) -->
         <section id="view-filo-listesi" class="admin-view hidden space-y-5">
             <div class="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-wrap items-center justify-between gap-3">
                 <div>
                     <h3 class="font-extrabold text-slate-900 text-sm sm:text-base">Aktif Yat Filosu (<%= yachts.length %>)</h3>
-                    <p class="text-xs text-slate-500 mt-0.5">Fotoğraf, kapasite, teknik özellik ve günlük fiyatları kart üzerinden güncelleyin</p>
+                    <p class="text-xs text-slate-500 mt-0.5">Yeni tekne ekleyin veya mevcut teknelerin fotoğraf, kapasite ve günlük fiyatlarını güncelleyin</p>
                 </div>
-                <button type="button" onclick="switchAdminTab('yeni-yat')" class="px-4 py-2 bg-[#0B1F3A] hover:bg-sky-900 text-white rounded-xl text-xs font-bold transition">
+                <button type="button" onclick="document.getElementById('newYachtInlineBox').classList.toggle('hidden')" class="px-4 py-2 bg-[#0B1F3A] hover:bg-sky-900 text-white rounded-xl text-xs font-bold transition">
                     + Yeni Yat Ekle
                 </button>
             </div>
 
+            <!-- Açılır / Kapanır Yeni Yat Ekleme Formu -->
+            <div id="newYachtInlineBox" class="hidden bg-white p-5 sm:p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+                <div class="flex items-center justify-between">
+                    <h4 class="font-extrabold text-slate-900 text-sm">Sisteme Yeni Yat Ekle</h4>
+                    <button type="button" onclick="document.getElementById('newYachtInlineBox').classList.add('hidden')" class="text-xs font-bold text-slate-400 hover:text-slate-700">Kapat ✕</button>
+                </div>
+                <form action="/admin/add-yacht" method="POST" enctype="multipart/form-data" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
+                    <input type="text" name="name" placeholder="Yat Adı (Örn: Azimut 60)" required class="p-2.5 border border-slate-200 rounded-xl text-xs font-medium">
+                    <select name="category" class="p-2.5 border border-slate-200 rounded-xl text-xs font-medium bg-white">
+                        <% (categories || []).forEach(cat => { %>
+                            <option value="<%= cat.key %>"><%= cat.nameTr %> (<%= cat.key %>)</option>
+                        <% }) %>
+                    </select>
+                    <input type="text" name="location" placeholder="Liman (Göcek, Marmaris, Bodrum...)" required class="p-2.5 border border-slate-200 rounded-xl text-xs font-medium">
+                    <input type="text" name="length" placeholder="Uzunluk (Örn: 19 m)" class="p-2.5 border border-slate-200 rounded-xl text-xs font-medium">
+                    <input type="number" name="price" placeholder="Günlük Fiyat (€)" required min="1" class="p-2.5 border border-slate-200 rounded-xl text-xs font-medium">
+                    <input type="number" name="guests" placeholder="Kişi Kapasitesi" required min="1" class="p-2.5 border border-slate-200 rounded-xl text-xs font-medium">
+                    <input type="number" name="cabins" placeholder="Kabin Sayısı" min="1" class="p-2.5 border border-slate-200 rounded-xl text-xs font-medium">
+                    <input type="number" name="crew" placeholder="Mürettebat Sayısı" min="1" class="p-2.5 border border-slate-200 rounded-xl text-xs font-medium">
+
+                    <div class="sm:col-span-2 p-3 border border-dashed border-slate-300 rounded-xl bg-slate-50 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                        <div class="space-y-1">
+                            <label class="block text-[11px] font-bold text-slate-700">Yat Fotoğrafı Yükle (JPG, PNG, WEBP)</label>
+                            <input id="yachtPhotoFileInput" type="file" name="imageFile" accept="image/*" class="text-xs text-slate-600 file:mr-2 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-[#0B1F3A] file:text-white">
+                            <input id="yachtPhotoBase64" type="hidden" name="imageData">
+                        </div>
+                        <img id="yachtPhotoPreview" src="https://images.unsplash.com/photo-1567899378494-47b22a2ae96a?auto=format&fit=crop&w=240&q=60" alt="Önizleme" class="w-16 h-12 object-cover rounded-lg border border-slate-200 shrink-0">
+                    </div>
+
+                    <input type="text" name="description" placeholder="Kısa yat açıklaması" class="sm:col-span-2 p-2.5 border border-slate-200 rounded-xl text-xs font-medium">
+                    <button type="submit" class="admin-action-btn bg-teal-600 hover:bg-teal-700 text-white py-2.5 px-4 rounded-xl font-bold text-xs transition shadow">
+                        + Yat ve Fotoğrafı Kaydet
+                    </button>
+                </form>
+            </div>
+
+            <!-- Mevcut Yat Kartları -->
             <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
                 <% yachts.forEach(y => { %>
                     <% const currentImg = (y.images && y.images[0]) ? y.images[0] : 'https://images.unsplash.com/photo-1567899378494-47b22a2ae96a?auto=format&fit=crop&w=600&q=80'; %>
@@ -873,7 +874,6 @@
     <script>
         const tabMeta = {
             'dashboard': { title: 'Dashboard & Genel Bakış', subtitle: 'Filo, turlar, kategoriler, ödemeler ve rezervasyon yönetimi' },
-            'yeni-yat': { title: 'Yeni Yat Ekle', subtitle: 'Cihazdan fotoğraf yükleyerek yeni yat ekleyin' },
             'rezervasyonlar': { title: 'Rezervasyon Yönetimi', subtitle: 'Onayla, Beklet veya Reddet işlemleri' },
             'filo-listesi': { title: 'Aktif Filo & Kapasite', subtitle: 'Kişi, kabin, mürettebat ve günlük fiyatları güncelleyin' },
             'turlar-kategoriler': { title: 'Turlar & Kategoriler', subtitle: 'Yeni tur paketleri ve yat kategorileri tanımlayın' },
