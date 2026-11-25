@@ -698,14 +698,14 @@ const idleTabClass = 'text-slate-200 hover:text-white';
                 <span class="hidden sm:inline"><i class="fa-solid fa-envelope text-amber-400 mr-1.5"></i><%= sCfg.email %></span>
             </div>
             <div class="flex items-center space-x-4">
-                <a href="https://wa.me/<%= sCfg.whatsappNumber %>" target="_blank" rel="noopener noreferrer" class="hover:text-emerald-300 transition">
-                    <i class="fa-brands fa-whatsapp text-emerald-400 mr-1"></i><%= en ? 'WhatsApp Support' : 'WhatsApp Destek' %>
+                <a href="https://wa.me/<%= sCfg.whatsappNumber %>" target="_blank" rel="noopener noreferrer" aria-label="<%= en ? 'WhatsApp Support' : 'WhatsApp Destek' %>" title="<%= en ? 'WhatsApp Support' : 'WhatsApp Destek' %>" class="hover:text-emerald-300 transition">
+                    <i class="fa-brands fa-whatsapp text-emerald-400 text-sm"></i>
                 </a>
-                <a href="/my-booking" class="hover:text-white transition">
-                    <i class="fa-solid fa-ticket text-sky-400 mr-1"></i><%= en ? 'PNR Lookup' : 'PNR Sorgula' %>
+                <a href="/my-booking" aria-label="<%= en ? 'PNR Lookup' : 'PNR Sorgula' %>" title="<%= en ? 'PNR Lookup' : 'PNR Sorgula' %>" class="hover:text-white transition">
+                    <i class="fa-solid fa-ticket text-sky-400 text-sm"></i>
                 </a>
-                <a href="/admin" class="text-teal-300 hover:text-white font-semibold transition">
-                    <i class="fa-solid fa-user-shield mr-1"></i>Admin
+                <a href="/admin" aria-label="Admin" title="Admin" class="text-teal-300 hover:text-white transition">
+                    <i class="fa-solid fa-user-shield text-sm"></i>
                 </a>
             </div>
         </div>
