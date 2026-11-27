@@ -110,7 +110,7 @@
             const tot = Number((bookingObj && bookingObj.totalAmount) || 0);
             const pd = Number((bookingObj && bookingObj.paidAmount) || 0);
             const rem = isCancRow ? 0 : Math.max(0, tot - pd);
-            const ref = Number((bookingObj && bookingObj.refundedAmount) || 0);
+            const ref = isCancRow ? Number((bookingObj && bookingObj.refundedAmount) || 0) : 0;
             const mapObj = {
                 '{pnr}': (bookingObj && bookingObj.id) || '',
                 '{customer}': (bookingObj && bookingObj.customer) || 'Misafir',
@@ -130,11 +130,13 @@
             };
             let msg = isCancRow
                 ? ('Merhaba ' + mapObj['{customer}'] + ', ' + mapObj['{yacht}'] + ' (' + mapObj['{pnr}'] + ') rezervasyonunuz İPTAL EDİLMİŞTİR.\n' +
-                   'İade Tutarı: €' + mapObj['{refundedAmount}'] + ' | Kalan Bakiye: €0\n' +
+                   'İade Tutarı: €' + mapObj['{refundedAmount}'] + ' | Kalan Bakiye: €' + mapObj['{remainingAmount}'] + '\n' +
                    'Tarih: ' + mapObj['{checkIn}'] + ' - ' + mapObj['{checkOut}'] + '\n' +
                    'Not: ' + mapObj['{notes}'])
                 : activeWaTemplate;
-            Object.keys(mapObj).forEach(k => { msg = msg.split(k).join(mapObj[k]); });
+            if (!isCancRow) {
+                Object.keys(mapObj).forEach(k => { msg = msg.split(k).join(mapObj[k]); });
+            }
             return cleanPh
                 ? ('https://wa.me/' + encodeURIComponent(cleanPh) + '?text=' + encodeURIComponent(msg))
                 : ('https://wa.me/?text=' + encodeURIComponent(msg));
@@ -309,7 +311,7 @@
             const grossVolume = activeBookings.reduce((sum, b) => sum + Number(b.totalAmount || 0), 0);
             const collectedRevenue = activeBookings.reduce((sum, b) => sum + Number(b.paidAmount || 0), 0);
             const refundedTotal = cancelledBookings.reduce((sum, b) => {
-                const ref = (b.refundedAmount !== undefined && b.refundedAmount !== null) ? Number(b.refundedAmount || 0) : Number(b.paidAmount || 0);
+                const ref = (b.refundedAmount !== undefined && b.refundedAmount !== null) ? Number(b.refundedAmount || 0) : 0;
                 return sum + ref;
             }, 0);
             const remainingBalance = Math.max(0, grossVolume - collectedRevenue);
@@ -508,7 +510,7 @@
                                     <td class="p-4 text-slate-600 whitespace-nowrap"><%= b.checkIn %> → <%= b.checkOut %></td>
                                     <td class="p-4 font-extrabold text-slate-900 whitespace-nowrap">
                                         <% if (isRef) { %>
-                                            <span class="text-rose-700">İade / İptal (€<%= Number(b.refundedAmount || b.paidAmount || 0).toLocaleString() %>)</span>
+                                            <span class="text-rose-700">İade / İptal (€<%= Number(b.refundedAmount || 0).toLocaleString() %>)</span>
                                         <% } else { %>
                                             <span>€<%= Number(b.totalAmount || 0).toLocaleString() %> <span class="text-[11px] font-semibold text-emerald-700">(Ödenen: €<%= Number(b.paidAmount || 0).toLocaleString() %>)</span></span>
                                         <% } %>
@@ -695,10 +697,7 @@
                                 const totAmt = Number(b.totalAmount || 0);
                                 const remAmt = isCanc ? 0 : Math.max(0, totAmt - payAmt);
                                 const daysLeft = calcDaysUntilCheckIn(b.checkIn);
-                                const eligibleFullRefund = daysLeft !== null && daysLeft >= 7;
-                                const refAmt = isCanc
-                                    ? ((b.refundedAmount !== undefined && b.refundedAmount !== null) ? Number(b.refundedAmount || 0) : (eligibleFullRefund ? payAmt : 0))
-                                    : Number(b.refundedAmount || 0);
+                                const refAmt = isCanc ? Number(b.refundedAmount || 0) : 0;
                                 const payBadge = b.paymentStatus || (isCanc
                                     ? (refAmt > 0 ? 'İade Edildi' : 'İptal Edildi')
                                     : (payAmt >= totAmt && totAmt > 0 ? 'Tam Ödendi' : (payAmt > 0 ? 'Ön Ödeme' : 'Ödeme Bekliyor')));
@@ -784,7 +783,7 @@
                                         Toplam: €<%= totAmt.toLocaleString() %>
                                     </div>
                                     <% if (isCanc) { %>
-                                        <div class="text-[11px] font-bold text-rose-700">İade: €<%= refAmt.toLocaleString() %></div>
+                                        <div class="text-[11px] font-bold text-rose-700">İade: €<%= refAmt.toLocaleString() %> • Kalan: €0</div>
                                     <% } else { %>
                                         <div class="text-[11px] font-semibold text-emerald-700">Ödenen: €<%= payAmt.toLocaleString() %></div>
                                     <% } %>

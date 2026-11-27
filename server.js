@@ -569,6 +569,11 @@ function isDailyCharter(charterType) {
     return val.includes('günlük') || val.includes('daily') || val.includes('saatlik') || val.includes('hourly');
 }
 
+function isCancelledBookingStatus(statusVal) {
+    const v = String(statusVal || '').trim();
+    return ['İptal Edildi', 'İptal', 'Cancelled', 'Reddedildi', 'Reddedildi (Hava Muhalefeti)', 'Rejected'].includes(v);
+}
+
 function normalizeDateRange(cIn, cOut, charterType) {
     const today = getTodayYMD();
     const fallbackStart = today;
@@ -599,31 +604,40 @@ function calcDays(cIn, cOut, charterType) {
 
 function buildManualBookingWhatsapp(templateStr, booking) {
     const tpl = String(templateStr || DEFAULT_MANUAL_WA_TEMPLATE).trim() || DEFAULT_MANUAL_WA_TEMPLATE;
-    const total = Number(booking.totalAmount || 0);
-    const paid = Number(booking.paidAmount || 0);
-    const remaining = Math.max(0, total - paid);
-    const cleanPhone = String(booking.phone || '').replace(/\D/g, '');
+    const isCanc = isCancelledBookingStatus(booking && booking.status);
+    const total = Number((booking && booking.totalAmount) || 0);
+    const paid = Number((booking && booking.paidAmount) || 0);
+    const refunded = isCanc ? Number((booking && booking.refundedAmount) || 0) : 0;
+    const remaining = isCanc ? 0 : Math.max(0, total - paid);
+    const cleanPhone = String((booking && booking.phone) || '').replace(/\D/g, '');
 
     const replacements = {
-        '{pnr}': booking.id || '',
-        '{customer}': booking.customer || 'Misafir',
-        '{yacht}': booking.yacht || '',
-        '{checkIn}': booking.checkIn || '',
-        '{checkOut}': booking.checkOut || booking.checkIn || '',
-        '{timeSlot}': booking.tourTimeSlot || 'Tam Gün',
-        '{guests}': String(booking.guests || 1),
+        '{pnr}': (booking && booking.id) || '',
+        '{customer}': (booking && booking.customer) || 'Misafir',
+        '{yacht}': (booking && booking.yacht) || '',
+        '{checkIn}': (booking && booking.checkIn) || '',
+        '{checkOut}': (booking && (booking.checkOut || booking.checkIn)) || '',
+        '{timeSlot}': (booking && booking.tourTimeSlot) || 'Tam Gün',
+        '{guests}': String((booking && booking.guests) || 1),
         '{totalAmount}': total.toLocaleString(),
         '{paidAmount}': paid.toLocaleString(),
         '{remainingAmount}': remaining.toLocaleString(),
-        '{captain}': booking.assignedCaptain || '-',
-        '{transfer}': booking.assignedTransfer || '-',
-        '{notes}': booking.notes || '-'
+        '{refundedAmount}': refunded.toLocaleString(),
+        '{status}': (booking && booking.status) || '',
+        '{captain}': (booking && booking.assignedCaptain) || '-',
+        '{transfer}': (booking && booking.assignedTransfer) || '-',
+        '{notes}': (booking && booking.notes) || '-'
     };
 
-    let message = tpl;
-    Object.keys(replacements).forEach((key) => {
-        message = message.split(key).join(replacements[key]);
-    });
+    let message = isCanc
+        ? `Merhaba ${replacements['{customer}']}, ${replacements['{yacht}']} (${replacements['{pnr}']}) için rezervasyonunuz iptal edildi. İade tutarı: €${replacements['{refundedAmount}']}. Kalan bakiye: €${replacements['{remainingAmount}']}.`
+        : tpl;
+
+    if (!isCanc) {
+        Object.keys(replacements).forEach((key) => {
+            message = message.split(key).join(replacements[key]);
+        });
+    }
 
     const whatsappUrl = cleanPhone
         ? `https://wa.me/${encodeURIComponent(cleanPhone)}?text=${encodeURIComponent(message)}`
@@ -655,8 +669,7 @@ function normalizeBookingRecord(b) {
         b.days = Math.max(1, rawDiffDays);
     }
 
-    const statusStr = String(b.status || '');
-    const isCancelledOrRejected = ['İptal Edildi', 'İptal', 'Cancelled', 'Reddedildi', 'Reddedildi (Hava Muhalefeti)', 'Rejected'].includes(statusStr);
+    const isCancelledOrRejected = isCancelledBookingStatus(b.status);
     const refundedAmt = Number(b.refundedAmount || 0);
 
     if (isCancelledOrRejected) {
