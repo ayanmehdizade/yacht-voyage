@@ -70,9 +70,9 @@
 
 <% const captainName = (booking.captainName || booking.assignedCaptain || '').trim(); %>
 <% const captainPhone = (booking.captainPhone || '').trim(); %>
-<% const transferPhone = (booking.transferPhone || booking.transferContactPhone || '').trim(); %>
+<% const transferPhone = (booking.transferPhone || booking.transferContactPhone || booking.assignedTransfer || '').trim(); %>
 <% const transferDriver = (booking.transferContactName || booking.transferDriver || '').trim(); %>
-<% const boardingInfo = (booking.boardingDetails || booking.marinaPier || '').trim(); %>
+<% const boardingInfo = (booking.boardingDetails || booking.marinaPier || booking.adminNote || '').trim(); %>
 <% const rejectionReasonText = (booking.rejectionReason || booking.rejectReason || '').trim(); %>
 <% const refundRuleText = (booking.refundRuleReason || booking.refundPolicyNote || '').trim(); %>
 
@@ -286,6 +286,8 @@
                        data-wa-yacht="<%= booking.yacht || '' %>"
                        data-wa-checkin="<%= booking.checkIn || '' %>"
                        data-wa-checkout="<%= booking.checkOut || '' %>"
+                       data-wa-slot="<%= booking.tourTimeSlot || '' %>"
+                       data-wa-total="<%= bTotal %>"
                        class="px-4 py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition">
                         <i class="fa-brands fa-whatsapp mr-1.5"></i><%= confIsEn ? 'Send via WhatsApp' : "WhatsApp'a Gönder" %>
                     </a>
@@ -299,6 +301,7 @@
 </main>
 
 <script>
+(function() {
     const isEnConf = document.documentElement.dataset.yvEn === '1';
     const pnrEl = document.getElementById('pnrCodeText');
     const pnrText = pnrEl ? pnrEl.innerText.trim() : '';
@@ -360,12 +363,16 @@
         const waStatus = waBtn.dataset.waStatus || '';
         const waYacht = waBtn.dataset.waYacht || '';
         const waCheckIn = waBtn.dataset.waCheckin || '';
-        const waCheckOut = waBtn.dataset.waCheckout || '';
+        const waCheckOut = waBtn.dataset.waCheckOut || '';
+        const waSlot = waBtn.dataset.waSlot || '';
+        const waTotal = Number(waBtn.dataset.waTotal || 0).toLocaleString();
+        const slotPart = waSlot ? (' (' + waSlot + ')') : '';
         const waMsg = isEnConf
-            ? (waBrand + ' Booking (' + waStatus + ') — PNR: ' + pnrText + ' | Yacht: ' + waYacht + ' | Dates: ' + waCheckIn + ' - ' + waCheckOut)
-            : (waBrand + ' Rezervasyon (' + waStatus + ') — PNR: ' + pnrText + ' | Yat: ' + waYacht + ' | Tarih: ' + waCheckIn + ' - ' + waCheckOut);
+            ? (waBrand + ' Booking (' + waStatus + ') — PNR: ' + pnrText + ' | Yacht: ' + waYacht + ' | Dates: ' + waCheckIn + ' - ' + waCheckOut + slotPart + ' | Total: €' + waTotal)
+            : (waBrand + ' Rezervasyon (' + waStatus + ') — PNR: ' + pnrText + ' | Yat: ' + waYacht + ' | Tarih: ' + waCheckIn + ' - ' + waCheckOut + slotPart + ' | Toplam: €' + waTotal);
         waBtn.href = 'https://wa.me/' + encodeURIComponent(waNum) + '?text=' + encodeURIComponent(waMsg);
     }
+})();
 </script>
 
 <%- include('../partials/footer') %>

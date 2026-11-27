@@ -86,17 +86,17 @@
         <% const payStatusText = mbIsEn
             ? (isCancelled
                 ? (refundedAmt > 0
-                    ? (booking.refundStatus === 'refunded' ? 'Refund Completed' : 'Refund Pending')
+                    ? (booking.refundStatus === 'refunded' ? 'Refund Completed' : 'Refund Issued')
                     : 'No Refund Due')
                 : (isRejected
-                    ? (paidAmt > 0 ? (booking.refundStatus === 'refunded' ? 'Refunded' : 'Refund Pending') : 'No Charge Taken')
+                    ? (paidAmt > 0 ? (refundedAmt > 0 ? 'Refund Issued' : 'Refund Pending') : 'No Charge Taken')
                     : (paidAmt <= 0 ? 'Payment Pending' : (paidAmt >= totalAmt ? 'Paid in Full' : 'Deposit Paid'))))
             : (isCancelled
                 ? (refundedAmt > 0
-                    ? (booking.refundStatus === 'refunded' ? 'İade Tamamlandı' : 'İade Bekliyor')
+                    ? (booking.refundStatus === 'refunded' ? 'İade Tamamlandı' : 'İade Edildi')
                     : 'İade Gerektirmiyor')
                 : (isRejected
-                    ? (paidAmt > 0 ? (booking.refundStatus === 'refunded' ? 'İade Edildi' : 'İade Bekliyor') : 'Tahsilat Yapılmadı')
+                    ? (paidAmt > 0 ? (refundedAmt > 0 ? 'İade Edildi' : 'İade Bekliyor') : 'Tahsilat Yapılmadı')
                     : (paidAmt <= 0 ? 'Ödeme Bekliyor' : (paidAmt >= totalAmt ? 'Tam Ödendi' : 'Ön Ödeme Alındı')))); %>
 
         <% const daysNum = Number(booking.days || 1); %>
@@ -106,13 +106,13 @@
             ? ({ 'Kart': 'Card', 'Kredi / Banka Kartı': 'Credit / Debit Card', 'Havale / EFT': 'Bank Transfer / EFT', 'Marinada Ödeme': 'Marina Payment', 'Nakit / Marina Ödemesi': 'Cash / Marina Payment' }[booking.paymentMethod] || booking.paymentMethod || 'Card')
             : (booking.paymentMethod || 'Kart'); %>
 
-        <% const captainName = (booking.captainName || booking.assignedCaptain || '').trim(); %>
-        <% const captainPhone = (booking.captainPhone || '').trim(); %>
-        <% const transferPhone = (booking.transferPhone || booking.transferContactPhone || '').trim(); %>
-        <% const transferDriver = (booking.transferContactName || booking.transferDriver || '').trim(); %>
-        <% const boardingInfo = (booking.boardingDetails || booking.marinaPier || '').trim(); %>
-        <% const rejectionReasonText = (booking.rejectionReason || booking.rejectReason || '').trim(); %>
-        <% const refundRuleText = (booking.refundRuleReason || booking.refundPolicyNote || '').trim(); %>
+        <% const captainName = String(booking.captainName || booking.assignedCaptain || '').trim(); %>
+        <% const captainPhone = String(booking.captainPhone || '').trim(); %>
+        <% const transferPhone = String(booking.transferPhone || booking.transferContactPhone || booking.assignedTransfer || '').trim(); %>
+        <% const transferDriver = String(booking.transferContactName || booking.transferDriver || '').trim(); %>
+        <% const boardingInfo = String(booking.boardingDetails || booking.marinaPier || booking.adminNote || '').trim(); %>
+        <% const rejectionReasonText = String(booking.rejectionReason || booking.rejectReason || '').trim(); %>
+        <% const refundRuleText = String(booking.refundRuleReason || booking.refundPolicyNote || '').trim(); %>
         <% const refundReasonSummary = refundRuleText
             || (refundedAmt > 0 && paidAmt > 0 && refundedAmt < paidAmt
                 ? (mbIsEn
@@ -120,8 +120,8 @@
                     : ('Ödenen €' + paidAmt.toLocaleString() + ' tutardan €' + refundedAmt.toLocaleString() + ' kısmi/yarım iade uygulandı.'))
                 : (refundedAmt > 0
                     ? (mbIsEn
-                        ? 'Full paid amount refunded under the 7+ days cancellation policy.'
-                        : '7+ gün iptal kuralı kapsamında ödenen tutarın tamamı iade edildi.')
+                        ? 'Full paid amount refunded under the cancellation policy.'
+                        : 'İptal kuralı kapsamında ödenen tutarın tamamı iade edildi.')
                     : (mbIsEn
                         ? 'No refund issued under the cancellation policy or payment status.'
                         : 'İptal kuralı veya ödeme durumuna göre iade uygulanmadı.'))); %>
@@ -290,6 +290,7 @@
                 <% if (!isCancelled && !isRejected) { %>
                     <form id="cancelBookingForm" action="/my-booking/cancel" method="POST" class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full sm:w-auto">
                         <input type="hidden" name="pnr" value="<%= booking.id %>">
+                        <input type="hidden" name="email" value="<%= booking.email || emailVal %>">
                         <select name="cancelReason" id="cancelReasonSelect" class="px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-700 focus:outline-none focus:border-[#0B1F3A]">
                             <option value="<%= mbIsEn ? 'Plan change' : 'Plan değişikliği' %>"><%= mbIsEn ? 'Plan change' : 'Plan değişikliği' %></option>
                             <option value="<%= mbIsEn ? 'Travel / flight delay' : 'Seyahat / uçuş aksaklığı' %>"><%= mbIsEn ? 'Travel / flight delay' : 'Seyahat / uçuş aksaklığı' %></option>

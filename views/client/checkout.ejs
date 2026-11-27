@@ -274,6 +274,8 @@
                     </div>
                 </div>
 
+                <div id="step1ErrorBox" class="hidden bg-rose-50 border border-rose-200 text-rose-700 px-4 py-3 rounded-xl text-xs font-bold"></div>
+
                 <button type="button" id="nextStepBtn" class="w-full bg-[#0B1F3A] hover:bg-sky-900 text-white py-4 rounded-xl font-bold text-sm transition shadow-lg">
                     <%= coIsEn ? 'Proceed to Payment →' : 'Ödeme Adımına Geç →' %>
                 </button>
@@ -569,6 +571,7 @@
 </div>
 
 <script>
+(function() {
     const isEnCo = document.documentElement.dataset.yvEn === '1';
     const summaryCard = document.getElementById('checkoutSummaryCard');
     const rate = Number(summaryCard.dataset.rate) || 2000;
@@ -627,6 +630,7 @@
     const promoAppliedInputEl = document.getElementById('promoCodeAppliedInput');
     const dateWarnBox = document.getElementById('dateOrderWarning');
     const dateWarnText = document.getElementById('dateOrderWarningText');
+    const step1ErrorBox = document.getElementById('step1ErrorBox');
 
     function toYMD(dateObj) {
         const y = dateObj.getFullYear();
@@ -651,6 +655,21 @@
 
     const nowRef = new Date();
     const todayYmd = toYMD(nowRef);
+
+    function showStep1Error(msg) {
+        if (step1ErrorBox) {
+            step1ErrorBox.textContent = msg;
+            step1ErrorBox.classList.remove('hidden');
+            step1ErrorBox.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+    }
+
+    function hideStep1Error() {
+        if (step1ErrorBox) {
+            step1ErrorBox.textContent = '';
+            step1ErrorBox.classList.add('hidden');
+        }
+    }
 
     function showInlineWarning(msg) {
         if (dateWarnBox && dateWarnText) {
@@ -746,6 +765,13 @@
         });
     }
 
+    function syncPackageCheckOutDate() {
+        const isDaily = isDailyTourSelected();
+        if (!isDaily && fixedPackageDays >= 2 && cInEl.value && cInEl.value >= todayYmd) {
+            cOutEl.value = addDaysYMD(cInEl.value, fixedPackageDays - 1);
+        }
+    }
+
     function syncCharterModeUI() {
         const dailyRadio = document.querySelector('.charter-type-radio[value="Günlük VIP Koy Turu"]');
         const privateRadio = document.querySelector('.charter-type-radio[value="Özel Yat Kiralama (Konaklamalı)"]');
@@ -793,8 +819,8 @@
             }
         } else {
             cOutEl.required = true;
-            if (lockOutForPackage && cInEl.value && cInEl.value >= todayYmd) {
-                cOutEl.value = addDaysYMD(cInEl.value, fixedPackageDays - 1);
+            if (lockOutForPackage) {
+                syncPackageCheckOutDate();
             } else if (cInEl.value && cOutEl.value && cOutEl.value <= cInEl.value) {
                 cOutEl.value = '';
             }
@@ -829,6 +855,7 @@
 
     document.querySelectorAll('.charter-type-radio').forEach(function(radio) {
         radio.addEventListener('change', function() {
+            hideStep1Error();
             syncCharterModeUI();
             isDateSelectionValid(false);
             recalculate();
@@ -868,7 +895,7 @@
         }
 
         if (fixedPackageDays >= 2) {
-            cOutEl.value = addDaysYMD(cInEl.value, fixedPackageDays - 1);
+            syncPackageCheckOutDate();
         }
 
         cOutEl.min = addDaysYMD(cInEl.value, 1);
@@ -947,7 +974,7 @@
         const statusNotice = document.getElementById('paymentStatusNotice');
         const needsPending = isTransfer || isMarina;
         if (statusHintInput) {
-            statusHintInput.value = 'pending_admin_approval';
+            statusHintInput.value = isCard ? 'card_authorized_pending_approval' : 'pending_admin_approval';
         }
         if (statusNotice) {
             statusNotice.classList.toggle('hidden', !needsPending);
@@ -1279,7 +1306,7 @@
 
         const baseTotal = hasFixedPackage ? fixedPackagePrice : (selectedDays * rate);
         const autoDisc = (!hasFixedPackage && selectedDays >= 5) ? Math.round(baseTotal * 0.05) : 0;
-        const subBeforePromo = baseTotal - autoDisc + extrasTotal;
+        const subBeforePromo = Math.max(0, baseTotal - autoDisc + extrasTotal);
         const promoDisc = Math.round(subBeforePromo * (discountPercent / 100));
         const subTotal = Math.max(0, subBeforePromo - promoDisc);
 
@@ -1400,12 +1427,13 @@
             } else {
                 btn.className = 'w-full h-7 rounded-md font-bold bg-emerald-100 text-emerald-800 hover:bg-emerald-500 hover:text-white transition flex items-center justify-center';
                 btn.addEventListener('click', function() {
+                    hideStep1Error();
                     if (target === 'in') {
                         cInEl.value = ymd;
                         if (isDailyTourSelected()) {
                             cOutEl.value = ymd;
                         } else if (fixedPackageDays >= 2) {
-                            cOutEl.value = addDaysYMD(ymd, fixedPackageDays - 1);
+                            syncPackageCheckOutDate();
                         } else if (cOutEl.value && cOutEl.value <= cInEl.value) {
                             cOutEl.value = '';
                         }
@@ -1476,10 +1504,11 @@
     });
 
     cInEl.addEventListener('change', function() {
+        hideStep1Error();
         if (isDailyTourSelected()) {
             cOutEl.value = cInEl.value;
         } else if (fixedPackageDays >= 2 && cInEl.value >= todayYmd) {
-            cOutEl.value = addDaysYMD(cInEl.value, fixedPackageDays - 1);
+            syncPackageCheckOutDate();
         } else if (cOutEl.value && cOutEl.value <= cInEl.value) {
             cOutEl.value = '';
         }
@@ -1488,6 +1517,7 @@
     });
 
     cOutEl.addEventListener('change', function() {
+        hideStep1Error();
         isDateSelectionValid(true);
         recalculate();
     });
@@ -1516,7 +1546,11 @@
     }
 
     document.getElementById('nextStepBtn').addEventListener('click', function() {
+        hideStep1Error();
         if (!isDateSelectionValid(true)) {
+            showStep1Error(isEnCo
+                ? 'Please select valid dates before continuing.'
+                : 'Devam etmeden önce geçerli tarih seçin.');
             recalculate();
             return;
         }
@@ -1528,9 +1562,11 @@
         const phone = phoneEl ? phoneEl.value.trim() : '';
 
         if (!name || !email || !phone) {
-            showInlineWarning(isEnCo
+            const missMsg = isEnCo
                 ? 'Please fill in Full Name, Email and Phone fields.'
-                : 'Lütfen Ad Soyad, E-posta ve Telefon alanlarını doldurun.');
+                : 'Lütfen Ad Soyad, E-posta ve Telefon alanlarını doldurun.';
+            showInlineWarning(missMsg);
+            showStep1Error(missMsg);
             if (!name && nameEl) nameEl.focus();
             else if (!email && emailEl) emailEl.focus();
             else if (!phone && phoneEl) phoneEl.focus();
@@ -1538,6 +1574,7 @@
         }
 
         hideInlineWarning();
+        hideStep1Error();
         document.getElementById('step1Box').classList.add('hidden');
         document.getElementById('step2Box').classList.remove('hidden');
         setStepTwoActive(true);
@@ -1546,6 +1583,7 @@
     });
 
     document.getElementById('backStepBtn').addEventListener('click', function() {
+        hideStep1Error();
         document.getElementById('step2Box').classList.add('hidden');
         document.getElementById('step1Box').classList.remove('hidden');
         setStepTwoActive(false);
@@ -1600,6 +1638,7 @@
     syncPayPlanCards();
     syncCardFieldsRequired();
     recalculate();
+})();
 </script>
 
 <%- include('../partials/footer') %>

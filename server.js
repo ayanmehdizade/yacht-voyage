@@ -31,24 +31,35 @@ app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 
 const DEFAULT_IMG = 'https://images.unsplash.com/photo-1567899378494-47b22a2ae96a?auto=format&fit=crop&w=1200&q=80';
+const DEFAULT_CAPTAIN_IMG = 'https://images.unsplash.com/photo-1560250097-0b93528c311a?auto=format&fit=crop&w=600&q=80';
+const DEFAULT_MANUAL_WA_TEMPLATE =
+    'Merhaba {customer}, {yacht} için rezervasyonunuz oluşturuldu.\n' +
+    'PNR: {pnr}\n' +
+    'Tarih: {checkIn} - {checkOut} ({timeSlot})\n' +
+    'Misafir: {guests} kişi\n' +
+    'Toplam: €{totalAmount} | Ödenen: €{paidAmount} | Kalan: €{remainingAmount}\n' +
+    'Kaptan: {captain} | Transfer: {transfer}\n' +
+    'Not: {notes}';
 
 const initialData = {
     siteSettings: {
         brandName: 'YachtVoyage',
         brandSubtext: 'Yacht Charter',
-        heroBadge: 'Göcek • Marmaris • Fethiye • Bodrum',
-        heroBadgeEn: 'Göcek • Marmaris • Fethiye • Bodrum',
+        defaultDeparture: 'Marmaris',
+        heroBadge: 'Marmaris • Göcek • Fethiye • Bodrum',
+        heroBadgeEn: 'Marmaris • Göcek • Fethiye • Bodrum',
         heroTitle: 'Eşsiz Yat Deneyimini Keşfedin',
         heroTitleEn: 'Discover a Unique Yacht Experience',
-        heroSubtitle: 'Göcek, Marmaris, Fethiye ve Bodrum koylarında özel yat kiralama, günlük tur paketleri ve şeffaf içerik bilgisi.',
-        heroSubtitleEn: 'Private yacht charters, daily tour packages and transparent itinerary details across Göcek, Marmaris, Fethiye and Bodrum coves.',
+        heroSubtitle: 'Marmaris, Göcek, Fethiye ve Bodrum koylarında özel yat kiralama, günlük tur paketleri ve şeffaf içerik bilgisi.',
+        heroSubtitleEn: 'Private yacht charters, daily tour packages and transparent itinerary details across Marmaris, Göcek, Fethiye and Bodrum coves.',
         heroImage: DEFAULT_IMG,
         phone: '+90 252 123 45 67',
         whatsappNumber: '902521234567',
         email: 'hello@yachtvoyage.com',
-        footerAbout: 'Göcek, Marmaris, Fethiye ve Bodrum koylarında lisanslı kaptanlar ve özel filo ile yat kiralama ve günlük tur platformu.',
+        footerAbout: 'Marmaris, Göcek, Fethiye ve Bodrum koylarında lisanslı kaptanlar ve özel filo ile yat kiralama ve günlük tur platformu.',
         copyrightText: '© 2026 YachtVoyage. Tüm hakları saklıdır.',
-        conciergeWelcome: 'Merhaba! Rota planlaması, özel menü veya tekne müsaitliği için hızlıca yazabilirsiniz.'
+        conciergeWelcome: 'Merhaba! Rota planlaması, özel menü veya tekne müsaitliği için hızlıca yazabilirsiniz.',
+        manualBookingWaTemplate: DEFAULT_MANUAL_WA_TEMPLATE
     },
     adminUsers: [
         {
@@ -68,6 +79,87 @@ const initialData = {
     promoCodes: [
         { id: 1, code: 'MAVI10', discountPercent: 10, expiresAt: '', isActive: true },
         { id: 2, code: 'VIP15', discountPercent: 15, expiresAt: '', isActive: true }
+    ],
+    timeSlots: [
+        { id: 1, label: '10:00 - 18:00', labelEn: '10:00 - 18:00 (Full Day)', type: 'daily', hours: 8, priceMultiplier: 1, active: true },
+        { id: 2, label: '09:00 - 13:00', labelEn: '09:00 - 13:00 (Morning 4h)', type: 'hourly', hours: 4, priceMultiplier: 0.6, active: true },
+        { id: 3, label: '14:00 - 18:00', labelEn: '14:00 - 18:00 (Afternoon 4h)', type: 'hourly', hours: 4, priceMultiplier: 0.6, active: true },
+        { id: 4, label: '18:30 - 21:30', labelEn: '18:30 - 21:30 (Sunset 3h)', type: 'hourly', hours: 3, priceMultiplier: 0.5, active: true }
+    ],
+    captains: [
+        {
+            id: 1,
+            name: 'Kaptan Murat Yılmaz',
+            roleTr: 'Baş Kaptan • Uzakyol Yat Kaptanı',
+            roleEn: 'Head Captain • Master Yacht Skipper',
+            experienceYears: 16,
+            languages: 'Türkçe, English',
+            region: 'Marmaris & Göcek',
+            bioTr: '16 yıllık Ege ve Akdeniz tecrübesiyle Marmaris, Hisarönü ve Göcek koylarında güvenli ve konforlu seyir planlaması yapar.',
+            bioEn: 'With 16 years of Aegean and Mediterranean experience, leading safe and tailored itineraries across Marmaris and Göcek coves.',
+            photo: DEFAULT_CAPTAIN_IMG,
+            active: true
+        },
+        {
+            id: 2,
+            name: 'Kaptan Deniz Kaya',
+            roleTr: 'Kıdemli Kaptan • Yelken & Katamaran Uzmanı',
+            roleEn: 'Senior Captain • Sailing & Catamaran Specialist',
+            experienceYears: 12,
+            languages: 'Türkçe, English, Русский',
+            region: 'Fethiye & Bodrum',
+            bioTr: 'Yelkenli ve katamaran filomuzda ailelere ve özel gruplara sakin koy rotaları ve su sporları eşliğinde rehberlik eder.',
+            bioEn: 'Guides families and private groups aboard our sailing and catamaran fleet across Fethiye and Bodrum bays.',
+            photo: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=600&q=80',
+            active: true
+        },
+        {
+            id: 3,
+            name: 'Kaptan Kerem Arslan',
+            roleTr: 'Süperyat Kaptanı',
+            roleEn: 'Superyacht Captain',
+            experienceYears: 19,
+            languages: 'Türkçe, English',
+            region: 'Bodrum & Marmaris',
+            bioTr: 'VIP misafir ağırlama protokolü, özel şef organizasyonu ve çok günlük mavi yolculuk rotalarında uzmandır.',
+            bioEn: 'Specializes in VIP hospitality protocols, private chef coordination, and multi-day blue cruise itineraries.',
+            photo: 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&w=600&q=80',
+            active: true
+        }
+    ],
+    faqs: [
+        {
+            id: 1,
+            questionTr: 'Rezervasyon iptalinde iade koşulları nelerdir?',
+            questionEn: 'What are the refund terms for booking cancellations?',
+            answerTr: 'Seyir tarihine 7 gün ve daha fazla süre kala yapılan iptallerde ödenen tutarın %100’ü kesintisiz iade edilir. Olumsuz hava koşullarında ücretsiz tarih değişikliği veya tam iade sağlanır.',
+            answerEn: 'Cancellations made 7 or more days prior to departure receive a 100% refund. In case of severe weather restrictions, free rescheduling or a full refund is provided.',
+            active: true
+        },
+        {
+            id: 2,
+            questionTr: 'Fiyatlara yakıt, kaptan ve mürettebat dahil mi?',
+            questionEn: 'Are fuel, captain, and crew included in the price?',
+            answerTr: 'Evet, tüm özel yat kiralamalarında lisanslı kaptan, mürettebat, standart rota yakıtı ve marina bağlama hizmetleri fiyata dahildir.',
+            answerEn: 'Yes, licensed captain, crew, standard route fuel, and marina mooring services are included in all private yacht charters.',
+            active: true
+        },
+        {
+            id: 3,
+            questionTr: 'Saatlik veya yarım günlük tur kiralayabilir miyiz?',
+            questionEn: 'Can we book an hourly or half-day charter?',
+            answerTr: 'Evet, günlük tur seçiminde sabah (09:00-13:00), öğleden sonra (14:00-18:00), gün batımı (18:30-21:30) veya tam gün saat aralıklarından birini seçebilirsiniz.',
+            answerEn: 'Yes, when selecting a daily charter you can choose morning (09:00-13:00), afternoon (14:00-18:00), sunset (18:30-21:30), or full-day time slots.',
+            active: true
+        },
+        {
+            id: 4,
+            questionTr: 'Kalan bakiyeyi marinada ödeyebilir miyiz?',
+            questionEn: 'Can we pay the remaining balance at the marina?',
+            answerTr: 'Evet, Hisseli Ödeme planında kapora ödemenizi online tamamladıktan sonra kalan bakiyeyi tekneye biniş günü marinada nakit veya kartla ödeyebilirsiniz.',
+            answerEn: 'Yes, with the Installment Plan you pay the deposit online and settle the remaining balance at the marina on boarding day via cash or card.',
+            active: true
+        }
     ],
     rentalContract: {
         title: 'YachtVoyage Tekne Kiralama ve İptal Sözleşmesi',
@@ -109,8 +201,8 @@ Tekne kapasitesi yasal maksimum misafir sayısını aşamaz. Kaptan, hava ve den
                 { time: '17:30', title: 'Göcek Marina Dönüş', desc: 'Gün batımı eşliğinde marinaya varış' }
             ],
             reviewList: [
-                { author: 'Emre K.', rating: 5, date: '2026-06-12', comment: 'Kaptan ve mürettebat inanılmaz ilgiliydi. Göcek koylarında rüya gibi 3 gün geçirdik.' },
-                { author: 'Selin A.', rating: 5, date: '2026-05-28', comment: 'Tekne tertemizdi, jakuzi ve güneşlenme alanı fotoğraflardan bile güzel.' }
+                { author: 'Emre K.', rating: 5, date: '2026-06-12', bookingId: '', tourDate: '', comment: 'Kaptan ve mürettebat inanılmaz ilgiliydi. Göcek koylarında rüya gibi 3 gün geçirdik.' },
+                { author: 'Selin A.', rating: 5, date: '2026-05-28', bookingId: '', tourDate: '', comment: 'Tekne tertemizdi, jakuzi ve güneşlenme alanı fotoğraflardan bile güzel.' }
             ],
             description: 'Turkuaz kıyılarda benzersiz bir lüks deneyimi yaşayın. Geniş güneşlenme terası, şık salonu ve deneyimli mürettebatı ile kusursuz bir mavi yolculuk sunar.',
             descriptionEn: 'Experience unmatched luxury along turquoise coasts with a spacious sun deck, refined salon, and experienced crew.',
@@ -146,7 +238,7 @@ Tekne kapasitesi yasal maksimum misafir sayısını aşamaz. Kaptan, hava ve den
                 { time: '18:00', title: 'Marmaris Dönüş', desc: 'Limana güvenli dönüş' }
             ],
             reviewList: [
-                { author: 'Mert D.', rating: 5, date: '2026-06-04', comment: '10 kişilik arkadaş grubumuzla çok rahat ettik. Aşçının mezeleri harikaydı.' }
+                { author: 'Mert D.', rating: 5, date: '2026-06-04', bookingId: '', tourDate: '', comment: '10 kişilik arkadaş grubumuzla çok rahat ettik. Aşçının mezeleri harikaydı.' }
             ],
             description: 'Geleneksel ahşap tasarımı modern konforla birleştiren Aegean Pearl, kalabalık gruplar için Marmaris koylarında huzurlu bir rota sunar.',
             descriptionEn: 'Blending traditional timber craftsmanship with modern comfort, Aegean Pearl offers a peaceful Marmaris itinerary for larger groups.',
@@ -182,7 +274,7 @@ Tekne kapasitesi yasal maksimum misafir sayısını aşamaz. Kaptan, hava ve den
                 { time: '18:00', title: 'Fethiye Dönüş', desc: 'Marinaya varış' }
             ],
             reviewList: [
-                { author: 'Caner T.', rating: 5, date: '2026-05-19', comment: 'Yelken deneyimi ve Fethiye koyları muazzamdı, kesinlikle tekrar geleceğiz.' }
+                { author: 'Caner T.', rating: 5, date: '2026-05-19', bookingId: '', tourDate: '', comment: 'Yelken deneyimi ve Fethiye koyları muazzamdı, kesinlikle tekrar geleceğiz.' }
             ],
             description: 'Rüzgarla bütünleşmek isteyen deniz tutkunları için tasarlanan Sun Odyssey 54, ferah güvertesiyle Fethiye körfezini keşfetmek için idealdir.',
             descriptionEn: 'Designed for sailing enthusiasts who love the wind, Sun Odyssey 54 features an open deck ideal for exploring Fethiye bays.',
@@ -218,7 +310,7 @@ Tekne kapasitesi yasal maksimum misafir sayısını aşamaz. Kaptan, hava ve den
                 { time: '18:00', title: 'Göcek Dönüş', desc: 'Limana varış' }
             ],
             reviewList: [
-                { author: 'Zeynep B.', rating: 5, date: '2026-06-15', comment: 'Katamaranın dengesi sayesinde hiç sallanmadık, çocuklu aileler için mükemmel.' }
+                { author: 'Zeynep B.', rating: 5, date: '2026-06-15', bookingId: '', tourDate: '', comment: 'Katamaranın dengesi sayesinde hiç sallanmadık, çocuklu aileler için mükemmel.' }
             ],
             description: 'Çift gövdeli dengeli yapısı ve geniş kabinleriyle maksimum konfor arayan misafirlerimizin favorisidir.',
             descriptionEn: 'A guest favorite for maximum comfort with twin-hull stability and spacious cabins.',
@@ -254,7 +346,7 @@ Tekne kapasitesi yasal maksimum misafir sayısını aşamaz. Kaptan, hava ve den
                 { time: '19:00', title: 'Yalıkavak Dönüş', desc: 'Gün batımı kokteyli ile varış' }
             ],
             reviewList: [
-                { author: 'Kerem V.', rating: 5, date: '2026-06-18', comment: 'Bodrum koylarında beş yıldızlı otel konforunda eşsiz bir deneyimdi.' }
+                { author: 'Kerem V.', rating: 5, date: '2026-06-18', bookingId: '', tourDate: '', comment: 'Bodrum koylarında beş yıldızlı otel konforunda eşsiz bir deneyimdi.' }
             ],
             description: 'Ultra lüks segmentin zirvesi Majesty 100; panoramik cam duvarları ve özel şef servisiyle beş yıldızlı bir deneyim sunar.',
             descriptionEn: 'At the peak of ultra-luxury, Majesty 100 offers a five-star experience with panoramic glass walls and private chef service.',
@@ -344,9 +436,9 @@ Tekne kapasitesi yasal maksimum misafir sayısını aşamaz. Kaptan, hava ve den
             regionEn: 'Bodrum',
             meetingPoint: 'Yalıkavak Marina',
             meetingPointEn: 'Yalıkavak Marina',
-            durationLabel: '1 Günlük Paket',
+            durationLabel: '2 Günlük Paket',
             capacityLabel: 'En fazla 12 kişi',
-            durationDays: 1,
+            durationDays: 2,
             pricePerDay: 6500,
             yachtId: 5,
             img: 'https://images.unsplash.com/photo-1544551763-46a013bb70d5?auto=format&fit=crop&w=800&q=80',
@@ -376,9 +468,9 @@ Tekne kapasitesi yasal maksimum misafir sayısını aşamaz. Kaptan, hava ve den
         fullPaymentDiscountPercent: 10
     },
     extras: [
-        { id: 1, name: 'VIP Havalimanı Transferi', pricePerGuest: 45, active: true },
-        { id: 2, name: 'Özel Şef & Gurme Menü', pricePerGuest: 120, active: true },
-        { id: 3, name: 'Seabob & Su Sporları Paketi', pricePerGuest: 85, active: true }
+        { id: 1, name: 'VIP Havalimanı Transferi', nameEn: 'VIP Airport Transfer', desc: 'Dalaman / Milas havalimanından marinaya özel VIP araç', descEn: 'Private VIP transfer from Dalaman / Milas airport to marina', pricePerGuest: 45, active: true },
+        { id: 2, name: 'Özel Şef & Gurme Menü', nameEn: 'Private Chef & Gourmet Menu', desc: 'Taze deniz ürünleri ve Akdeniz mezeleri eşliğinde özel servis', descEn: 'Fresh seafood and Mediterranean meze service by private chef', pricePerGuest: 120, active: true },
+        { id: 3, name: 'Seabob & Su Sporları Paketi', nameEn: 'Seabob & Water Sports Package', desc: 'Seabob, paddleboard ve şnorkel ekipmanları', descEn: 'Seabob, paddleboard, and snorkeling gear', pricePerGuest: 85, active: true }
     ],
     bookings: [
         {
@@ -400,6 +492,7 @@ Tekne kapasitesi yasal maksimum misafir sayısını aşamaz. Kaptan, hava ve den
             paidAmount: 5430,
             refundedAmount: 0,
             refundStatus: 'none',
+            refundRuleReason: '',
             paymentType: 'Hisseli Ödeme',
             paymentMethod: 'Kredi / Banka Kartı',
             status: 'Onaylandı'
@@ -469,12 +562,140 @@ function writeJsonAtomic(filePath, dataObj) {
     fs.renameSync(tmpPath, filePath);
 }
 
+function isDailyCharter(charterType) {
+    const val = String(charterType || '').toLowerCase();
+    return val.includes('günlük') || val.includes('daily') || val.includes('saatlik') || val.includes('hourly');
+}
+
+function normalizeDateRange(cIn, cOut, charterType) {
+    const today = getTodayYMD();
+    const fallbackStart = today;
+    const isDaily = isDailyCharter(charterType);
+    const fallbackEnd = isDaily ? fallbackStart : addDaysYMD(fallbackStart, 1);
+
+    let start = (cIn || fallbackStart).trim();
+    let end = (cOut || fallbackEnd).trim();
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(start)) start = fallbackStart;
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(end)) end = fallbackEnd;
+
+    if (isDaily) {
+        if (end < start) end = start;
+    } else if (end <= start) {
+        end = addDaysYMD(start, 1);
+    }
+    return { checkIn: start, checkOut: end };
+}
+
+function calcDays(cIn, cOut, charterType) {
+    if (isDailyCharter(charterType)) return 1;
+    const { checkIn, checkOut } = normalizeDateRange(cIn, cOut, charterType);
+    const d1 = new Date(`${checkIn}T12:00:00`);
+    const d2 = new Date(`${checkOut}T12:00:00`);
+    const diff = Math.round((d2 - d1) / (1000 * 60 * 60 * 24));
+    return (!isNaN(diff) && diff >= 1) ? diff : 1;
+}
+
+function buildManualBookingWhatsapp(templateStr, booking) {
+    const tpl = String(templateStr || DEFAULT_MANUAL_WA_TEMPLATE).trim() || DEFAULT_MANUAL_WA_TEMPLATE;
+    const total = Number(booking.totalAmount || 0);
+    const paid = Number(booking.paidAmount || 0);
+    const remaining = Math.max(0, total - paid);
+    const cleanPhone = String(booking.phone || '').replace(/\D/g, '');
+
+    const replacements = {
+        '{pnr}': booking.id || '',
+        '{customer}': booking.customer || 'Misafir',
+        '{yacht}': booking.yacht || '',
+        '{checkIn}': booking.checkIn || '',
+        '{checkOut}': booking.checkOut || booking.checkIn || '',
+        '{timeSlot}': booking.tourTimeSlot || 'Tam Gün',
+        '{guests}': String(booking.guests || 1),
+        '{totalAmount}': total.toLocaleString(),
+        '{paidAmount}': paid.toLocaleString(),
+        '{remainingAmount}': remaining.toLocaleString(),
+        '{captain}': booking.assignedCaptain || '-',
+        '{transfer}': booking.assignedTransfer || '-',
+        '{notes}': booking.notes || '-'
+    };
+
+    let message = tpl;
+    Object.keys(replacements).forEach((key) => {
+        message = message.split(key).join(replacements[key]);
+    });
+
+    const whatsappUrl = cleanPhone
+        ? `https://wa.me/${encodeURIComponent(cleanPhone)}?text=${encodeURIComponent(message)}`
+        : `https://wa.me/?text=${encodeURIComponent(message)}`;
+
+    return { cleanPhone, message, whatsappUrl };
+}
+
+function normalizeBookingRecord(b) {
+    if (!b || typeof b !== 'object') return b;
+
+    const hasValidDates = /^\d{4}-\d{2}-\d{2}$/.test(String(b.checkIn || '')) && /^\d{4}-\d{2}-\d{2}$/.test(String(b.checkOut || ''));
+    let rawDiffDays = Number(b.days) || 1;
+    if (hasValidDates) {
+        const d1 = new Date(`${b.checkIn}T12:00:00`);
+        const d2 = new Date(`${b.checkOut}T12:00:00`);
+        const diff = Math.round((d2 - d1) / 86400000);
+        if (diff >= 1) rawDiffDays = diff;
+        else if (b.checkIn === b.checkOut) rawDiffDays = 1;
+    }
+
+    if (isDailyCharter(b.charterType) && rawDiffDays > 1) {
+        b.charterType = 'Özel Yat Kiralama (Konaklamalı)';
+        b.days = rawDiffDays;
+    } else if (isDailyCharter(b.charterType)) {
+        b.days = 1;
+        if (b.checkIn) b.checkOut = b.checkIn;
+    } else {
+        b.days = Math.max(1, rawDiffDays);
+    }
+
+    const statusStr = String(b.status || '');
+    const isCancelledOrRejected = ['İptal Edildi', 'İptal', 'Cancelled', 'Reddedildi', 'Reddedildi (Hava Muhalefeti)', 'Rejected'].includes(statusStr);
+    const refundedAmt = Number(b.refundedAmount || 0);
+
+    if (isCancelledOrRejected) {
+        b.remainingBalance = 0;
+        if (refundedAmt > 0) {
+            b.refundStatus = (b.refundStatus && b.refundStatus !== 'none' && !b.refundStatus.includes('no_refund'))
+                ? b.refundStatus
+                : 'refunded';
+            const currentReason = String(b.refundRuleReason || '').trim();
+            if (!currentReason || /uygulanmadı|no refund/i.test(currentReason)) {
+                b.refundRuleReason = `€${refundedAmt.toLocaleString()} tutarında iade işlemi onaylandı${b.refundedAt ? ` (${b.refundedAt})` : ''}.`;
+            }
+        } else {
+            b.refundedAmount = 0;
+            if (!b.refundStatus || b.refundStatus === 'none') {
+                b.refundStatus = 'no_refund';
+            }
+            if (!String(b.refundRuleReason || '').trim()) {
+                b.refundRuleReason = Number(b.paidAmount || 0) > 0
+                    ? 'İptal/red koşulları gereği iade uygulanmadı (€0).'
+                    : 'Tahsil edilmiş ödeme bulunmadığı için iade tutarı €0.';
+            }
+        }
+    } else {
+        b.refundedAmount = 0;
+        b.refundStatus = 'none';
+        b.refundRuleReason = '';
+    }
+
+    return b;
+}
+
 function loadDB() {
     if (!fs.existsSync(DB_PATH)) {
         const bundledDbPath = path.join(__dirname, 'data.json');
         const seedSource = fs.existsSync(bundledDbPath)
             ? JSON.parse(fs.readFileSync(bundledDbPath, 'utf8'))
             : structuredClone(initialData);
+        if (Array.isArray(seedSource.bookings)) {
+            seedSource.bookings = seedSource.bookings.map(normalizeBookingRecord);
+        }
         writeJsonAtomic(DB_PATH, seedSource);
         return seedSource;
     }
@@ -501,6 +722,15 @@ function loadDB() {
     parsed.promoCodes = Array.isArray(parsed.promoCodes)
         ? parsed.promoCodes
         : structuredClone(initialData.promoCodes);
+    parsed.timeSlots = (Array.isArray(parsed.timeSlots) && parsed.timeSlots.length)
+        ? parsed.timeSlots
+        : structuredClone(initialData.timeSlots);
+    parsed.captains = (Array.isArray(parsed.captains) && parsed.captains.length)
+        ? parsed.captains
+        : structuredClone(initialData.captains);
+    parsed.faqs = (Array.isArray(parsed.faqs) && parsed.faqs.length)
+        ? parsed.faqs
+        : structuredClone(initialData.faqs);
     parsed.tours = (parsed.tours && parsed.tours.length)
         ? parsed.tours
         : structuredClone(initialData.tours);
@@ -510,11 +740,14 @@ function loadDB() {
         parsed.paymentPlanSettings || {}
     );
     parsed.extras = parsed.extras || structuredClone(initialData.extras);
-    parsed.bookings = parsed.bookings || [];
+    parsed.bookings = (parsed.bookings || []).map(normalizeBookingRecord);
     return parsed;
 }
 
 function saveDB(data) {
+    if (data && Array.isArray(data.bookings)) {
+        data.bookings = data.bookings.map(normalizeBookingRecord);
+    }
     writeJsonAtomic(DB_PATH, data);
 }
 
@@ -815,6 +1048,10 @@ app.use((req, res, next) => {
     res.locals.categories = db.categories;
     res.locals.departurePoints = db.departurePoints;
     res.locals.promoCodes = db.promoCodes || [];
+    res.locals.timeSlots = (db.timeSlots || []).filter(t => t.active !== false);
+    res.locals.captains = (db.captains || []).filter(c => c.active !== false);
+    res.locals.faqs = (db.faqs || []).filter(f => f.active !== false);
+    res.locals.showAdminNav = Boolean(getAuthenticatedAdmin(req, db));
     next();
 });
 
@@ -900,11 +1137,6 @@ function isDateOverlap(startA, endA, startB, endB) {
     return startA < endB && endA > startB;
 }
 
-function isDailyCharter(charterType) {
-    const val = String(charterType || '').toLowerCase();
-    return val.includes('günlük') || val.includes('daily');
-}
-
 function isValidBookingRange(cIn, cOut, charterType) {
     const today = getTodayYMD();
     if (!/^\d{4}-\d{2}-\d{2}$/.test(cIn || '') || cIn < today) {
@@ -920,34 +1152,6 @@ function isValidBookingRange(cIn, cOut, charterType) {
         return false;
     }
     return cOut > cIn;
-}
-
-function normalizeDateRange(cIn, cOut, charterType) {
-    const today = getTodayYMD();
-    const fallbackStart = today;
-    const isDaily = isDailyCharter(charterType);
-    const fallbackEnd = isDaily ? fallbackStart : addDaysYMD(fallbackStart, 1);
-
-    let start = (cIn || fallbackStart).trim();
-    let end = (cOut || fallbackEnd).trim();
-    if (!/^\d{4}-\d{2}-\d{2}$/.test(start)) start = fallbackStart;
-    if (!/^\d{4}-\d{2}-\d{2}$/.test(end)) end = fallbackEnd;
-
-    if (isDaily) {
-        if (end < start) end = start;
-    } else if (end <= start) {
-        end = addDaysYMD(start, 1);
-    }
-    return { checkIn: start, checkOut: end };
-}
-
-function calcDays(cIn, cOut, charterType) {
-    if (isDailyCharter(charterType)) return 1;
-    const { checkIn, checkOut } = normalizeDateRange(cIn, cOut, charterType);
-    const d1 = new Date(`${checkIn}T12:00:00`);
-    const d2 = new Date(`${checkOut}T12:00:00`);
-    const diff = Math.round((d2 - d1) / (1000 * 60 * 60 * 24));
-    return (!isNaN(diff) && diff >= 1) ? diff : 1;
 }
 
 function findMatchedTour(db, queryOrBody) {
@@ -980,14 +1184,23 @@ function resolveBookingYacht(db, booking) {
 app.get('/', (req, res) => {
     const db = loadDB();
     const homeBookings = (db.bookings || [])
-        .filter(b => b.status !== 'İptal Edildi' && b.status !== 'İptal')
+        .filter(b => b.status !== 'İptal Edildi' && b.status !== 'İptal' && b.status !== 'Reddedildi')
         .map(b => ({ checkIn: b.checkIn, checkOut: b.checkOut }));
+
+    const sortedDepartures = [...(db.departurePoints || [])].sort((a, b) => {
+        if (String(a.name).toLowerCase() === 'marmaris') return -1;
+        if (String(b.name).toLowerCase() === 'marmaris') return 1;
+        return 0;
+    });
 
     res.render('client/home', {
         yachts: db.yachts,
         categories: db.categories,
-        departurePoints: db.departurePoints,
+        departurePoints: sortedDepartures,
+        defaultDeparture: (db.siteSettings && db.siteSettings.defaultDeparture) || 'Marmaris',
         tours: db.tours,
+        captains: (db.captains || []).filter(c => c.active !== false),
+        faqs: (db.faqs || []).filter(f => f.active !== false),
         homeBookings
     });
 });
@@ -1062,13 +1275,15 @@ app.get('/yachts/:id', (req, res) => {
     const db = loadDB();
     const yacht = db.yachts.find(y => Number(y.id) === Number(req.params.id));
     if (!yacht) return res.redirect('/yachts');
-    const yachtBookings = db.bookings.filter(b => Number(b.yachtId) === Number(yacht.id) && b.status !== 'İptal Edildi' && b.status !== 'İptal');
+    const yachtBookings = db.bookings.filter(b => Number(b.yachtId) === Number(yacht.id) && b.status !== 'İptal Edildi' && b.status !== 'İptal' && b.status !== 'Reddedildi');
     const range = normalizeDateRange(req.query.checkIn, req.query.checkOut, 'Özel Yat Kiralama (Konaklamalı)');
     const activeExtras = (db.extras || []).filter(e => e.active !== false);
+    const activeTimeSlots = (db.timeSlots || []).filter(t => t.active !== false);
     res.render('client/detail', {
         yacht,
         yachtBookings,
         extrasList: activeExtras,
+        timeSlots: activeTimeSlots,
         reviewSaved: req.query.reviewSaved === '1',
         checkIn: range.checkIn,
         checkOut: range.checkOut
@@ -1080,12 +1295,27 @@ app.post('/yachts/:id/reviews', (req, res) => {
     const yacht = db.yachts.find(y => Number(y.id) === Number(req.params.id));
     if (yacht) {
         const author = (req.body.author || 'Misafir').trim();
+        const reviewerEmail = String(req.body.email || '').trim().toLowerCase();
+        const inputPnr = String(req.body.pnr || '').trim().toUpperCase();
         const rating = Math.min(5, Math.max(1, Number(req.body.rating) || 5));
         const comment = (req.body.comment || '').trim();
+
+        const verifiedCookie = getVerifiedPnrFromCookie(req);
+        const matchedBooking = (db.bookings || []).find(b => {
+            if (inputPnr && String(b.id || '').toUpperCase() === inputPnr) return true;
+            if (verifiedCookie && String(b.id || '').toUpperCase() === verifiedCookie.pnr && Number(b.yachtId) === Number(yacht.id)) return true;
+            if (reviewerEmail && String(b.email || '').toLowerCase() === reviewerEmail && Number(b.yachtId) === Number(yacht.id)) return true;
+            return false;
+        });
+
         if (comment) {
             yacht.reviewList = yacht.reviewList || [];
             yacht.reviewList.unshift({
+                id: `REV-${Date.now()}`,
                 author,
+                email: reviewerEmail || (matchedBooking ? matchedBooking.email : ''),
+                bookingId: matchedBooking ? matchedBooking.id : (inputPnr || ''),
+                tourDate: matchedBooking ? `${matchedBooking.checkIn}${matchedBooking.checkOut && matchedBooking.checkOut !== matchedBooking.checkIn ? ' → ' + matchedBooking.checkOut : ''}` : '',
                 rating,
                 date: getTodayYMD(),
                 comment
@@ -1105,7 +1335,7 @@ app.get('/checkout', (req, res) => {
     const matchedTour = findMatchedTour(db, req.query);
     const targetYachtId = Number(req.query.yachtId || (matchedTour && matchedTour.yachtId) || 0);
     const yacht = db.yachts.find(y => Number(y.id) === targetYachtId) || db.yachts[0];
-    const yachtBookings = db.bookings.filter(b => Number(b.yachtId) === Number(yacht.id) && b.status !== 'İptal Edildi' && b.status !== 'İptal');
+    const yachtBookings = db.bookings.filter(b => Number(b.yachtId) === Number(yacht.id) && b.status !== 'İptal Edildi' && b.status !== 'İptal' && b.status !== 'Reddedildi');
 
     const rawIn = (req.query.checkIn || '').trim();
     const rawOut = (req.query.checkOut || '').trim();
@@ -1115,6 +1345,7 @@ app.get('/checkout', (req, res) => {
 
     const activeExtras = (db.extras || []).filter(e => e.active !== false);
     const activePayments = (db.paymentOptions || []).filter(p => p.active !== false);
+    const activeTimeSlots = (db.timeSlots || []).filter(t => t.active !== false);
     const activePromoCodes = (db.promoCodes || []).filter(p => {
         if (p.isActive === false) return false;
         if (p.expiresAt && /^\d{4}-\d{2}-\d{2}$/.test(p.expiresAt) && p.expiresAt < today) return false;
@@ -1141,6 +1372,7 @@ app.get('/checkout', (req, res) => {
         yacht,
         yachtBookings,
         extrasList: activeExtras,
+        timeSlots: activeTimeSlots,
         paymentOptions: activePayments,
         paymentPlanSettings: db.paymentPlanSettings,
         rentalContract: db.rentalContract,
@@ -1155,39 +1387,50 @@ app.get('/checkout', (req, res) => {
 
 app.post('/checkout/confirm', (req, res) => {
     const db = loadDB();
+    const isEnReq = res.locals.isEn;
     const {
         yachtId, customerName, email, phone, checkIn, checkOut,
-        guests, charterType, tourTimeSlot, extras, notes, discount,
-        promoCode, paymentType, paymentMethod
+        guests, charterType, tourTimeSlot, extras, notes,
+        paymentType, paymentMethod
     } = req.body;
 
     const matchedTour = findMatchedTour(db, req.body);
     const targetYachtId = Number(yachtId || (matchedTour && matchedTour.yachtId) || 0);
     const yacht = db.yachts.find(y => Number(y.id) === targetYachtId) || db.yachts[0];
+    if (!yacht) return res.redirect('/yachts');
+
     const guestCount = Math.min(Number(yacht.guests) || 12, Math.max(1, Number(guests) || 1));
-    const normalizedCharter = charterType || (matchedTour ? 'Günlük VIP Koy Turu' : 'Özel Yat Kiralama (Konaklamalı)');
-    const isDaily = isDailyCharter(normalizedCharter);
 
-    const pkgDaysFromReq = Number(matchedTour && matchedTour.durationDays) || Number(req.body.packageDays || req.body.days) || 0;
-    const hasMultiDayPkg = !isDaily && pkgDaysFromReq >= 2;
+    const pkgDaysFromReq = Number(matchedTour && matchedTour.durationDays) || Number(req.body.packageDays) || 0;
+    const rawDaily = isDailyCharter(charterType || (matchedTour && matchedTour.durationDays === 1 ? 'Günlük VIP Koy Turu' : ''));
+    const hasMultiDayPkg = !rawDaily && pkgDaysFromReq >= 2;
 
-    const effectiveCheckOutForValidation = (!isDaily && hasMultiDayPkg && /^\d{4}-\d{2}-\d{2}$/.test(String(checkIn || '').trim()))
-        ? addDaysYMD(String(checkIn).trim(), pkgDaysFromReq - 1)
-        : checkOut;
+    const startYmd = String(checkIn || '').trim();
+    const effectiveCheckOutForValidation = (hasMultiDayPkg && /^\d{4}-\d{2}-\d{2}$/.test(startYmd))
+        ? addDaysYMD(startYmd, pkgDaysFromReq - 1)
+        : String(checkOut || '').trim();
 
-    if (!isValidBookingRange(checkIn, effectiveCheckOutForValidation, normalizedCharter)) {
-        return res.redirect(`/checkout?yachtId=${yacht.id}&guests=${guestCount}&error=${encodeURIComponent('Lütfen bugün veya ileri bir tarih ve uygun bitiş tarihi seçin.')}`);
+    if (!isValidBookingRange(startYmd, effectiveCheckOutForValidation, rawDaily ? 'Günlük VIP Koy Turu' : 'Özel Yat Kiralama (Konaklamalı)')) {
+        const errText = isEnReq
+            ? 'Please select today or a future date and a valid end date.'
+            : 'Lütfen bugün veya ileri bir tarih ve uygun bitiş tarihi seçin.';
+        return res.redirect(`/checkout?yachtId=${yacht.id}&guests=${guestCount}&error=${encodeURIComponent(errText)}`);
     }
 
-    const startYmd = checkIn.trim();
-    const endYmd = isDaily
+    const endYmd = rawDaily
         ? startYmd
-        : (hasMultiDayPkg ? addDaysYMD(startYmd, pkgDaysFromReq - 1) : effectiveCheckOutForValidation.trim());
-    const overlapEndYmd = isDaily ? addDaysYMD(startYmd, 1) : endYmd;
+        : (hasMultiDayPkg ? addDaysYMD(startYmd, pkgDaysFromReq - 1) : effectiveCheckOutForValidation);
 
-    const days = isDaily
-        ? (Number(matchedTour && matchedTour.durationDays) || 1)
-        : (hasMultiDayPkg ? pkgDaysFromReq : calcDays(startYmd, endYmd, normalizedCharter));
+    const days = rawDaily
+        ? 1
+        : (hasMultiDayPkg ? pkgDaysFromReq : calcDays(startYmd, endYmd, 'Özel Yat Kiralama (Konaklamalı)'));
+
+    const isDaily = days === 1 && (rawDaily || startYmd === endYmd);
+    const normalizedCharter = isDaily
+        ? (charterType && isDailyCharter(charterType) ? charterType : 'Günlük VIP Koy Turu')
+        : 'Özel Yat Kiralama (Konaklamalı)';
+
+    const overlapEndYmd = isDaily ? addDaysYMD(startYmd, 1) : endYmd;
 
     const conflict = db.bookings.find(b =>
         Number(b.yachtId) === Number(yacht.id) &&
@@ -1198,47 +1441,71 @@ app.post('/checkout/confirm', (req, res) => {
     );
 
     if (conflict) {
-        return res.redirect(`/checkout?yachtId=${yacht.id}&checkIn=${startYmd}&checkOut=${endYmd}&guests=${guestCount}&error=${encodeURIComponent(`Seçilen tarihler (${conflict.checkIn} - ${conflict.checkOut}) dolu. Lütfen boş bir tarih seçin.`)}`);
+        const errText = isEnReq
+            ? `Selected dates (${conflict.checkIn} - ${conflict.checkOut}) are already booked. Please choose available dates.`
+            : `Seçilen tarihler (${conflict.checkIn} - ${conflict.checkOut}) dolu. Lütfen boş bir tarih seçin.`;
+        return res.redirect(`/checkout?yachtId=${yacht.id}&checkIn=${startYmd}&checkOut=${endYmd}&guests=${guestCount}&error=${encodeURIComponent(errText)}`);
     }
 
     const selectedMethod = String(paymentMethod || 'Kredi / Banka Kartı').trim();
     const methodLower = selectedMethod.toLowerCase();
     const isCard = methodLower.includes('kart') || methodLower.includes('card');
-    const isDeferredPayment = methodLower.includes('havale') || methodLower.includes('eft') || methodLower.includes('marina') || methodLower.includes('nakit');
+    const isDeferredPayment = methodLower.includes('havale') || methodLower.includes('eft') || methodLower.includes('marina') || methodLower.includes('nakit') || methodLower.includes('cash');
 
     if (isCard) {
         const cardHolder = String(req.body.cardHolder || '').trim();
-        const cardNumber = String(req.body.cardNumber || '').replace(/\s+/g, '');
+        const cardNumber = String(req.body.cardNumber || '').replace(/\D/g, '');
         const cardExpiry = String(req.body.cardExpiry || '').trim();
-        const cardCvv = String(req.body.cardCvv || '').trim();
+        const cardCvv = String(req.body.cardCvv || '').replace(/\D/g, '');
+
+        const expMatch = /^(0[1-9]|1[0-2])\/(\d{2})$/.exec(cardExpiry);
+        const nowRef = new Date();
+        const curYear = nowRef.getFullYear();
+        const curMonth = nowRef.getMonth() + 1;
+        const expYear = expMatch ? 2000 + Number(expMatch[2]) : 0;
+        const expMonth = expMatch ? Number(expMatch[1]) : 0;
+        const expValid = Boolean(expMatch) && (expYear > curYear || (expYear === curYear && expMonth >= curMonth));
 
         const validCard =
-            cardHolder.length >= 3 &&
-            /^\d{13,19}$/.test(cardNumber) &&
-            /^(0[1-9]|1[0-2])\/\d{2}$/.test(cardExpiry) &&
-            /^\d{3,4}$/.test(cardCvv);
+            cardHolder.length >= 2 &&
+            cardNumber.length >= 13 && cardNumber.length <= 19 &&
+            expValid &&
+            (cardCvv.length === 3 || cardCvv.length === 4);
 
         if (!validCard) {
-            return res.redirect(`/checkout?yachtId=${yacht.id}&checkIn=${startYmd}&checkOut=${endYmd}&guests=${guestCount}&error=${encodeURIComponent('Kredi / Banka Kartı ile ödeme için kart bilgilerini eksiksiz ve doğru girmeniz gerekir.')}`);
+            const errText = isEnReq
+                ? 'Please enter valid card details to pay by Credit / Debit Card.'
+                : 'Kredi / Banka Kartı ile ödeme için kart bilgilerini eksiksiz ve doğru girmeniz gerekir.';
+            return res.redirect(`/checkout?yachtId=${yacht.id}&checkIn=${startYmd}&checkOut=${endYmd}&guests=${guestCount}&error=${encodeURIComponent(errText)}`);
         }
     }
 
     const selectedExtraNames = extras ? (Array.isArray(extras) ? extras : [extras]) : [];
-    const extrasPerGuestTotal = (db.extras || [])
-        .filter(e => e.active !== false && selectedExtraNames.includes(e.name))
+    const activeExtras = (db.extras || []).filter(e => e.active !== false);
+    const validExtraNames = selectedExtraNames.filter(name => activeExtras.some(e => e.name === name));
+    const extrasPerGuestTotal = activeExtras
+        .filter(e => validExtraNames.includes(e.name))
         .reduce((sum, e) => sum + Number(e.pricePerGuest || 0), 0);
 
     const extrasTotal = extrasPerGuestTotal * guestCount;
 
     const fixedPkgPrice = matchedTour
-        ? Number(matchedTour.pricePerDay || 0)
+        ? Math.max(0, Number(matchedTour.pricePerDay || 0))
         : Math.max(0, Number(req.body.packagePrice) || 0);
     const hasFixedPkg = fixedPkgPrice > 0;
 
-    const baseTotal = hasFixedPkg ? fixedPkgPrice : (Number(yacht.price || 0) * days);
+    const matchedSlot = isDaily
+        ? (db.timeSlots || []).find(s => s.active !== false && (s.label === String(tourTimeSlot || '').trim() || s.labelEn === String(tourTimeSlot || '').trim()))
+        : null;
+    const slotMultiplier = (!hasFixedPkg && matchedSlot && Number(matchedSlot.priceMultiplier) > 0)
+        ? Number(matchedSlot.priceMultiplier)
+        : 1;
+
+    const baseTotal = hasFixedPkg ? fixedPkgPrice : Math.round(Number(yacht.price || 0) * days * slotMultiplier);
     const autoDisc = (!hasFixedPkg && days >= 5) ? Math.round(baseTotal * 0.05) : 0;
 
-    const normPromoInput = String(promoCode || '').trim().toUpperCase();
+    const rawPromoCode = req.body.promoCodeApplied || req.body.promoCode || '';
+    const normPromoInput = String(rawPromoCode).trim().toUpperCase();
     const today = getTodayYMD();
     const matchedPromo = normPromoInput
         ? (db.promoCodes || []).find(p =>
@@ -1248,13 +1515,13 @@ app.post('/checkout/confirm', (req, res) => {
         )
         : null;
 
+    const subBeforePromo = Math.max(0, baseTotal - autoDisc + extrasTotal);
     const promoDiscAmt = matchedPromo
-        ? Math.round((baseTotal + extrasTotal) * (Number(matchedPromo.discountPercent || 0) / 100))
+        ? Math.round(subBeforePromo * (Number(matchedPromo.discountPercent || 0) / 100))
         : 0;
 
-    const manualDiscAmt = Math.max(0, Number(discount) || 0);
-    const totalDiscountAmt = autoDisc + promoDiscAmt + manualDiscAmt;
-    const computedTotal = Math.max(0, baseTotal + extrasTotal - totalDiscountAmt);
+    const totalDiscountAmt = autoDisc + promoDiscAmt;
+    const subTotal = Math.max(0, subBeforePromo - promoDiscAmt);
 
     const planCfg = db.paymentPlanSettings || {
         installmentPercent: 50,
@@ -1263,21 +1530,19 @@ app.post('/checkout/confirm', (req, res) => {
     };
 
     const isFullPayment = paymentType === 'Tam Ödeme (İndirimli)';
-    let finalAmount = computedTotal;
-
-    if (isFullPayment) {
-        finalAmount = Math.max(0, Math.round(computedTotal * (1 - Number(planCfg.fullPaymentDiscountPercent || 0) / 100)));
-    } else {
-        finalAmount = Math.max(0, Math.round(computedTotal * (1 + Number(planCfg.installmentInterestPercent || 0) / 100)));
-    }
+    const finalAmount = isFullPayment
+        ? Math.max(0, Math.round(subTotal * (1 - Number(planCfg.fullPaymentDiscountPercent || 0) / 100)))
+        : Math.max(0, Math.round(subTotal * (1 + Number(planCfg.installmentInterestPercent || 0) / 100)));
 
     const plannedPaidAmt = isFullPayment
         ? finalAmount
         : Math.round(finalAmount * (Number(planCfg.installmentPercent || 50) / 100));
 
-    const paidAmt = isDeferredPayment ? 0 : plannedPaidAmt;
+    const paidAmt = (isCard && !isDeferredPayment) ? plannedPaidAmt : 0;
     const bookingStatus = 'Beklemede';
-    const paymentStatus = isDeferredPayment ? 'pending_payment' : (paidAmt >= finalAmount ? 'paid_full' : 'deposit_paid');
+    const paymentStatus = isDeferredPayment
+        ? 'pending_payment'
+        : (isCard ? (paidAmt >= finalAmount ? 'paid_full' : 'deposit_paid') : 'pending_payment');
 
     let pnr = '';
     const existingIds = new Set((db.bookings || []).map(b => String(b.id || '').toUpperCase()));
@@ -1287,7 +1552,7 @@ app.post('/checkout/confirm', (req, res) => {
 
     const normEmail = (email || '').trim().toLowerCase();
 
-    db.bookings.unshift({
+    db.bookings.unshift(normalizeBookingRecord({
         id: pnr,
         customer: (customerName || '').trim(),
         email: normEmail,
@@ -1299,19 +1564,20 @@ app.post('/checkout/confirm', (req, res) => {
         packageName: matchedTour ? matchedTour.title : (String(req.body.packageName || '').trim() || null),
         checkIn: startYmd,
         checkOut: endYmd,
-        tourTimeSlot: isDaily ? (String(tourTimeSlot || '10:00 - 18:00').trim()) : null,
+        tourTimeSlot: isDaily ? (String(tourTimeSlot || '10:30 - 18:00').trim()) : null,
         days,
         guests: guestCount,
         charterType: normalizedCharter,
-        extras: selectedExtraNames,
+        extras: validExtraNames,
         extrasTotal,
         notes: (notes || '').trim(),
-        promoCode: matchedPromo ? matchedPromo.code : (normPromoInput || ''),
+        promoCode: matchedPromo ? matchedPromo.code : '',
         discount: totalDiscountAmt,
         totalAmount: finalAmount,
         paidAmount: paidAmt,
         refundedAmount: 0,
         refundStatus: 'none',
+        refundRuleReason: '',
         paymentStatus,
         paymentType: isFullPayment ? 'Tam Ödeme (İndirimli)' : 'Hisseli Ödeme',
         paymentMethod: selectedMethod,
@@ -1319,11 +1585,11 @@ app.post('/checkout/confirm', (req, res) => {
         assignedTransfer: '',
         adminNote: '',
         status: bookingStatus
-    });
+    }));
 
     saveDB(db);
     setVerifiedPnrCookie(res, pnr, normEmail);
-    res.redirect(`/confirmation/${pnr}`);
+    return res.redirect(`/confirmation/${pnr}`);
 });
 
 app.get('/confirmation/:pnr', (req, res) => {
@@ -1347,7 +1613,10 @@ app.get('/my-booking', (req, res) => {
     let yacht = null;
 
     if (pnr && verified && verified.pnr === pnr) {
-        const candidate = db.bookings.find(b => b.id.toUpperCase() === pnr && String(b.email || '').toLowerCase() === verified.email);
+        const candidate = db.bookings.find(b =>
+            b.id.toUpperCase() === pnr &&
+            String(b.email || '').toLowerCase() === verified.email
+        );
         if (candidate) {
             booking = candidate;
             yacht = resolveBookingYacht(db, booking);
@@ -1358,7 +1627,7 @@ app.get('/my-booking', (req, res) => {
         booking,
         yacht,
         pnr,
-        email: '',
+        email: (verified && verified.email) || '',
         searched: Boolean(pnr),
         msg: req.query.msg || '',
         errMsg: req.query.err || ''
@@ -1367,11 +1636,15 @@ app.get('/my-booking', (req, res) => {
 
 app.post('/my-booking', (req, res) => {
     const db = loadDB();
+    const isEnReq = res.locals.isEn;
     const pnr = String(req.body.pnr || '').trim().toUpperCase();
     const emailQuery = String(req.body.email || '').trim().toLowerCase();
 
     if (!pnr || !emailQuery) {
-        return res.redirect('/my-booking?err=' + encodeURIComponent('PNR kodu ve e-posta adresini girin.'));
+        const msg = isEnReq
+            ? 'Please enter both your PNR code and email address.'
+            : 'PNR kodu ve e-posta adresini girin.';
+        return res.redirect('/my-booking?err=' + encodeURIComponent(msg));
     }
 
     const candidate = db.bookings.find(b =>
@@ -1380,7 +1653,10 @@ app.post('/my-booking', (req, res) => {
     );
 
     if (!candidate) {
-        return res.redirect('/my-booking?err=' + encodeURIComponent('Girilen PNR ve e-posta ile eşleşen rezervasyon bulunamadı.'));
+        const msg = isEnReq
+            ? 'No matching booking was found for the entered PNR code and email address.'
+            : 'Girilen PNR ve e-posta ile eşleşen rezervasyon bulunamadı.';
+        return res.redirect('/my-booking?err=' + encodeURIComponent(msg));
     }
 
     setVerifiedPnrCookie(res, candidate.id, emailQuery);
@@ -1389,6 +1665,7 @@ app.post('/my-booking', (req, res) => {
 
 app.post('/my-booking/cancel', (req, res) => {
     const db = loadDB();
+    const isEnReq = res.locals.isEn;
     const verified = getVerifiedPnrFromCookie(req);
     const pnr = String(req.body.pnr || (verified && verified.pnr) || '').trim().toUpperCase();
     const emailQuery = String(req.body.email || (verified && verified.email) || '').trim().toLowerCase();
@@ -1400,6 +1677,7 @@ app.post('/my-booking/cancel', (req, res) => {
 
     if (booking && verified && verified.pnr === booking.id.toUpperCase() && verified.email === String(booking.email || '').toLowerCase()) {
         booking.status = 'İptal Edildi';
+        const todayStr = getTodayYMD();
 
         const rawCancelReason = String(req.body.cancelReason || '').trim();
         const customCancelReason = String(req.body.cancelReasonCustom || '').trim();
@@ -1415,19 +1693,23 @@ app.post('/my-booking/cancel', (req, res) => {
             if (daysLeft !== null && daysLeft >= 7) {
                 booking.refundedAmount = currentPaid;
                 booking.refundStatus = 'full_refund_7plus_days';
-                booking.refundRuleReason = `Check-in tarihine ${daysLeft} gün kaldığı için (7+ gün kuralı) ödenen tutarın tamamı (€${currentPaid.toLocaleString()}) iade edildi.`;
+                booking.refundedAt = todayStr;
+                booking.refundRuleReason = `Check-in tarihine ${daysLeft} gün kaldığı için (7+ gün kuralı) ödenen tutarın tamamı (€${currentPaid.toLocaleString()}) iade edildi (${todayStr}).`;
             } else if (daysLeft !== null && daysLeft >= 0) {
                 booking.refundedAmount = 0;
                 booking.refundStatus = 'non_refundable_under_7_days';
+                booking.refundedAt = '';
                 booking.refundRuleReason = `Check-in tarihine ${daysLeft} gün kaldığı için (7 günden az) iade uygulanmadı.`;
             } else {
                 booking.refundedAmount = 0;
                 booking.refundStatus = 'past_date_no_refund';
+                booking.refundedAt = '';
                 booking.refundRuleReason = 'Check-in tarihi geçtiği için iade uygulanmadı.';
             }
         } else {
             booking.refundedAmount = 0;
             booking.refundStatus = 'no_payment';
+            booking.refundedAt = '';
             booking.refundRuleReason = 'Tahsil edilmiş ödeme bulunmadığı için iade tutarı €0.';
         }
 
@@ -1435,12 +1717,19 @@ app.post('/my-booking/cancel', (req, res) => {
 
         saveDB(db);
         const msg = Number(booking.refundedAmount || 0) > 0
-            ? `Rezervasyonunuz iptal edildi; 7+ gün kuralı kapsamında €${Number(booking.refundedAmount).toLocaleString()} iade talebi oluşturuldu.`
-            : 'Rezervasyonunuz iptal edildi (7 günden az süre kaldığı için iade uygulanmadı).';
+            ? (isEnReq
+                ? `Your booking has been cancelled; a €${Number(booking.refundedAmount).toLocaleString()} refund has been issued under the 7+ day policy.`
+                : `Rezervasyonunuz iptal edildi; 7+ gün kuralı kapsamında €${Number(booking.refundedAmount).toLocaleString()} iade talebi oluşturuldu.`)
+            : (isEnReq
+                ? 'Your booking has been cancelled (no refund due under the 7-day policy).'
+                : 'Rezervasyonunuz iptal edildi (7 günden az süre kaldığı için iade uygulanmadı).');
         return res.redirect(`/my-booking?pnr=${encodeURIComponent(pnr)}&msg=${encodeURIComponent(msg)}`);
     }
 
-    return res.redirect('/my-booking?err=' + encodeURIComponent('İptal işlemi için önce PNR ve e-posta ile doğrulama yapın.'));
+    const errText = isEnReq
+        ? 'Please verify your PNR code and email address before cancelling.'
+        : 'İptal işlemi için önce PNR ve e-posta ile doğrulama yapın.';
+    return res.redirect('/my-booking?err=' + encodeURIComponent(errText));
 });
 
 app.get('/admin/login', (req, res) => {
@@ -1473,25 +1762,248 @@ app.post('/admin/logout', (req, res) => {
 app.get('/admin', requireAdmin, (req, res) => {
     const db = loadDB();
     const totalRevenue = db.bookings
-        .filter(b => b.status !== 'İptal Edildi' && b.status !== 'İptal')
+        .filter(b => b.status !== 'İptal Edildi' && b.status !== 'İptal' && b.status !== 'Reddedildi')
         .reduce((sum, b) => sum + Number(b.paidAmount || 0), 0);
+
+    const allReviews = [];
+    (db.yachts || []).forEach(y => {
+        (y.reviewList || []).forEach((rev, idx) => {
+            const matchedBk = (db.bookings || []).find(b =>
+                (rev.bookingId && String(b.id || '').toUpperCase() === String(rev.bookingId).toUpperCase()) ||
+                (rev.email && String(b.email || '').toLowerCase() === String(rev.email).toLowerCase() && Number(b.yachtId) === Number(y.id))
+            );
+            allReviews.push({
+                yachtId: y.id,
+                yachtName: y.name,
+                reviewIndex: idx,
+                author: rev.author || 'Misafir',
+                email: rev.email || (matchedBk ? matchedBk.email : ''),
+                rating: Number(rev.rating || 5),
+                date: rev.date || '',
+                comment: rev.comment || '',
+                bookingId: rev.bookingId || (matchedBk ? matchedBk.id : ''),
+                tourDate: rev.tourDate || (matchedBk ? `${matchedBk.checkIn}${matchedBk.checkOut && matchedBk.checkOut !== matchedBk.checkIn ? ' → ' + matchedBk.checkOut : ''}` : '')
+            });
+        });
+    });
+
+    const waTemplate = (db.siteSettings && db.siteSettings.manualBookingWaTemplate) || DEFAULT_MANUAL_WA_TEMPLATE;
+    const bookingsWithWa = (db.bookings || []).map(b => {
+        const waInfo = buildManualBookingWhatsapp(waTemplate, b);
+        return Object.assign({}, b, {
+            whatsappMessage: waInfo.message,
+            whatsappUrl: waInfo.whatsappUrl
+        });
+    });
 
     res.render('admin/dashboard', {
         yachts: db.yachts,
-        bookings: db.bookings,
+        bookings: bookingsWithWa,
         categories: db.categories,
         departurePoints: db.departurePoints,
         promoCodes: db.promoCodes || [],
+        timeSlots: db.timeSlots || [],
+        captains: db.captains || [],
+        faqs: db.faqs || [],
+        allReviews,
         tours: db.tours,
         paymentOptions: db.paymentOptions,
         paymentPlanSettings: db.paymentPlanSettings,
         rentalContract: db.rentalContract,
         siteSettings: db.siteSettings,
+        manualBookingWaTemplate: waTemplate,
         extras: db.extras,
         adminUsers: db.adminUsers || [],
         totalRevenue,
-        notice: req.query.notice || ''
+        notice: req.query.notice || '',
+        waShareUrl: req.query.waUrl || ''
     });
+});
+
+/* --- MANUEL REZERVASYON WHATSAPP ŞABLONU --- */
+app.post('/admin/whatsapp-template/update', requireAdmin, (req, res) => {
+    const db = loadDB();
+    db.siteSettings = db.siteSettings || {};
+    const tpl = String(req.body.manualBookingWaTemplate || '').trim();
+    if (tpl) {
+        db.siteSettings.manualBookingWaTemplate = tpl;
+        saveDB(db);
+    }
+    res.redirect('/admin?tab=rezervasyonlar&notice=' + encodeURIComponent('Manuel rezervasyon WhatsApp mesaj şablonu güncellendi.'));
+});
+
+/* --- SAAT ARALIKLARI CMS --- */
+app.post('/admin/time-slots/add', requireAdmin, (req, res) => {
+    const db = loadDB();
+    const label = String(req.body.label || '').trim();
+    const labelEn = String(req.body.labelEn || label).trim();
+    const type = req.body.type === 'hourly' ? 'hourly' : 'daily';
+    const hours = Math.max(1, Math.min(24, Number(req.body.hours) || 8));
+    const priceMultiplier = Math.max(0.1, Math.min(2, Number(req.body.priceMultiplier) || 1));
+
+    if (label) {
+        db.timeSlots = db.timeSlots || [];
+        const nextId = db.timeSlots.reduce((max, s) => Math.max(max, Number(s.id) || 0), 0) + 1;
+        db.timeSlots.push({
+            id: nextId,
+            label,
+            labelEn,
+            type,
+            hours,
+            priceMultiplier,
+            active: true
+        });
+        saveDB(db);
+    }
+    res.redirect('/admin?tab=ayarlar&notice=' + encodeURIComponent('Yeni saat aralığı eklendi.'));
+});
+
+app.post('/admin/time-slots/:id/toggle', requireAdmin, (req, res) => {
+    const db = loadDB();
+    const slot = (db.timeSlots || []).find(s => Number(s.id) === Number(req.params.id));
+    if (slot) {
+        slot.active = slot.active === false ? true : false;
+        saveDB(db);
+    }
+    res.redirect('/admin?tab=ayarlar&notice=' + encodeURIComponent('Saat aralığı durumu güncellendi.'));
+});
+
+app.post('/admin/time-slots/:id/delete', requireAdmin, (req, res) => {
+    const db = loadDB();
+    db.timeSlots = (db.timeSlots || []).filter(s => Number(s.id) !== Number(req.params.id));
+    saveDB(db);
+    res.redirect('/admin?tab=ayarlar&notice=' + encodeURIComponent('Saat aralığı silindi.'));
+});
+
+/* --- KAPTANLAR CMS --- */
+app.post('/admin/captains/add', requireAdmin, async (req, res) => {
+    const db = loadDB();
+    const { fields, file, tooLarge } = await parseMultipartUpload(req);
+    if (tooLarge) {
+        return res.redirect('/admin?tab=ayarlar&notice=' + encodeURIComponent('Yüklenen fotoğraf 10 MB sınırını aştı.'));
+    }
+
+    const name = String(fields.name || '').trim();
+    if (name) {
+        db.captains = db.captains || [];
+        const nextId = db.captains.reduce((max, c) => Math.max(max, Number(c.id) || 0), 0) + 1;
+        let photoUrl = DEFAULT_CAPTAIN_IMG;
+        if (file && file.url) photoUrl = file.url;
+        else if (fields.imageData) photoUrl = saveBase64Image(fields.imageData, 'captain') || DEFAULT_CAPTAIN_IMG;
+        else if (fields.photo && fields.photo.trim()) photoUrl = fields.photo.trim();
+
+        db.captains.push({
+            id: nextId,
+            name,
+            roleTr: String(fields.roleTr || 'Lisanslı Yat Kaptanı').trim(),
+            roleEn: String(fields.roleEn || 'Licensed Yacht Captain').trim(),
+            experienceYears: Math.max(1, Number(fields.experienceYears) || 10),
+            languages: String(fields.languages || 'Türkçe, English').trim(),
+            region: String(fields.region || 'Marmaris & Göcek').trim(),
+            bioTr: String(fields.bioTr || '').trim(),
+            bioEn: String(fields.bioEn || fields.bioTr || '').trim(),
+            photo: photoUrl,
+            active: true
+        });
+        saveDB(db);
+    }
+    res.redirect('/admin?tab=ayarlar&notice=' + encodeURIComponent('Yeni kaptan bilgisi eklendi.'));
+});
+
+app.post('/admin/captains/:id/update', requireAdmin, async (req, res) => {
+    const db = loadDB();
+    const { fields, file, tooLarge } = await parseMultipartUpload(req);
+    if (tooLarge) {
+        return res.redirect('/admin?tab=ayarlar&notice=' + encodeURIComponent('Yüklenen fotoğraf 10 MB sınırını aştı.'));
+    }
+
+    const cap = (db.captains || []).find(c => Number(c.id) === Number(req.params.id));
+    if (cap) {
+        if (fields.name && fields.name.trim()) cap.name = fields.name.trim();
+        if (typeof fields.roleTr === 'string') cap.roleTr = fields.roleTr.trim();
+        if (typeof fields.roleEn === 'string') cap.roleEn = fields.roleEn.trim();
+        if (typeof fields.languages === 'string') cap.languages = fields.languages.trim();
+        if (typeof fields.region === 'string') cap.region = fields.region.trim();
+        if (typeof fields.bioTr === 'string') cap.bioTr = fields.bioTr.trim();
+        if (typeof fields.bioEn === 'string') cap.bioEn = fields.bioEn.trim();
+        const exp = Number(fields.experienceYears);
+        if (!isNaN(exp) && exp >= 1) cap.experienceYears = exp;
+
+        if (file && file.url) cap.photo = file.url;
+        else if (fields.imageData) {
+            const saved = saveBase64Image(fields.imageData, 'captain');
+            if (saved) cap.photo = saved;
+        } else if (fields.photo && fields.photo.trim()) {
+            cap.photo = fields.photo.trim();
+        }
+        saveDB(db);
+    }
+    res.redirect('/admin?tab=ayarlar&notice=' + encodeURIComponent('Kaptan bilgileri güncellendi.'));
+});
+
+app.post('/admin/captains/:id/delete', requireAdmin, (req, res) => {
+    const db = loadDB();
+    db.captains = (db.captains || []).filter(c => Number(c.id) !== Number(req.params.id));
+    saveDB(db);
+    res.redirect('/admin?tab=ayarlar&notice=' + encodeURIComponent('Kaptan kaydı silindi.'));
+});
+
+/* --- SIKÇA SORULAN SORULAR (FAQ) CMS --- */
+app.post('/admin/faqs/add', requireAdmin, (req, res) => {
+    const db = loadDB();
+    const questionTr = String(req.body.questionTr || '').trim();
+    const answerTr = String(req.body.answerTr || '').trim();
+    if (questionTr && answerTr) {
+        db.faqs = db.faqs || [];
+        const nextId = db.faqs.reduce((max, f) => Math.max(max, Number(f.id) || 0), 0) + 1;
+        db.faqs.push({
+            id: nextId,
+            questionTr,
+            questionEn: String(req.body.questionEn || questionTr).trim(),
+            answerTr,
+            answerEn: String(req.body.answerEn || answerTr).trim(),
+            active: true
+        });
+        saveDB(db);
+    }
+    res.redirect('/admin?tab=ayarlar&notice=' + encodeURIComponent('Yeni SSS maddesi eklendi.'));
+});
+
+app.post('/admin/faqs/:id/update', requireAdmin, (req, res) => {
+    const db = loadDB();
+    const faq = (db.faqs || []).find(f => Number(f.id) === Number(req.params.id));
+    if (faq) {
+        if (req.body.questionTr && req.body.questionTr.trim()) faq.questionTr = req.body.questionTr.trim();
+        if (typeof req.body.questionEn === 'string') faq.questionEn = req.body.questionEn.trim();
+        if (req.body.answerTr && req.body.answerTr.trim()) faq.answerTr = req.body.answerTr.trim();
+        if (typeof req.body.answerEn === 'string') faq.answerEn = req.body.answerEn.trim();
+        saveDB(db);
+    }
+    res.redirect('/admin?tab=ayarlar&notice=' + encodeURIComponent('SSS maddesi güncellendi.'));
+});
+
+app.post('/admin/faqs/:id/delete', requireAdmin, (req, res) => {
+    const db = loadDB();
+    db.faqs = (db.faqs || []).filter(f => Number(f.id) !== Number(req.params.id));
+    saveDB(db);
+    res.redirect('/admin?tab=ayarlar&notice=' + encodeURIComponent('SSS maddesi silindi.'));
+});
+
+/* --- KOMMENT SİLME --- */
+app.post('/admin/reviews/:yachtId/:reviewIndex/delete', requireAdmin, (req, res) => {
+    const db = loadDB();
+    const yacht = (db.yachts || []).find(y => Number(y.id) === Number(req.params.yachtId));
+    const idx = Number(req.params.reviewIndex);
+    if (yacht && Array.isArray(yacht.reviewList) && idx >= 0 && idx < yacht.reviewList.length) {
+        yacht.reviewList.splice(idx, 1);
+        yacht.reviews = Math.max(0, yacht.reviewList.length);
+        if (yacht.reviewList.length > 0) {
+            const avg = yacht.reviewList.reduce((s, r) => s + Number(r.rating || 5), 0) / yacht.reviewList.length;
+            yacht.rating = Number(avg.toFixed(1));
+        }
+        saveDB(db);
+    }
+    res.redirect('/admin?tab=ayarlar&notice=' + encodeURIComponent('Müşteri yorumu silindi.'));
 });
 
 app.post('/admin/promocodes/add', requireAdmin, (req, res) => {
@@ -1620,6 +2132,7 @@ app.post('/admin/site-settings/update', requireAdmin, (req, res) => {
     db.siteSettings = Object.assign({}, current, {
         brandName: (req.body.brandName || current.brandName || 'YachtVoyage').trim(),
         brandSubtext: (req.body.brandSubtext || current.brandSubtext || 'Yacht Charter').trim(),
+        defaultDeparture: (req.body.defaultDeparture || current.defaultDeparture || 'Marmaris').trim(),
         heroBadge: typeof req.body.heroBadge === 'string' && req.body.heroBadge.trim() ? req.body.heroBadge.trim() : current.heroBadge,
         heroBadgeEn: typeof req.body.heroBadgeEn === 'string' && req.body.heroBadgeEn.trim() ? req.body.heroBadgeEn.trim() : current.heroBadgeEn,
         heroTitle: typeof req.body.heroTitle === 'string' && req.body.heroTitle.trim() ? req.body.heroTitle.trim() : current.heroTitle,
@@ -2020,12 +2533,18 @@ app.post('/admin/payments/:id/delete', requireAdmin, (req, res) => {
 app.post('/admin/extras/add', requireAdmin, (req, res) => {
     const db = loadDB();
     const name = (req.body.name || '').trim();
+    const nameEn = (req.body.nameEn || name).trim();
+    const desc = (req.body.desc || '').trim();
+    const descEn = (req.body.descEn || desc).trim();
     const pricePerGuest = Math.max(0, Number(req.body.pricePerGuest) || 0);
     if (name) {
         const nextId = (db.extras || []).reduce((max, e) => Math.max(max, Number(e.id) || 0), 0) + 1;
         db.extras.push({
             id: nextId,
             name,
+            nameEn,
+            desc,
+            descEn,
             pricePerGuest,
             active: true
         });
@@ -2038,6 +2557,10 @@ app.post('/admin/extras/:id/update', requireAdmin, (req, res) => {
     const db = loadDB();
     const item = (db.extras || []).find(e => Number(e.id) === Number(req.params.id));
     if (item) {
+        if (req.body.name && req.body.name.trim()) item.name = req.body.name.trim();
+        if (typeof req.body.nameEn === 'string' && req.body.nameEn.trim()) item.nameEn = req.body.nameEn.trim();
+        if (typeof req.body.desc === 'string') item.desc = req.body.desc.trim();
+        if (typeof req.body.descEn === 'string') item.descEn = req.body.descEn.trim();
         const p = Number(req.body.pricePerGuest);
         if (!isNaN(p) && p >= 0) item.pricePerGuest = p;
         if (typeof req.body.toggleActive !== 'undefined') {
@@ -2045,7 +2568,7 @@ app.post('/admin/extras/:id/update', requireAdmin, (req, res) => {
         }
         saveDB(db);
     }
-    res.redirect('/admin?tab=ayarlar&notice=' + encodeURIComponent('Ekstra hizmet fiyatı/durumu güncellendi.'));
+    res.redirect('/admin?tab=ayarlar&notice=' + encodeURIComponent('Ekstra hizmet güncellendi.'));
 });
 
 app.post('/admin/extras/:id/delete', requireAdmin, (req, res) => {
@@ -2053,6 +2576,192 @@ app.post('/admin/extras/:id/delete', requireAdmin, (req, res) => {
     db.extras = (db.extras || []).filter(e => Number(e.id) !== Number(req.params.id));
     saveDB(db);
     res.redirect('/admin?tab=ayarlar&notice=' + encodeURIComponent('Ekstra hizmet silindi.'));
+});
+
+app.post('/admin/bookings/create', requireAdmin, (req, res) => {
+    const db = loadDB();
+    const yacht = db.yachts.find(y => Number(y.id) === Number(req.body.yachtId)) || db.yachts[0];
+    if (!yacht) return res.redirect('/admin?tab=rezervasyonlar');
+
+    const startYmd = String(req.body.checkIn || '').trim();
+    const rawEndYmd = String(req.body.checkOut || '').trim();
+    const rawDaily = isDailyCharter(req.body.charterType);
+
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(startYmd)) {
+        return res.redirect('/admin?tab=rezervasyonlar&notice=' + encodeURIComponent('Geçerli bir giriş tarihi girin.'));
+    }
+
+    const endYmd = rawDaily ? startYmd : (/^\d{4}-\d{2}-\d{2}$/.test(rawEndYmd) && rawEndYmd > startYmd ? rawEndYmd : addDaysYMD(startYmd, 1));
+    const days = rawDaily ? 1 : calcDays(startYmd, endYmd, 'Özel Yat Kiralama (Konaklamalı)');
+    const isDaily = days === 1 && (rawDaily || startYmd === endYmd);
+    const overlapEndYmd = isDaily ? addDaysYMD(startYmd, 1) : endYmd;
+
+    const conflict = db.bookings.find(b =>
+        Number(b.yachtId) === Number(yacht.id) &&
+        b.status !== 'İptal Edildi' &&
+        b.status !== 'İptal' &&
+        b.status !== 'Reddedildi' &&
+        isDateOverlap(startYmd, overlapEndYmd, b.checkIn, b.checkOut)
+    );
+
+    if (conflict) {
+        return res.redirect('/admin?tab=rezervasyonlar&notice=' + encodeURIComponent(`Seçilen tarihler (${conflict.checkIn} - ${conflict.checkOut}) bu yat için dolu.`));
+    }
+
+    let pnr = '';
+    const existingIds = new Set((db.bookings || []).map(b => String(b.id || '').toUpperCase()));
+    do {
+        pnr = `YV2026-${Math.floor(1000 + Math.random() * 9000)}`;
+    } while (existingIds.has(pnr));
+
+    const totalAmount = Math.max(0, Number(req.body.totalAmount) || (Number(yacht.price || 0) * days));
+    const paidAmount = Math.min(totalAmount, Math.max(0, Number(req.body.paidAmount) || 0));
+    const status = String(req.body.status || 'Onaylandı').trim();
+
+    const newBooking = normalizeBookingRecord({
+        id: pnr,
+        customer: String(req.body.customerName || 'Manuel Misafir').trim(),
+        email: String(req.body.email || '').trim().toLowerCase(),
+        phone: String(req.body.phone || '').trim(),
+        yachtId: yacht.id,
+        yacht: yacht.name,
+        location: yacht.location || '',
+        checkIn: startYmd,
+        checkOut: endYmd,
+        tourTimeSlot: isDaily ? String(req.body.tourTimeSlot || '10:00 - 18:00').trim() : null,
+        days,
+        guests: Math.min(Number(yacht.guests) || 12, Math.max(1, Number(req.body.guests) || 2)),
+        charterType: isDaily ? 'Günlük VIP Koy Turu' : 'Özel Yat Kiralama (Konaklamalı)',
+        extras: [],
+        extrasTotal: 0,
+        notes: String(req.body.notes || '').trim(),
+        discount: 0,
+        totalAmount,
+        paidAmount,
+        refundedAmount: 0,
+        refundStatus: 'none',
+        refundRuleReason: '',
+        paymentStatus: paidAmount >= totalAmount ? 'paid_full' : (paidAmount > 0 ? 'deposit_paid' : 'pending_payment'),
+        paymentType: paidAmount >= totalAmount ? 'Tam Ödeme' : 'Hisseli Ödeme',
+        paymentMethod: String(req.body.paymentMethod || 'Nakit / Marina Ödemesi').trim(),
+        assignedCaptain: String(req.body.assignedCaptain || '').trim(),
+        assignedTransfer: String(req.body.assignedTransfer || '').trim(),
+        adminNote: String(req.body.adminNote || 'Admin panelinden manuel oluşturuldu.').trim(),
+        status
+    });
+
+    db.bookings.unshift(newBooking);
+    saveDB(db);
+
+    const waTemplate = (db.siteSettings && db.siteSettings.manualBookingWaTemplate) || DEFAULT_MANUAL_WA_TEMPLATE;
+    const waInfo = buildManualBookingWhatsapp(waTemplate, newBooking);
+
+    return res.redirect(
+        '/admin?tab=rezervasyonlar' +
+        '&notice=' + encodeURIComponent(`Manuel rezervasyon (${pnr}) oluşturuldu. Müşteriye WhatsApp mesajı hazır.`) +
+        '&waUrl=' + encodeURIComponent(waInfo.whatsappUrl)
+    );
+});
+
+app.post('/admin/bookings/:id/edit', requireAdmin, (req, res) => {
+    const db = loadDB();
+    const bookingId = decodeURIComponent(req.params.id);
+    const booking = db.bookings.find(b => b.id === bookingId);
+    if (!booking) return res.redirect('/admin?tab=rezervasyonlar');
+
+    const targetYacht = db.yachts.find(y => Number(y.id) === Number(req.body.yachtId || booking.yachtId)) || resolveBookingYacht(db, booking);
+    const startYmd = String(req.body.checkIn || booking.checkIn).trim();
+    const rawEndYmd = String(req.body.checkOut || booking.checkOut).trim();
+    const rawDaily = isDailyCharter(req.body.charterType || booking.charterType);
+
+    const endYmd = rawDaily ? startYmd : (/^\d{4}-\d{2}-\d{2}$/.test(rawEndYmd) && rawEndYmd > startYmd ? rawEndYmd : addDaysYMD(startYmd, 1));
+    const days = rawDaily ? 1 : calcDays(startYmd, endYmd, 'Özel Yat Kiralama (Konaklamalı)');
+    const isDaily = days === 1 && (rawDaily || startYmd === endYmd);
+    const overlapEndYmd = isDaily ? addDaysYMD(startYmd, 1) : endYmd;
+
+    const conflict = db.bookings.find(b =>
+        b.id !== booking.id &&
+        Number(b.yachtId) === Number(targetYacht.id) &&
+        b.status !== 'İptal Edildi' &&
+        b.status !== 'İptal' &&
+        b.status !== 'Reddedildi' &&
+        isDateOverlap(startYmd, overlapEndYmd, b.checkIn, b.checkOut)
+    );
+
+    if (conflict) {
+        return res.redirect('/admin?tab=rezervasyonlar&notice=' + encodeURIComponent(`Tarih değişikliği yapılamadı: ${conflict.checkIn} - ${conflict.checkOut} dolu.`));
+    }
+
+    booking.yachtId = targetYacht.id;
+    booking.yacht = targetYacht.name;
+    booking.location = targetYacht.location || booking.location || '';
+    booking.checkIn = startYmd;
+    booking.checkOut = endYmd;
+    booking.days = days;
+    booking.charterType = isDaily ? 'Günlük VIP Koy Turu' : 'Özel Yat Kiralama (Konaklamalı)';
+    booking.tourTimeSlot = isDaily ? String(req.body.tourTimeSlot || booking.tourTimeSlot || '10:00 - 18:00').trim() : null;
+    booking.guests = Math.min(Number(targetYacht.guests) || 12, Math.max(1, Number(req.body.guests) || booking.guests || 1));
+
+    if (req.body.totalAmount !== undefined && String(req.body.totalAmount).trim() !== '') {
+        booking.totalAmount = Math.max(0, Number(req.body.totalAmount) || booking.totalAmount);
+    }
+    if (req.body.paidAmount !== undefined && String(req.body.paidAmount).trim() !== '') {
+        booking.paidAmount = Math.max(0, Number(req.body.paidAmount) || 0);
+    }
+
+    normalizeBookingRecord(booking);
+    saveDB(db);
+    res.redirect('/admin?tab=rezervasyonlar&notice=' + encodeURIComponent('Rezervasyon yat, tarih ve kapasite bilgileri güncellendi.'));
+});
+
+app.post('/admin/bookings/:id/mark-paid', requireAdmin, (req, res) => {
+    const db = loadDB();
+    const bookingId = decodeURIComponent(req.params.id);
+    const booking = db.bookings.find(b => b.id === bookingId);
+    if (booking) {
+        booking.paidAmount = Number(booking.totalAmount || 0);
+        booking.paymentStatus = 'paid_full';
+        booking.remainingBalance = 0;
+        booking.paidCompletedAt = getTodayYMD();
+        const noteAppend = `Marina bakiyesi tahsil edildi (${booking.paidCompletedAt}).`;
+        booking.adminNote = booking.adminNote ? `${booking.adminNote} | ${noteAppend}` : noteAppend;
+        saveDB(db);
+    }
+    res.redirect('/admin?tab=rezervasyonlar&notice=' + encodeURIComponent('Kalan bakiye ödendi olarak kapatıldı.'));
+});
+
+app.post('/admin/bookings/:id/refund', requireAdmin, (req, res) => {
+    const db = loadDB();
+    const bookingId = decodeURIComponent(req.params.id);
+    const booking = db.bookings.find(b => b.id === bookingId);
+    if (booking) {
+        const paid = Number(booking.paidAmount || 0);
+        const requestedRefund = Math.min(paid, Math.max(0, Number(req.body.refundAmount) || 0));
+        const customNote = String(req.body.refundNote || '').trim();
+        const todayStr = getTodayYMD();
+
+        if (booking.status !== 'İptal Edildi' && booking.status !== 'Reddedildi') {
+            booking.status = 'İptal Edildi';
+        }
+        booking.remainingBalance = 0;
+
+        if (requestedRefund > 0) {
+            booking.refundedAmount = requestedRefund;
+            booking.refundStatus = requestedRefund >= paid ? 'full_refund_admin' : 'partial_refund_admin';
+            booking.refundedAt = todayStr;
+            booking.refundRuleReason = customNote
+                ? `${customNote} — İade Edilen: €${requestedRefund.toLocaleString()} (${todayStr})`
+                : `Admin onayı ile €${requestedRefund.toLocaleString()} tutarında iade yapıldı (${todayStr}).`;
+        } else {
+            booking.refundedAmount = 0;
+            booking.refundStatus = 'no_refund_admin';
+            booking.refundedAt = '';
+            booking.refundRuleReason = customNote || 'Admin kararı / iptal koşulları gereği iade uygulanmadı (€0).';
+        }
+
+        saveDB(db);
+    }
+    res.redirect('/admin?tab=rezervasyonlar&notice=' + encodeURIComponent('İade tutarı ve açıklaması güncellendi.'));
 });
 
 app.post('/admin/bookings/:id/assign', requireAdmin, (req, res) => {
@@ -2081,6 +2790,7 @@ app.post('/admin/bookings/:id/status', requireAdmin, (req, res) => {
     if (booking && req.body.status) {
         const nextStatus = String(req.body.status).trim();
         const isAlreadyCancelled = booking.status === 'İptal Edildi' || booking.status === 'İptal';
+        const todayStr = getTodayYMD();
 
         if (isAlreadyCancelled && nextStatus === 'Onaylandı') {
             return res.redirect('/admin?tab=rezervasyonlar&notice=' + encodeURIComponent('İptal edilmiş rezervasyon onaylanamaz.'));
@@ -2094,31 +2804,42 @@ app.post('/admin/bookings/:id/status', requireAdmin, (req, res) => {
             }
             booking.refundedAmount = 0;
             booking.refundStatus = 'none';
+            booking.refundedAt = '';
             booking.refundRuleReason = '';
-        } else if (booking.status === 'İptal Edildi') {
+        } else if (booking.status === 'İptal Edildi' || booking.status === 'Reddedildi') {
             const daysLeft = daysUntilYMD(booking.checkIn);
             const currentPaid = Number(booking.paidAmount || 0);
+            const rejectReason = String(req.body.rejectionReason || '').trim();
+            if (rejectReason) booking.rejectionReason = rejectReason;
 
             if (currentPaid > 0) {
-                if (daysLeft !== null && daysLeft >= 7) {
+                if (booking.status === 'Reddedildi' || (daysLeft !== null && daysLeft >= 7)) {
                     booking.refundedAmount = currentPaid;
-                    booking.refundStatus = 'full_refund_7plus_days';
-                    booking.refundRuleReason = `Check-in tarihine ${daysLeft} gün kaldığı için (7+ gün kuralı) ödenen tutarın tamamı (€${currentPaid.toLocaleString()}) iade edildi.`;
+                    booking.refundStatus = booking.status === 'Reddedildi' ? 'full_refund_rejected' : 'full_refund_7plus_days';
+                    booking.refundedAt = todayStr;
+                    booking.refundRuleReason = booking.status === 'Reddedildi'
+                        ? `Rezervasyon reddedildiği için ödenen tutarın tamamı (€${currentPaid.toLocaleString()}) iade edildi (${todayStr}).`
+                        : `Check-in tarihine ${daysLeft} gün kaldığı için (7+ gün kuralı) ödenen tutarın tamamı (€${currentPaid.toLocaleString()}) iade edildi (${todayStr}).`;
                 } else if (daysLeft !== null && daysLeft >= 0) {
                     booking.refundedAmount = 0;
                     booking.refundStatus = 'non_refundable_under_7_days';
+                    booking.refundedAt = '';
                     booking.refundRuleReason = `Check-in tarihine ${daysLeft} gün kaldığı için (7 günden az) iade uygulanmadı.`;
                 } else {
                     booking.refundedAmount = 0;
                     booking.refundStatus = 'past_date_no_refund';
+                    booking.refundedAt = '';
                     booking.refundRuleReason = 'Check-in tarihi geçtiği için iade uygulanmadı.';
                 }
             } else {
                 booking.refundedAmount = 0;
                 booking.refundStatus = 'no_payment';
+                booking.refundedAt = '';
                 booking.refundRuleReason = 'Tahsil edilmiş ödeme bulunmadığı için iade tutarı €0.';
             }
+            booking.remainingBalance = 0;
         }
+        normalizeBookingRecord(booking);
         saveDB(db);
     }
     res.redirect('/admin?tab=rezervasyonlar&notice=' + encodeURIComponent('Rezervasyon durumu güncellendi.'));

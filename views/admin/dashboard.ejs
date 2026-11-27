@@ -24,6 +24,15 @@
             .admin-action-btn { min-height: 34px; display: inline-flex; align-items: center; justify-content: center; }
             .admin-table th, .admin-table td { padding: 0.7rem 0.75rem !important; white-space: nowrap; }
         }
+        #bookingDetailDrawer.drawer-open {
+            pointer-events: auto;
+        }
+        #bookingDetailDrawer.drawer-open #bookingDrawerBackdrop {
+            opacity: 1;
+        }
+        #bookingDetailDrawer.drawer-open #bookingDrawerPanel {
+            transform: translateX(0);
+        }
     </style>
 </head>
 <body class="bg-slate-100 text-slate-900 min-h-screen flex flex-col md:flex-row">
@@ -37,6 +46,24 @@
         const safeDepartures = (typeof departurePoints !== 'undefined' && Array.isArray(departurePoints)) ? departurePoints : [];
         const safeAdminUsers = (typeof adminUsers !== 'undefined' && Array.isArray(adminUsers)) ? adminUsers : [];
         const safePromoCodes = (typeof promoCodes !== 'undefined' && Array.isArray(promoCodes)) ? promoCodes : [];
+        const safeTimeSlots = (typeof timeSlots !== 'undefined' && Array.isArray(timeSlots)) ? timeSlots : [];
+        const safeCaptains = (typeof captains !== 'undefined' && Array.isArray(captains)) ? captains : [];
+        const safeFaqs = (typeof faqs !== 'undefined' && Array.isArray(faqs)) ? faqs : [];
+        const safeReviews = (typeof allReviews !== 'undefined' && Array.isArray(allReviews)) ? allReviews : [];
+
+        const defaultWaTpl =
+            'Merhaba {customer}, {yacht} için rezervasyonunuz oluşturuldu.\n' +
+            'PNR: {pnr}\n' +
+            'Tarih: {checkIn} - {checkOut} ({timeSlot})\n' +
+            'Misafir: {guests} kişi\n' +
+            'Toplam: €{totalAmount} | Ödenen: €{paidAmount} | Kalan: €{remainingAmount}\n' +
+            'Kaptan: {captain} | Transfer: {transfer}\n' +
+            'Not: {notes}';
+        const activeWaTemplate = (typeof manualBookingWaTemplate !== 'undefined' && manualBookingWaTemplate)
+            ? manualBookingWaTemplate
+            : ((typeof siteSettings !== 'undefined' && siteSettings && siteSettings.manualBookingWaTemplate)
+                ? siteSettings.manualBookingWaTemplate
+                : defaultWaTpl);
 
         const planCfg = (typeof paymentPlanSettings !== 'undefined' && paymentPlanSettings) ? paymentPlanSettings : {
             installmentPercent: 50,
@@ -62,7 +89,7 @@
         const normalizeBookingStatus = (raw) => {
             const v = String(raw || '').trim();
             if (v === 'Onaylandı' || v === 'confirmed' || v === 'approved') return 'Onaylandı';
-            if (v === 'İptal' || v === 'İptal Edildi' || v === 'cancelled' || v === 'rejected' || v === 'Reddedildi') return 'İptal Edildi';
+            if (v === 'İptal' || v === 'İptal Edildi' || v === 'cancelled' || v === 'rejected' || v === 'Reddedildi' || v === 'Reddedildi (Hava Muhalefeti)') return 'İptal Edildi';
             return 'Beklemede';
         };
 
@@ -74,7 +101,47 @@
             const targetUtc = Date.UTC(p[0], (p[1] || 1) - 1, p[2] || 1);
             return Math.round((targetUtc - todayUtc) / 86400000);
         };
+
+        const buildWaLinkForRow = (bookingObj) => {
+            if (bookingObj && bookingObj.whatsappUrl) return bookingObj.whatsappUrl;
+            const cleanPh = String((bookingObj && bookingObj.phone) || '').replace(/\D/g, '');
+            const tot = Number((bookingObj && bookingObj.totalAmount) || 0);
+            const pd = Number((bookingObj && bookingObj.paidAmount) || 0);
+            const rem = Math.max(0, tot - pd);
+            const mapObj = {
+                '{pnr}': (bookingObj && bookingObj.id) || '',
+                '{customer}': (bookingObj && bookingObj.customer) || 'Misafir',
+                '{yacht}': (bookingObj && bookingObj.yacht) || '',
+                '{checkIn}': (bookingObj && bookingObj.checkIn) || '',
+                '{checkOut}': (bookingObj && (bookingObj.checkOut || bookingObj.checkIn)) || '',
+                '{timeSlot}': (bookingObj && bookingObj.tourTimeSlot) || 'Tam Gün',
+                '{guests}': String((bookingObj && bookingObj.guests) || 1),
+                '{totalAmount}': tot.toLocaleString(),
+                '{paidAmount}': pd.toLocaleString(),
+                '{remainingAmount}': rem.toLocaleString(),
+                '{captain}': (bookingObj && bookingObj.assignedCaptain) || '-',
+                '{transfer}': (bookingObj && bookingObj.assignedTransfer) || '-',
+                '{notes}': (bookingObj && bookingObj.notes) || '-'
+            };
+            let msg = activeWaTemplate;
+            Object.keys(mapObj).forEach(k => { msg = msg.split(k).join(mapObj[k]); });
+            return cleanPh
+                ? ('https://wa.me/' + encodeURIComponent(cleanPh) + '?text=' + encodeURIComponent(msg))
+                : ('https://wa.me/?text=' + encodeURIComponent(msg));
+        };
     %>
+
+    <datalist id="adminCaptainList">
+        <% safeCaptains.forEach(cp => { %>
+            <option value="<%= cp.name %>"></option>
+        <% }) %>
+    </datalist>
+
+    <datalist id="adminSlotList">
+        <% safeTimeSlots.forEach(sl => { %>
+            <option value="<%= sl.label %>"></option>
+        <% }) %>
+    </datalist>
 
 <!-- MOBİL ÜST BAR -->
 <div class="md:hidden sticky top-0 z-40 bg-[#0B1F3A] text-white px-4 py-3 flex items-center justify-between shadow-md">
@@ -201,10 +268,16 @@
     </div>
 
     <% if (typeof notice !== 'undefined' && notice) { %>
-        <div id="adminNoticeBanner" class="bg-emerald-50 border border-emerald-200 text-emerald-800 px-4 py-3 rounded-2xl text-xs font-bold flex items-center justify-between gap-3">
-            <div class="flex items-center space-x-2 min-w-0">
+        <div id="adminNoticeBanner" class="bg-emerald-50 border border-emerald-200 text-emerald-800 px-4 py-3 rounded-2xl text-xs font-bold flex flex-wrap items-center justify-between gap-3">
+            <div class="flex items-center flex-wrap gap-2 min-w-0">
                 <i class="fa-solid fa-circle-check text-emerald-600 shrink-0"></i>
                 <span><%= notice %></span>
+                <% if (typeof waShareUrl !== 'undefined' && waShareUrl) { %>
+                    <a href="<%= waShareUrl %>" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-[11px] font-bold transition shadow-sm">
+                        <i class="fa-brands fa-whatsapp text-sm"></i>
+                        <span>Müşteriye WhatsApp ile Gönder</span>
+                    </a>
+                <% } %>
             </div>
             <button
                 type="button"
@@ -453,182 +526,435 @@
         </div>
     </section>
 
-    <!-- 2. REZERVASYONLAR -->
-    <section id="view-rezervasyonlar" class="admin-view hidden bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-        <div class="p-4 sm:p-5 border-b border-slate-100 flex flex-col lg:flex-row lg:items-center justify-between gap-3">
-            <div class="flex flex-wrap items-center gap-2">
-                <span class="font-extrabold text-slate-900 text-sm sm:text-base mr-1">Rezervasyonlar (<%= safeBookings.length %>)</span>
-                <button type="button" data-status-filter="all" class="status-filter-btn px-3 py-1.5 rounded-lg text-[11px] font-bold bg-[#0B1F3A] text-white">Tümü</button>
-                <button type="button" data-status-filter="Beklemede" class="status-filter-btn px-3 py-1.5 rounded-lg text-[11px] font-bold bg-slate-100 text-slate-700">Bekleyen (<%= pendingCount %>)</button>
-                <button type="button" data-status-filter="Onaylandı" class="status-filter-btn px-3 py-1.5 rounded-lg text-[11px] font-bold bg-slate-100 text-slate-700">Onaylı (<%= approvedCount %>)</button>
-                <button type="button" data-status-filter="İptal Edildi" class="status-filter-btn px-3 py-1.5 rounded-lg text-[11px] font-bold bg-slate-100 text-slate-700">İptal (<%= cancelledCount %>)</button>
+    <!-- 2. REZERVASYONLAR + MANUEL REZERV + WHATSAPP ŞABLONU -->
+    <section id="view-rezervasyonlar" class="admin-view hidden space-y-6">
+        <div class="grid grid-cols-1 xl:grid-cols-12 gap-6">
+            <!-- Manuel Rezervasyon Yaratma Formu -->
+            <div class="xl:col-span-7 bg-white p-5 sm:p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+                <div class="flex items-center justify-between gap-2">
+                    <div>
+                        <h3 class="font-extrabold text-slate-900 text-base">Manuel Rezervasyon Oluştur</h3>
+                        <p class="text-xs text-slate-500 mt-0.5">Müşteri telefon numarası ile kayıt açın, tüm detayları WhatsApp şablonuyla anında gönderin.</p>
+                    </div>
+                    <span class="px-2.5 py-1 rounded-lg bg-teal-50 text-teal-700 text-[11px] font-extrabold">+ Manuel Rezerv</span>
+                </div>
+
+                <form action="/admin/bookings/create" method="POST" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 text-xs">
+                    <div>
+                        <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">Müşteri Ad Soyad *</label>
+                        <input type="text" name="customerName" required placeholder="Örn: Orhan Əliyev" class="w-full p-2.5 border border-slate-200 rounded-xl font-semibold">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">Telefon (WhatsApp) *</label>
+                        <input type="text" name="phone" required placeholder="+994 50 123 45 67" class="w-full p-2.5 border border-slate-200 rounded-xl font-mono font-bold">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">E-posta</label>
+                        <input type="email" name="email" placeholder="musteri@mail.com" class="w-full p-2.5 border border-slate-200 rounded-xl">
+                    </div>
+
+                    <div>
+                        <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">Yat Seçimi *</label>
+                        <select name="yachtId" class="w-full p-2.5 border border-slate-200 rounded-xl font-bold bg-white">
+                            <% safeYachts.forEach(y => { %>
+                                <option value="<%= y.id %>"><%= y.name %> (<%= y.location %> • €<%= y.price %>/gün)</option>
+                            <% }) %>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">Tur Tipi</label>
+                        <select name="charterType" class="w-full p-2.5 border border-slate-200 rounded-xl font-medium bg-white">
+                            <option value="Özel Yat Kiralama (Konaklamalı)">Konaklamalı Kiralama</option>
+                            <option value="Günlük VIP Koy Turu">Günlük / Saatlik Tur</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">Saat Aralığı (Günlük)</label>
+                        <input type="text" name="tourTimeSlot" list="adminSlotList" value="10:00 - 18:00" class="w-full p-2.5 border border-slate-200 rounded-xl font-medium">
+                    </div>
+
+                    <div>
+                        <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">Giriş Tarihi *</label>
+                        <input type="date" name="checkIn" required class="w-full p-2.5 border border-slate-200 rounded-xl font-semibold">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">Çıkış Tarihi</label>
+                        <input type="date" name="checkOut" class="w-full p-2.5 border border-slate-200 rounded-xl font-semibold">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">Misafir Sayısı</label>
+                        <input type="number" name="guests" min="1" value="6" class="w-full p-2.5 border border-slate-200 rounded-xl font-bold">
+                    </div>
+
+                    <div>
+                        <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">Toplam Tutar (€)</label>
+                        <input type="number" name="totalAmount" min="0" placeholder="Otomatik veya girin" class="w-full p-2.5 border border-slate-200 rounded-xl font-extrabold">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">Ödenen Tutar (€)</label>
+                        <input type="number" name="paidAmount" min="0" value="0" class="w-full p-2.5 border border-slate-200 rounded-xl font-bold text-emerald-700">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">Durum &amp; Ödeme</label>
+                        <div class="grid grid-cols-2 gap-1.5">
+                            <select name="status" class="p-2.5 border border-slate-200 rounded-xl font-bold bg-white">
+                                <option value="Onaylandı">Onaylandı</option>
+                                <option value="Beklemede">Beklemede</option>
+                            </select>
+                            <select name="paymentMethod" class="p-2.5 border border-slate-200 rounded-xl font-medium bg-white">
+                                <% safePayments.forEach(p => { %>
+                                    <option value="<%= p.name %>"><%= p.name %></option>
+                                <% }) %>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">Kaptan</label>
+                        <input type="text" name="assignedCaptain" list="adminCaptainList" placeholder="Kaptan seçin veya yazın" class="w-full p-2.5 border border-slate-200 rounded-xl">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">VIP Transfer</label>
+                        <input type="text" name="assignedTransfer" placeholder="Örn: Dalaman Marina VIP" class="w-full p-2.5 border border-slate-200 rounded-xl">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">Müşteri Notu</label>
+                        <input type="text" name="notes" placeholder="Menü, rota, özel istek..." class="w-full p-2.5 border border-slate-200 rounded-xl">
+                    </div>
+
+                    <div class="sm:col-span-2 lg:col-span-3 flex items-center justify-end pt-1">
+                        <button type="submit" class="px-5 py-2.5 bg-teal-600 hover:bg-teal-700 text-white rounded-xl font-bold text-xs shadow transition inline-flex items-center gap-2">
+                            <i class="fa-brands fa-whatsapp text-sm"></i>
+                            <span>Rezervasyonu Oluştur &amp; WhatsApp Hazırla</span>
+                        </button>
+                    </div>
+                </form>
             </div>
-            <input id="bookingSearchInput" type="text" placeholder="PNR, müşteri veya yat ara..." class="px-3.5 py-2 text-xs border border-slate-200 rounded-xl w-full lg:w-64 focus:outline-none focus:border-teal-600">
+
+            <!-- WhatsApp Mesaj Şablonu Editörü -->
+            <div class="xl:col-span-5 bg-white p-5 sm:p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+                <div>
+                    <h3 class="font-extrabold text-slate-900 text-base">WhatsApp Mesaj Şablonu</h3>
+                    <p class="text-xs text-slate-500 mt-0.5">Manuel rezervasyonda müşteriye gönderilecek mesaj şablonunu buradan yönetin.</p>
+                </div>
+
+                <div class="flex flex-wrap gap-1.5">
+                    <% const waVars = ['{pnr}', '{customer}', '{yacht}', '{checkIn}', '{checkOut}', '{timeSlot}', '{guests}', '{totalAmount}', '{paidAmount}', '{remainingAmount}', '{captain}', '{transfer}', '{notes}']; %>
+                    <% waVars.forEach(tag => { %>
+                        <button type="button" onclick="insertWaTag('<%= tag %>')" class="px-2 py-1 rounded-md bg-slate-100 hover:bg-teal-50 hover:text-teal-800 text-[10px] font-mono font-bold text-slate-700 border border-slate-200 transition">
+                            + <%= tag %>
+                        </button>
+                    <% }) %>
+                </div>
+
+                <form action="/admin/whatsapp-template/update" method="POST" class="space-y-3">
+                    <textarea id="manualWaTemplateInput" name="manualBookingWaTemplate" rows="8" required class="w-full p-3 border border-slate-200 rounded-xl text-xs font-mono leading-relaxed text-slate-800 focus:outline-none focus:border-teal-600"><%= activeWaTemplate %></textarea>
+                    <div class="flex justify-end">
+                        <button type="submit" class="px-4 py-2 bg-[#0B1F3A] hover:bg-sky-900 text-white rounded-xl font-bold text-xs transition">
+                            Şablonu Kaydet
+                        </button>
+                    </div>
+                </form>
+            </div>
         </div>
 
-        <div class="overflow-x-auto">
-            <table class="admin-table w-full text-left text-xs">
-                <thead class="bg-slate-50 text-slate-400 uppercase text-[10px] tracking-wider">
-                    <tr>
-                        <th class="px-4 py-3 whitespace-nowrap">PNR</th>
-                        <th class="px-4 py-3 whitespace-nowrap">Müşteri</th>
-                        <th class="px-4 py-3 whitespace-nowrap">Yat &amp; Paket</th>
-                        <th class="px-4 py-3 whitespace-nowrap">Tarih &amp; Kişi</th>
-                        <th class="px-4 py-3 whitespace-nowrap">Durum</th>
-                        <th class="px-4 py-3 whitespace-nowrap">Ödeme</th>
-                        <th class="px-4 py-3 whitespace-nowrap text-right">İşlem</th>
-                    </tr>
-                </thead>
-                <tbody class="divide-y divide-slate-100">
-                    <% safeBookings.forEach((b, idx) => { %>
-                        <%
-                            const normStatus = normalizeBookingStatus(b.status);
-                            const isCanc = normStatus === 'İptal Edildi';
-                            const isApproved = normStatus === 'Onaylandı';
-                            const payAmt = Number(b.paidAmount || 0);
-                            const totAmt = Number(b.totalAmount || 0);
-                            const daysLeft = calcDaysUntilCheckIn(b.checkIn);
-                            const eligibleFullRefund = daysLeft !== null && daysLeft >= 7;
-                            const refAmt = isCanc
-                                ? ((b.refundedAmount !== undefined && b.refundedAmount !== null) ? Number(b.refundedAmount || 0) : (eligibleFullRefund ? payAmt : 0))
-                                : Number(b.refundedAmount || 0);
-                            const payBadge = b.paymentStatus || (isCanc
-                                ? (refAmt > 0 ? 'İade Edildi' : 'İptal Edildi')
-                                : (payAmt >= totAmt && totAmt > 0 ? 'Tam Ödendi' : (payAmt > 0 ? 'Ön Ödeme' : 'Ödeme Bekliyor')));
-                            const safeBid = encodeURIComponent(b.id);
-                            const detailRowId = 'booking-detail-row-' + idx;
-                            const extrasText = Array.isArray(b.extras) && b.extras.length
-                                ? b.extras.join(', ')
-                                : (b.extras || b.extrasCsv || 'Seçilmedi');
-                        %>
-                        <tr class="booking-row hover:bg-slate-50/70 align-middle" data-booking-status="<%= normStatus %>" data-detail-target="<%= detailRowId %>">
-                            <td class="px-4 py-3 font-mono font-bold text-[#0B1F3A] whitespace-nowrap"><%= b.id %></td>
-                            <td class="px-4 py-3 whitespace-nowrap">
-                                <div class="font-bold text-slate-900"><%= b.customer %></div>
-                                <div class="text-[11px] text-slate-500"><%= b.email || '' %></div>
-                            </td>
-                            <td class="px-4 py-3 whitespace-nowrap">
-                                <div class="font-bold text-slate-800"><%= b.yacht %></div>
-                                <div class="text-[11px] text-slate-500"><%= b.packageName || b.charterType || 'Özel Kiralama' %></div>
-                            </td>
-                            <td class="px-4 py-3 whitespace-nowrap text-slate-700">
-                                <div class="font-medium"><%= b.checkIn %> → <%= b.checkOut %></div>
-                                <div class="text-[11px] font-bold text-slate-900 mt-0.5"><%= b.guests %> Kişi • <%= b.days || 1 %> Gün</div>
-                            </td>
-                            <td class="px-4 py-3 whitespace-nowrap">
-                                <% if (isApproved) { %>
-                                    <span class="inline-flex items-center bg-emerald-100 text-emerald-700 px-2.5 py-1 rounded-full font-bold text-[11px]">Onaylandı</span>
-                                <% } else if (isCanc) { %>
-                                    <span class="inline-flex items-center bg-rose-100 text-rose-700 px-2.5 py-1 rounded-full font-bold text-[11px]">İptal Edildi</span>
-                                <% } else { %>
-                                    <span class="inline-flex items-center bg-amber-100 text-amber-800 px-2.5 py-1 rounded-full font-bold text-[11px]">Onay Bekliyor</span>
-                                <% } %>
-                                <% if (!isCanc && daysLeft !== null && daysLeft >= 0) { %>
-                                    <div class="text-[10px] text-slate-500 mt-1"><%= daysLeft %> gün kaldı (<%= daysLeft >= 7 ? '%100 iade' : '<7 gün' %>)</div>
-                                <% } %>
-                            </td>
-                            <td class="px-4 py-3 whitespace-nowrap">
-                                <span class="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-bold <%= isCanc ? 'bg-rose-50 text-rose-700 border border-rose-200' : 'bg-sky-50 text-sky-800 border border-sky-200' %>">
-                                    <%= payBadge %>
-                                </span>
-                                <div class="text-[11px] text-slate-700 font-semibold mt-1">
-                                    Toplam: €<%= totAmt.toLocaleString() %>
-                                </div>
-                                <% if (isCanc) { %>
-                                    <div class="text-[11px] font-bold text-rose-700">İade: €<%= refAmt.toLocaleString() %></div>
-                                <% } else { %>
-                                    <div class="text-[11px] font-semibold text-emerald-700">Ödenen: €<%= payAmt.toLocaleString() %></div>
-                                <% } %>
-                            </td>
-                            <td class="px-4 py-3 text-right whitespace-nowrap">
-                                <div class="inline-flex items-center gap-1.5">
-                                    <button type="button" onclick="toggleBookingDetail('<%= detailRowId %>')" class="admin-action-btn px-2.5 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-lg font-bold transition">
-                                        Detay
-                                    </button>
-                                    <% if (!isApproved && !isCanc) { %>
-                                        <form action="/admin/bookings/<%= safeBid %>/status" method="POST" class="inline">
-                                            <input type="hidden" name="status" value="Onaylandı">
-                                            <button type="submit" class="admin-action-btn px-2.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg font-bold transition">Onayla</button>
-                                        </form>
-                                    <% } %>
-                                    <% if (!isCanc) { %>
-                                        <form action="/admin/bookings/<%= safeBid %>/status" method="POST" class="inline">
-                                            <input type="hidden" name="status" value="İptal Edildi">
-                                            <button type="submit" class="admin-action-btn px-2.5 py-1.5 bg-rose-600 hover:bg-rose-700 text-white rounded-lg font-bold transition">İptal</button>
-                                        </form>
-                                    <% } %>
-                                    <form action="/admin/bookings/<%= safeBid %>/delete" method="POST" class="inline">
-                                        <button type="submit" class="admin-action-btn px-2 py-1.5 text-slate-400 hover:text-rose-600 rounded-lg transition" title="Sil"><i class="fa-solid fa-trash"></i></button>
-                                    </form>
-                                </div>
-                            </td>
-                        </tr>
-                        <tr id="<%= detailRowId %>" class="booking-detail-row hidden bg-slate-50/90">
-                            <td colspan="7" class="p-4 sm:p-5 whitespace-normal">
-                                <div class="grid grid-cols-1 lg:grid-cols-12 gap-4 items-start">
-                                    <div class="lg:col-span-6 bg-white p-4 rounded-xl border border-slate-200 space-y-2 text-xs">
-                                        <div class="font-extrabold text-[#0B1F3A] uppercase text-[11px]">Rezervasyon &amp; Operasyon Detayları</div>
-                                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-slate-600">
-                                            <div><strong>Telefon:</strong> <%= b.phone || '-' %></div>
-                                            <div><strong>Ödeme Yöntemi:</strong> <%= b.paymentMethod || 'Belirtilmedi' %></div>
-                                            <div><strong>Ödeme Planı:</strong> <%= (b.paymentPlan === 'full' || b.paymentType === 'Tam Ödeme (İndirimli)') ? 'Tam Ödeme' : ('Hisseli (%' + (b.installmentPercent || planCfg.installmentPercent) + ')') %></div>
-                                            <div><strong>Ödeme Durumu:</strong> <%= payBadge %></div>
-                                            <div><strong>Toplam Tutar:</strong> €<%= totAmt.toLocaleString() %></div>
-                                            <div><strong>Ödenen Tutar:</strong> <span class="text-emerald-700 font-bold">€<%= payAmt.toLocaleString() %></span></div>
-                                            <div><strong>Kalan Bakiye:</strong> €<%= isCanc ? 0 : Math.max(0, totAmt - payAmt).toLocaleString() %></div><div><strong>Promokod:</strong> <%= b.promoCode || 'Yok' %></div>
-                                            <% if (isCanc) { %>
-                                                <%
-                                                    const autoRefundReason = b.refundRuleReason
-                                                        || (daysLeft !== null && daysLeft >= 7
-                                                            ? ('Check-in tarihine ' + daysLeft + ' gün kaldığı için (7+ gün kuralı) tam iade.')
-                                                            : (refAmt > 0 && payAmt > 0 && refAmt < payAmt
-                                                                ? ('Ödenen €' + payAmt.toLocaleString() + ' tutarın kısmi/yarısı (€' + refAmt.toLocaleString() + ') iade edildi.')
-                                                                : (daysLeft !== null && daysLeft < 0
-                                                                    ? 'Check-in tarihi geçtiği için standart kurala göre iade uygulanmadı.'
-                                                                    : (daysLeft !== null
-                                                                        ? ('Check-in tarihine ' + daysLeft + ' gün kaldığı için (7 günden az) iade uygulanmadı.')
-                                                                        : 'İptal kuralına göre iade hesaplandı.'))));
-                                                %>
-                                                <div><strong>İade Edilen:</strong> <span class="text-rose-700 font-bold">€<%= refAmt.toLocaleString() %></span></div>
-                                                <div class="sm:col-span-2 bg-rose-50 border border-rose-200 text-rose-800 px-3 py-2 rounded-lg">
-                                                    <strong>İade Gerekçesi:</strong> <%= autoRefundReason %>
-                                                </div>
-                                            <% } %>
-                                            <div class="sm:col-span-2"><strong>Ekstralar:</strong> <%= extrasText %></div>
-                                            <div class="sm:col-span-2"><strong>Müşteri Notu:</strong> <%= b.notes || b.specialRequests || 'Not girilmemiş.' %></div>
-                                        </div>
-                                    </div>
+        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+            <div class="p-4 sm:p-5 border-b border-slate-100 flex flex-col lg:flex-row lg:items-center justify-between gap-3">
+                <div class="flex flex-wrap items-center gap-2">
+                    <span class="font-extrabold text-slate-900 text-sm sm:text-base mr-1">Rezervasyonlar (<%= safeBookings.length %>)</span>
+                    <button type="button" data-status-filter="all" class="status-filter-btn px-3 py-1.5 rounded-lg text-[11px] font-bold bg-[#0B1F3A] text-white">Tümü</button>
+                    <button type="button" data-status-filter="Beklemede" class="status-filter-btn px-3 py-1.5 rounded-lg text-[11px] font-bold bg-slate-100 text-slate-700">Bekleyen (<%= pendingCount %>)</button>
+                    <button type="button" data-status-filter="Onaylandı" class="status-filter-btn px-3 py-1.5 rounded-lg text-[11px] font-bold bg-slate-100 text-slate-700">Onaylı (<%= approvedCount %>)</button>
+                    <button type="button" data-status-filter="İptal Edildi" class="status-filter-btn px-3 py-1.5 rounded-lg text-[11px] font-bold bg-slate-100 text-slate-700">İptal (<%= cancelledCount %>)</button>
+                </div>
+                <input id="bookingSearchInput" type="text" placeholder="PNR, müşteri, telefon veya yat ara..." class="px-3.5 py-2 text-xs border border-slate-200 rounded-xl w-full lg:w-64 focus:outline-none focus:border-teal-600">
+            </div>
 
-                                    <form action="/admin/bookings/<%= safeBid %>/assign" method="POST" class="lg:col-span-6 bg-white p-4 rounded-xl border border-slate-200 space-y-3 text-xs">
-                                        <div class="font-extrabold text-[#0B1F3A] uppercase text-[11px]">Kaptan &amp; VIP Transfer Ataması</div>
-                                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-                                            <div>
-                                                <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">Atanan Kaptan</label>
-                                                <input type="text" name="assignedCaptain" value="<%= b.assignedCaptain || '' %>" placeholder="Örn: Kaptan Ahmet Yılmaz" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-xs font-semibold">
-                                            </div>
-                                            <div>
-                                                <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">VIP Transfer</label>
-                                                <input type="text" name="assignedTransfer" value="<%= b.assignedTransfer || '' %>" placeholder="Örn: Dalaman Havalimanı VIP" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-xs font-semibold">
-                                            </div>
-                                            <div class="sm:col-span-2">
-                                                <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">Operasyon Notu</label>
-                                                <input type="text" name="adminNote" value="<%= b.adminNote || '' %>" placeholder="İskele no, ikram vb." class="w-full px-3 py-2 border border-slate-200 rounded-lg text-xs">
-                                            </div>
-                                        </div>
-                                        <div class="flex justify-end">
-                                            <button type="submit" class="px-4 py-2 bg-[#0B1F3A] hover:bg-sky-900 text-white rounded-lg font-bold text-xs transition">
-                                                Kaydet
-                                            </button>
-                                        </div>
-                                    </form>
-                                </div>
-                            </td>
+            <div class="overflow-x-auto">
+                <table class="admin-table w-full text-left text-xs">
+                    <thead class="bg-slate-50 text-slate-400 uppercase text-[10px] tracking-wider">
+                        <tr>
+                            <th class="px-4 py-3 whitespace-nowrap">PNR</th>
+                            <th class="px-4 py-3 whitespace-nowrap">Müşteri</th>
+                            <th class="px-4 py-3 whitespace-nowrap">Yat &amp; Paket</th>
+                            <th class="px-4 py-3 whitespace-nowrap">Tarih &amp; Kişi</th>
+                            <th class="px-4 py-3 whitespace-nowrap">Durum</th>
+                            <th class="px-4 py-3 whitespace-nowrap">Ödeme</th>
+                            <th class="px-4 py-3 whitespace-nowrap text-right">İşlem</th>
                         </tr>
-                    <% }) %>
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody class="divide-y divide-slate-100">
+                        <% safeBookings.forEach((b, idx) => { %>
+                            <%
+                                const normStatus = normalizeBookingStatus(b.status);
+                                const isCanc = normStatus === 'İptal Edildi';
+                                const isApproved = normStatus === 'Onaylandı';
+                                const payAmt = Number(b.paidAmount || 0);
+                                const totAmt = Number(b.totalAmount || 0);
+                                const remAmt = isCanc ? 0 : Math.max(0, totAmt - payAmt);
+                                const daysLeft = calcDaysUntilCheckIn(b.checkIn);
+                                const eligibleFullRefund = daysLeft !== null && daysLeft >= 7;
+                                const refAmt = isCanc
+                                    ? ((b.refundedAmount !== undefined && b.refundedAmount !== null) ? Number(b.refundedAmount || 0) : (eligibleFullRefund ? payAmt : 0))
+                                    : Number(b.refundedAmount || 0);
+                                const payBadge = b.paymentStatus || (isCanc
+                                    ? (refAmt > 0 ? 'İade Edildi' : 'İptal Edildi')
+                                    : (payAmt >= totAmt && totAmt > 0 ? 'Tam Ödendi' : (payAmt > 0 ? 'Ön Ödeme' : 'Ödeme Bekliyor')));
+                                const safeBid = encodeURIComponent(b.id);
+                                const extrasText = Array.isArray(b.extras) && b.extras.length
+                                    ? b.extras.join(', ')
+                                    : (b.extras || b.extrasCsv || 'Seçilmedi');
+                                const rowWaUrl = buildWaLinkForRow(b);
+                                const autoRefundReason = b.refundRuleReason
+                                    || (daysLeft !== null && daysLeft >= 7
+                                        ? ('Check-in tarihine ' + daysLeft + ' gün kaldığı için (7+ gün kuralı) tam iade.')
+                                        : (refAmt > 0 && payAmt > 0 && refAmt < payAmt
+                                            ? ('Ödenen €' + payAmt.toLocaleString() + ' tutarın kısmi/yarısı (€' + refAmt.toLocaleString() + ') iade edildi.')
+                                            : (daysLeft !== null && daysLeft < 0
+                                                ? 'Check-in tarihi geçtiği için standart kurala göre iade uygulanmadı.'
+                                                : (daysLeft !== null
+                                                    ? ('Check-in tarihine ' + daysLeft + ' gün kaldığı için (7 günden az) iade uygulanmadı.')
+                                                    : 'İptal kuralına göre iade hesaplandı.'))));
+                                const drawerPayload = {
+                                    id: b.id,
+                                    safeBid: safeBid,
+                                    customer: b.customer || '',
+                                    phone: b.phone || '-',
+                                    email: b.email || '-',
+                                    yacht: b.yacht || '',
+                                    yachtId: b.yachtId || '',
+                                    packageName: b.packageName || b.charterType || 'Özel Kiralama',
+                                    checkIn: b.checkIn || '',
+                                    checkOut: b.checkOut || '',
+                                    guests: Number(b.guests || 1),
+                                    days: Number(b.days || 1),
+                                    status: normStatus,
+                                    isCancelled: isCanc,
+                                    paymentMethod: b.paymentMethod || 'Belirtilmedi',
+                                    paymentStatus: payBadge,
+                                    totalAmount: totAmt,
+                                    paidAmount: payAmt,
+                                    remainingAmount: remAmt,
+                                    refundedAmount: refAmt,
+                                    refundRuleReason: autoRefundReason,
+                                    promoCode: b.promoCode || 'Yok',
+                                    extrasText: extrasText,
+                                    notes: b.notes || b.specialRequests || 'Not girilmemiş.',
+                                    assignedCaptain: b.assignedCaptain || '',
+                                    assignedTransfer: b.assignedTransfer || '',
+                                    adminNote: b.adminNote || '',
+                                    waUrl: rowWaUrl
+                                };
+                                const encodedPayload = encodeURIComponent(JSON.stringify(drawerPayload));
+                            %>
+                            <tr class="booking-row hover:bg-slate-50/70 align-middle" data-booking-status="<%= normStatus %>" data-search-text="<%= [b.id, b.customer, b.phone, b.email, b.yacht, b.packageName, b.charterType, b.assignedCaptain, b.assignedTransfer].filter(Boolean).join(' ').toLowerCase() %>">
+                                <td class="px-4 py-3 font-mono font-bold text-[#0B1F3A] whitespace-nowrap"><%= b.id %></td>
+                                <td class="px-4 py-3 whitespace-nowrap">
+                                    <div class="font-bold text-slate-900"><%= b.customer %></div>
+                                    <div class="text-[11px] text-slate-500"><%= b.phone || b.email || '' %></div>
+                                </td>
+                                <td class="px-4 py-3 whitespace-nowrap">
+                                    <div class="font-bold text-slate-800"><%= b.yacht %></div>
+                                    <div class="text-[11px] text-slate-500"><%= b.packageName || b.charterType || 'Özel Kiralama' %></div>
+                                </td>
+                                <td class="px-4 py-3 whitespace-nowrap text-slate-700">
+                                    <div class="font-medium"><%= b.checkIn %> → <%= b.checkOut %></div>
+                                    <div class="text-[11px] font-bold text-slate-900 mt-0.5"><%= b.guests %> Kişi • <%= b.days || 1 %> Gün</div>
+                                </td>
+                                <td class="px-4 py-3 whitespace-nowrap">
+                                    <% if (isApproved) { %>
+                                        <span class="inline-flex items-center bg-emerald-100 text-emerald-700 px-2.5 py-1 rounded-full font-bold text-[11px]">Onaylandı</span>
+                                    <% } else if (isCanc) { %>
+                                        <span class="inline-flex items-center bg-rose-100 text-rose-700 px-2.5 py-1 rounded-full font-bold text-[11px]">İptal Edildi</span>
+                                    <% } else { %>
+                                        <span class="inline-flex items-center bg-amber-100 text-amber-800 px-2.5 py-1 rounded-full font-bold text-[11px]">Onay Bekliyor</span>
+                                    <% } %>
+                                    <% if (!isCanc && daysLeft !== null && daysLeft >= 0) { %>
+                                        <div class="text-[10px] text-slate-500 mt-1"><%= daysLeft %> gün kaldı (<%= daysLeft >= 7 ? '%100 iade' : '<7 gün' %>)</div>
+                                    <% } %>
+                                </td>
+                                <td class="px-4 py-3 whitespace-nowrap">
+                                    <span class="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-bold <%= isCanc ? 'bg-rose-50 text-rose-700 border border-rose-200' : 'bg-sky-50 text-sky-800 border border-sky-200' %>">
+                                        <%= payBadge %>
+                                    </span>
+                                    <div class="text-[11px] text-slate-700 font-semibold mt-1">
+                                        Toplam: €<%= totAmt.toLocaleString() %>
+                                    </div>
+                                    <% if (isCanc) { %>
+                                        <div class="text-[11px] font-bold text-rose-700">İade: €<%= refAmt.toLocaleString() %></div>
+                                    <% } else { %>
+                                        <div class="text-[11px] font-semibold text-emerald-700">Ödenen: €<%= payAmt.toLocaleString() %></div>
+                                    <% } %>
+                                </td>
+                                <td class="px-4 py-3 text-right whitespace-nowrap">
+                                    <div class="inline-flex items-center gap-1.5">
+                                        <a href="<%= rowWaUrl %>" target="_blank" rel="noopener noreferrer" title="WhatsApp Gönder" class="admin-action-btn px-2.5 py-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 rounded-lg font-bold transition inline-flex items-center gap-1">
+                                            <i class="fa-brands fa-whatsapp"></i><span>WP</span>
+                                        </a>
+                                        <button type="button" data-booking-payload="<%= encodedPayload %>" onclick="openBookingDrawerFromBtn(this)" class="admin-action-btn px-2.5 py-1.5 bg-[#0B1F3A] hover:bg-sky-900 text-white rounded-lg font-bold transition inline-flex items-center gap-1">
+                                            <span>Detay</span>
+                                            <i class="fa-solid fa-arrow-up-right-from-square text-[10px]"></i>
+                                        </button>
+                                        <% if (!isApproved && !isCanc) { %>
+                                            <form action="/admin/bookings/<%= safeBid %>/status" method="POST" class="inline">
+                                                <input type="hidden" name="status" value="Onaylandı">
+                                                <button type="submit" class="admin-action-btn px-2.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg font-bold transition">Onayla</button>
+                                            </form>
+                                        <% } %>
+                                        <% if (!isCanc) { %>
+                                            <form action="/admin/bookings/<%= safeBid %>/status" method="POST" class="inline">
+                                                <input type="hidden" name="status" value="İptal Edildi">
+                                                <button type="submit" class="admin-action-btn px-2.5 py-1.5 bg-rose-600 hover:bg-rose-700 text-white rounded-lg font-bold transition">İptal</button>
+                                            </form>
+                                        <% } %>
+                                        <form action="/admin/bookings/<%= safeBid %>/delete" method="POST" class="inline">
+                                            <button type="submit" class="admin-action-btn px-2.5 py-1.5 text-slate-400 hover:text-rose-600 rounded-lg transition" title="Sil"><i class="fa-solid fa-trash"></i></button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                        <% }) %>
+                    </tbody>
+                </table>
+            </div>
         </div>
     </section>
+
+    <!-- PUSH / SLIDE-OVER REZERVASYON DETAY PANELİ -->
+    <div id="bookingDetailDrawer" class="fixed inset-0 z-50 pointer-events-none" aria-hidden="true">
+        <div id="bookingDrawerBackdrop" onclick="closeBookingDrawer()" class="fixed inset-0 bg-slate-950/45 backdrop-blur-[1px] opacity-0 transition-opacity duration-200"></div>
+        <aside id="bookingDrawerPanel" class="fixed top-0 right-0 h-full w-full max-w-xl bg-white shadow-2xl border-l border-slate-200 translate-x-full transition-transform duration-200 flex flex-col">
+            <!-- Panel Başlığı -->
+            <div class="px-5 py-4 bg-[#0B1F3A] text-white flex items-center justify-between gap-3 shrink-0">
+                <div>
+                    <div class="flex items-center gap-2">
+                        <span id="drawerPnrBadge" class="font-mono text-xs font-extrabold px-2.5 py-0.5 rounded-md bg-white/15 text-sky-300">-</span>
+                        <span id="drawerStatusBadge" class="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-amber-400/20 text-amber-200">-</span>
+                    </div>
+                    <h3 id="drawerCustomerTitle" class="text-base font-extrabold mt-1">Rezervasyon Detayı</h3>
+                </div>
+                <button type="button" onclick="closeBookingDrawer()" aria-label="Paneli kapat" class="w-9 h-9 rounded-xl bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <!-- Panel İçeriği -->
+            <div class="p-5 overflow-y-auto space-y-5 flex-1 text-xs">
+                <!-- Özet Kartı -->
+                <div class="bg-slate-50 p-4 rounded-2xl border border-slate-200 space-y-3">
+                    <div class="flex items-center justify-between">
+                        <span class="font-extrabold text-[#0B1F3A] uppercase text-[11px]">Müşteri &amp; Ödeme Özeti</span>
+                        <span id="drawerPaymentBadge" class="px-2 py-0.5 rounded-md text-[10px] font-bold bg-sky-100 text-sky-800">-</span>
+                    </div>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 text-slate-600">
+                        <div><strong>Telefon:</strong> <span id="drawerPhone" class="text-slate-900 font-semibold">-</span></div>
+                        <div><strong>E-posta:</strong> <span id="drawerEmail" class="text-slate-900">-</span></div>
+                        <div><strong>Yat &amp; Paket:</strong> <span id="drawerYachtPkg" class="text-slate-900 font-semibold">-</span></div>
+                        <div><strong>Tarih &amp; Süre:</strong> <span id="drawerDateInfo" class="text-slate-900 font-semibold">-</span></div>
+                        <div><strong>Ödeme Yöntemi:</strong> <span id="drawerPayMethod" class="text-slate-900">-</span></div>
+                        <div><strong>Promokod:</strong> <span id="drawerPromo" class="text-slate-900">-</span></div>
+                        <div><strong>Toplam Tutar:</strong> <span id="drawerTotal" class="text-slate-900 font-extrabold">-</span></div>
+                        <div><strong>Ödenen / Kalan:</strong> <span id="drawerPaidRem" class="text-emerald-700 font-extrabold">-</span></div>
+                        <div id="drawerRefundRow" class="hidden sm:col-span-2 bg-rose-50 border border-rose-200 text-rose-800 px-3 py-2 rounded-xl">
+                            <strong>İade (<span id="drawerRefundAmt">€0</span>):</strong> <span id="drawerRefundReason">-</span>
+                        </div>
+                        <div class="sm:col-span-2"><strong>Ekstralar:</strong> <span id="drawerExtras" class="text-slate-800">-</span></div>
+                        <div class="sm:col-span-2"><strong>Müşteri Notu:</strong> <span id="drawerNotes" class="text-slate-800">-</span></div>
+                    </div>
+
+                    <div class="pt-2 flex flex-wrap items-center gap-2 border-t border-slate-200/80">
+                        <a id="drawerWaLink" href="#" target="_blank" rel="noopener noreferrer" class="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-bold text-[11px] inline-flex items-center gap-1.5 transition">
+                            <i class="fa-brands fa-whatsapp text-sm"></i>
+                            <span>WhatsApp ile Gönder</span>
+                        </a>
+                        <form id="drawerMarkPaidForm" action="#" method="POST" class="inline hidden">
+                            <button id="drawerMarkPaidBtn" type="submit" class="px-3.5 py-2 bg-sky-700 hover:bg-sky-800 text-white rounded-xl font-bold text-[11px] transition">
+                                Kalan Bakiyeyi Tahsil Et
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Tarih, Yat & Tutar Düzenle -->
+                <form id="drawerEditForm" action="#" method="POST" class="bg-white p-4 rounded-2xl border border-slate-200 space-y-3">
+                    <div class="font-extrabold text-[#0B1F3A] uppercase text-[11px]">Tarih, Yat &amp; Tutar Düzenle</div>
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+                        <div class="sm:col-span-3">
+                            <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">Yat</label>
+                            <select id="drawerYachtSelect" name="yachtId" class="w-full p-2 border border-slate-200 rounded-xl font-bold bg-white">
+                                <% safeYachts.forEach(sy => { %>
+                                    <option value="<%= sy.id %>"><%= sy.name %> (<%= sy.location %>)</option>
+                                <% }) %>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">Giriş</label>
+                            <input id="drawerCheckIn" type="date" name="checkIn" class="w-full p-2 border border-slate-200 rounded-xl font-semibold">
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">Çıkış</label>
+                            <input id="drawerCheckOut" type="date" name="checkOut" class="w-full p-2 border border-slate-200 rounded-xl font-semibold">
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">Misafir</label>
+                            <input id="drawerGuests" type="number" name="guests" min="1" class="w-full p-2 border border-slate-200 rounded-xl font-bold">
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">Toplam (€)</label>
+                            <input id="drawerTotalInput" type="number" name="totalAmount" min="0" class="w-full p-2 border border-slate-200 rounded-xl font-bold">
+                        </div>
+                        <div class="sm:col-span-2">
+                            <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">Ödenen (€)</label>
+                            <input id="drawerPaidInput" type="number" name="paidAmount" min="0" class="w-full p-2 border border-slate-200 rounded-xl font-bold text-emerald-700">
+                        </div>
+                    </div>
+                    <div class="flex justify-end">
+                        <button type="submit" class="px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white rounded-xl font-bold text-xs transition">
+                            Rezervasyonu Güncelle
+                        </button>
+                    </div>
+                </form>
+
+                <!-- İade & Kaptan / Transfer Yan Yana -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <form id="drawerRefundForm" action="#" method="POST" class="bg-white p-4 rounded-2xl border border-slate-200 space-y-2.5">
+                        <div class="font-extrabold text-rose-700 uppercase text-[11px]">İade Tutarı &amp; İzahı</div>
+                        <div>
+                            <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">İade Tutarı (€)</label>
+                            <input id="drawerRefundInput" type="number" name="refundAmount" min="0" class="w-full p-2 border border-slate-200 rounded-xl font-bold text-rose-700">
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">İade Gerekçesi</label>
+                            <input id="drawerRefundNoteInput" type="text" name="refundNote" placeholder="İade açıklaması..." class="w-full p-2 border border-slate-200 rounded-xl">
+                        </div>
+                        <div class="flex justify-end pt-1">
+                            <button type="submit" class="px-3.5 py-2 bg-rose-600 hover:bg-rose-700 text-white rounded-xl font-bold text-xs transition">
+                                İadeyi Kaydet
+                            </button>
+                        </div>
+                    </form>
+
+                    <form id="drawerAssignForm" action="#" method="POST" class="bg-white p-4 rounded-2xl border border-slate-200 space-y-2.5">
+                        <div class="font-extrabold text-[#0B1F3A] uppercase text-[11px]">Kaptan &amp; VIP Transfer</div>
+                        <div>
+                            <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">Atanan Kaptan</label>
+                            <input id="drawerCaptainInput" type="text" name="assignedCaptain" list="adminCaptainList" placeholder="Kaptan adı" class="w-full p-2 border border-slate-200 rounded-xl font-semibold">
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">Transfer &amp; Biniş Notu</label>
+                            <input id="drawerTransferInput" type="text" name="assignedTransfer" placeholder="Transfer bilgisi" class="w-full p-2 border border-slate-200 rounded-xl mb-1.5">
+                            <input id="drawerAdminNoteInput" type="text" name="adminNote" placeholder="Operasyon notu" class="w-full p-2 border border-slate-200 rounded-xl">
+                        </div>
+                        <div class="flex justify-end pt-1">
+                            <button type="submit" class="px-3.5 py-2 bg-[#0B1F3A] hover:bg-sky-900 text-white rounded-xl font-bold text-xs transition">
+                                Kaydet
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </aside>
+    </div>
 
     <!-- 3. AKTİF FİLO & KAPASİTE DÜZENLEME -->
     <section id="view-filo-listesi" class="admin-view hidden space-y-5">
@@ -663,7 +989,7 @@
 
                 <div class="sm:col-span-2 lg:col-span-3 p-3.5 border border-dashed border-slate-300 rounded-xl bg-slate-50 space-y-2.5">
                     <div class="flex flex-wrap items-center justify-between gap-2">
-                        <label class="block text-[11px] font-bold text-slate-700">Yat Fotoğrafları Yükle (Birden Fazla Seçebilirsiniz — JPG, PNG, WEBP)</label>
+                        <label class="block text-[11px] font-bold text-slate-700">Yat Fotoğrafları Yükle (Birden Fazla Seçebilirsiniz — Maks. 10 MB)</label>
                         <span id="newYachtPhotoCount" class="text-[11px] font-bold text-teal-700">0 fotoğraf seçildi</span>
                     </div>
                     <input id="yachtPhotoFileInput" type="file" name="imageFiles" accept="image/*" multiple class="text-xs text-slate-600 file:mr-2 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-[#0B1F3A] file:text-white">
@@ -906,7 +1232,7 @@
         </div>
     </section>
 
-    <!-- 5. SİTE, PROMOKOD, ÖDEME PLANI, SÖZLEŞME & EKSTRALAR -->
+    <!-- 5. SİTE, PROMOKOD, ÖDEME PLANI, SÖZLEŞME, SAAT ARALIKLARI, KAPTANLAR, FAQ & EKSTRALAR -->
     <section id="view-ayarlar" class="admin-view hidden space-y-6">
         <div class="bg-white p-5 sm:p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
             <div>
@@ -949,6 +1275,113 @@
                                     <button type="submit" class="text-rose-600 font-bold text-[11px] px-2 py-1 hover:bg-rose-50 rounded-lg">Sil</button>
                                 </form>
                             </div>
+                        </div>
+                    <% }) %>
+                <% } %>
+            </div>
+        </div>
+
+        <!-- Saat Aralıkları -->
+        <div class="bg-white p-5 sm:p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+            <h3 class="font-extrabold text-slate-900 text-base">Günlük / Saatlik Tur Saat Aralıkları</h3>
+            <form action="/admin/time-slots/add" method="POST" class="grid grid-cols-1 sm:grid-cols-5 gap-3 text-xs">
+                <input type="text" name="label" placeholder="Saat Aralığı (Örn: 11:00 - 15:00)" required class="p-2.5 border border-slate-200 rounded-xl font-semibold">
+                <select name="type" class="p-2.5 border border-slate-200 rounded-xl bg-white font-medium">
+                    <option value="hourly">Saatlik / Yarım Gün</option>
+                    <option value="daily">Tam Gün</option>
+                </select>
+                <input type="number" name="hours" min="1" max="24" value="4" placeholder="Saat" class="p-2.5 border border-slate-200 rounded-xl font-bold">
+                <input type="number" name="priceMultiplier" min="0.1" max="2" step="0.05" value="0.6" placeholder="Çarpan (0.6)" class="p-2.5 border border-slate-200 rounded-xl font-bold">
+                <button type="submit" class="bg-teal-600 hover:bg-teal-700 text-white rounded-xl font-bold py-2.5">+ Saat Ekle</button>
+            </form>
+            <div class="divide-y divide-slate-100 border-t border-slate-100 text-xs">
+                <% safeTimeSlots.forEach(sl => { %>
+                    <div class="py-2.5 flex items-center justify-between gap-2">
+                        <div>
+                            <span class="font-bold text-slate-900"><%= sl.label %></span>
+                            <span class="text-slate-500 ml-2"><%= sl.hours %> saat • Çarpan: <strong><%= sl.priceMultiplier %>x</strong></span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <form action="/admin/time-slots/<%= encodeURIComponent(sl.id) %>/toggle" method="POST">
+                                <button type="submit" class="px-2.5 py-1 rounded-full font-bold text-[11px] <%= sl.active !== false ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-200 text-slate-600' %>">
+                                    <%= sl.active !== false ? 'Aktif' : 'Pasif' %>
+                                </button>
+                            </form>
+                            <form action="/admin/time-slots/<%= encodeURIComponent(sl.id) %>/delete" method="POST">
+                                <button type="submit" class="text-rose-600 font-bold text-[11px] px-2 py-1 hover:bg-rose-50 rounded-lg">Sil</button>
+                            </form>
+                        </div>
+                    </div>
+                <% }) %>
+            </div>
+        </div>
+
+        <!-- Kaptanlar -->
+        <div class="bg-white p-5 sm:p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+            <h3 class="font-extrabold text-slate-900 text-base">Kaptan Kadrosu</h3>
+            <form action="/admin/captains/add" method="POST" enctype="multipart/form-data" class="grid grid-cols-1 sm:grid-cols-4 gap-3 text-xs">
+                <input type="text" name="name" placeholder="Kaptan Ad Soyad" required class="p-2.5 border border-slate-200 rounded-xl font-semibold">
+                <input type="text" name="roleTr" placeholder="Ünvan (Örn: Baş Kaptan)" class="p-2.5 border border-slate-200 rounded-xl">
+                <input type="number" name="experienceYears" min="1" value="12" placeholder="Tecrübe (Yıl)" class="p-2.5 border border-slate-200 rounded-xl font-bold">
+                <input type="text" name="region" placeholder="Bölge (Göcek & Marmaris)" class="p-2.5 border border-slate-200 rounded-xl">
+                <input type="text" name="languages" placeholder="Diller (Türkçe, English)" class="p-2.5 border border-slate-200 rounded-xl">
+                <input type="text" name="bioTr" placeholder="Kısa biyografi" class="sm:col-span-2 p-2.5 border border-slate-200 rounded-xl">
+                <button type="submit" class="bg-[#0B1F3A] hover:bg-sky-900 text-white rounded-xl font-bold py-2.5">+ Kaptan Ekle</button>
+            </form>
+            <div class="divide-y divide-slate-100 border-t border-slate-100 text-xs">
+                <% safeCaptains.forEach(cp => { %>
+                    <div class="py-2.5 flex items-center justify-between gap-2">
+                        <div>
+                            <span class="font-bold text-slate-900"><%= cp.name %></span>
+                            <span class="text-slate-500 ml-2"><%= cp.roleTr || '' %> • <%= cp.experienceYears || 0 %> yıl • <%= cp.region || '' %></span>
+                        </div>
+                        <form action="/admin/captains/<%= encodeURIComponent(cp.id) %>/delete" method="POST">
+                            <button type="submit" class="text-rose-600 font-bold text-[11px] px-2 py-1 hover:bg-rose-50 rounded-lg">Sil</button>
+                        </form>
+                    </div>
+                <% }) %>
+            </div>
+        </div>
+
+        <!-- SSS (FAQ) -->
+        <div class="bg-white p-5 sm:p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+            <h3 class="font-extrabold text-slate-900 text-base">Sıkça Sorulan Sorular (SSS)</h3>
+            <form action="/admin/faqs/add" method="POST" class="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
+                <input type="text" name="questionTr" placeholder="Soru (TR)" required class="p-2.5 border border-slate-200 rounded-xl font-semibold">
+                <input type="text" name="answerTr" placeholder="Cevap (TR)" required class="p-2.5 border border-slate-200 rounded-xl">
+                <button type="submit" class="bg-teal-600 hover:bg-teal-700 text-white rounded-xl font-bold py-2.5">+ Soru Ekle</button>
+            </form>
+            <div class="divide-y divide-slate-100 border-t border-slate-100 text-xs">
+                <% safeFaqs.forEach(fq => { %>
+                    <div class="py-2.5 flex items-start justify-between gap-3">
+                        <div>
+                            <div class="font-bold text-slate-900"><%= fq.questionTr %></div>
+                            <div class="text-slate-500 mt-0.5"><%= fq.answerTr %></div>
+                        </div>
+                        <form action="/admin/faqs/<%= encodeURIComponent(fq.id) %>/delete" method="POST" class="shrink-0">
+                            <button type="submit" class="text-rose-600 font-bold text-[11px] px-2 py-1 hover:bg-rose-50 rounded-lg">Sil</button>
+                        </form>
+                    </div>
+                <% }) %>
+            </div>
+        </div>
+
+        <!-- Müşteri Yorumları -->
+        <div class="bg-white p-5 sm:p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+            <h3 class="font-extrabold text-slate-900 text-base">Müşteri Yorumları (<%= safeReviews.length %>)</h3>
+            <div class="divide-y divide-slate-100 border-t border-slate-100 text-xs">
+                <% if (safeReviews.length === 0) { %>
+                    <p class="py-3 text-slate-400">Henüz müşteri yorumu yok.</p>
+                <% } else { %>
+                    <% safeReviews.forEach(rv => { %>
+                        <div class="py-2.5 flex items-start justify-between gap-3">
+                            <div>
+                                <div class="font-bold text-slate-900"><%= rv.author %> <span class="text-amber-500 ml-1">★ <%= rv.rating %></span> <span class="text-slate-400 font-normal ml-2"><%= rv.yachtName %> • <%= rv.date %></span></div>
+                                <div class="text-slate-600 mt-0.5"><%= rv.comment %></div>
+                            </div>
+                            <form action="/admin/reviews/<%= encodeURIComponent(rv.yachtId) %>/<%= encodeURIComponent(rv.reviewIndex) %>/delete" method="POST" class="shrink-0">
+                                <button type="submit" class="text-rose-600 font-bold text-[11px] px-2 py-1 hover:bg-rose-50 rounded-lg">Sil</button>
+                            </form>
                         </div>
                     <% }) %>
                 <% } %>
@@ -1171,6 +1604,16 @@
 </main>
 
 <script>
+    function insertWaTag(tag) {
+        const ta = document.getElementById('manualWaTemplateInput');
+        if (!ta) return;
+        const start = ta.selectionStart || ta.value.length;
+        const end = ta.selectionEnd || ta.value.length;
+        ta.value = ta.value.slice(0, start) + tag + ta.value.slice(end);
+        ta.focus();
+        ta.selectionStart = ta.selectionEnd = start + tag.length;
+    }
+
     function applySidebarCollapsedState(collapsed) {
         document.body.classList.toggle('sidebar-collapsed', collapsed);
         const label = document.getElementById('desktopSidebarToggleLabel');
@@ -1190,27 +1633,28 @@
             const url = new URL(window.location.href);
             if (url.searchParams.has('notice')) {
                 url.searchParams.delete('notice');
+                url.searchParams.delete('waUrl');
                 window.history.replaceState({}, '', url.pathname + url.search + url.hash);
             }
         } catch (e) {}
     }
 
     document.querySelectorAll('form[action*="/delete"], form[action*="/status"]').forEach(form => {
-    form.addEventListener('submit', function (e) {
-        const isDelete = this.action.includes('/delete');
-        const statusInput = this.querySelector('input[name="status"]');
-        const isCancelAction = statusInput && statusInput.value === 'İptal Edildi';
-        if (isDelete) {
-            if (!window.confirm('Bu kaydı silmek istediğinizden emin misiniz?')) {
-                e.preventDefault();
+        form.addEventListener('submit', function (e) {
+            const isDelete = this.action.includes('/delete');
+            const statusInput = this.querySelector('input[name="status"]');
+            const isCancelAction = statusInput && statusInput.value === 'İptal Edildi';
+            if (isDelete) {
+                if (!window.confirm('Bu kaydı silmek istediğinizden emin misiniz?')) {
+                    e.preventDefault();
+                }
+            } else if (isCancelAction) {
+                if (!window.confirm('Bu rezervasyonu iptal etmek istediğinizden emin misiniz?')) {
+                    e.preventDefault();
+                }
             }
-        } else if (isCancelAction) {
-            if (!window.confirm('Bu rezervasyonu iptal etmek istediğinizden emin misiniz?')) {
-                e.preventDefault();
-            }
-        }
+        });
     });
-});
 
     function toggleDesktopSidebar() {
         const nextState = !document.body.classList.contains('sidebar-collapsed');
@@ -1233,10 +1677,10 @@
 
     const tabMeta = {
         'dashboard': { title: 'Dashboard & Genel Bakış', subtitle: 'Filo, turlar, kategoriler, ödemeler ve rezervasyon yönetimi' },
-        'rezervasyonlar': { title: 'Rezervasyon Yönetimi', subtitle: 'Admin onayı, kaptan & transfer ataması ve 7 gün iade kuralı yönetimi' },
+        'rezervasyonlar': { title: 'Rezervasyon Yönetimi', subtitle: 'Manuel rezervasyon, WhatsApp şablonu, admin onayı, düzenleme ve iade yönetimi' },
         'filo-listesi': { title: 'Aktif Filo & Kapasite', subtitle: 'Kişi, kabin, mürettebat, günlük fiyat, çoklu fotoğraf ve operasyon takvimi' },
         'turlar-kategoriler': { title: 'Turlar & Kategoriler', subtitle: 'Fotoğraflı tur paketleri ve yat kategorileri tanımlayın' },
-        'ayarlar': { title: 'Site, Promokod & Sözleşme', subtitle: 'Promokodlar, yetkililer, marka/iletişim, ödeme planı oranları ve sözleşmeyi yönetin' }
+        'ayarlar': { title: 'Site, Promokod & Sözleşme', subtitle: 'Promokodlar, saatler, kaptanlar, SSS, yorumlar, yetkililer ve sözleşmeyi yönetin' }
     };
 
     const mobileBtn = document.getElementById('adminMobileMenuBtn');
@@ -1268,10 +1712,99 @@
     const params = new URLSearchParams(window.location.search);
     switchAdminTab(params.get('tab') || 'dashboard');
 
-    function toggleBookingDetail(rowId) {
-        const detailRow = document.getElementById(rowId);
-        if (detailRow) detailRow.classList.toggle('hidden');
+    /* PUSH PANEL YÖNETİMİ */
+    function openBookingDrawer(d) {
+        const drawer = document.getElementById('bookingDetailDrawer');
+        if (!drawer || !d) return;
+
+        document.getElementById('drawerPnrBadge').innerText = d.id || '-';
+        const stBadge = document.getElementById('drawerStatusBadge');
+        stBadge.innerText = d.status || 'Beklemede';
+        stBadge.className = 'text-[11px] font-bold px-2.5 py-0.5 rounded-full ' + (
+            d.status === 'Onaylandı'
+                ? 'bg-emerald-400/20 text-emerald-200'
+                : (d.isCancelled ? 'bg-rose-400/20 text-rose-200' : 'bg-amber-400/20 text-amber-200')
+        );
+
+        document.getElementById('drawerCustomerTitle').innerText = d.customer || 'Rezervasyon Detayı';
+        document.getElementById('drawerPaymentBadge').innerText = d.paymentStatus || '-';
+        document.getElementById('drawerPhone').innerText = d.phone || '-';
+        document.getElementById('drawerEmail').innerText = d.email || '-';
+        document.getElementById('drawerYachtPkg').innerText = (d.yacht || '') + ' • ' + (d.packageName || '');
+        document.getElementById('drawerDateInfo').innerText = (d.checkIn || '') + ' → ' + (d.checkOut || '') + ' (' + (d.guests || 1) + ' kişi, ' + (d.days || 1) + ' gün)';
+        document.getElementById('drawerPayMethod').innerText = d.paymentMethod || '-';
+        document.getElementById('drawerPromo').innerText = d.promoCode || 'Yok';
+        document.getElementById('drawerTotal').innerText = '€' + Number(d.totalAmount || 0).toLocaleString();
+        document.getElementById('drawerPaidRem').innerText = '€' + Number(d.paidAmount || 0).toLocaleString() + ' / Kalan €' + Number(d.remainingAmount || 0).toLocaleString();
+        document.getElementById('drawerExtras').innerText = d.extrasText || 'Seçilmedi';
+        document.getElementById('drawerNotes').innerText = d.notes || 'Not girilmemiş.';
+
+        const refundRow = document.getElementById('drawerRefundRow');
+        if (d.isCancelled) {
+            refundRow.classList.remove('hidden');
+            document.getElementById('drawerRefundAmt').innerText = '€' + Number(d.refundedAmount || 0).toLocaleString();
+            document.getElementById('drawerRefundReason').innerText = d.refundRuleReason || '-';
+        } else {
+            refundRow.classList.add('hidden');
+        }
+
+        const waLink = document.getElementById('drawerWaLink');
+        waLink.href = d.waUrl || '#';
+
+        const markPaidForm = document.getElementById('drawerMarkPaidForm');
+        const markPaidBtn = document.getElementById('drawerMarkPaidBtn');
+        if (!d.isCancelled && Number(d.remainingAmount || 0) > 0) {
+            markPaidForm.classList.remove('hidden');
+            markPaidForm.action = '/admin/bookings/' + d.safeBid + '/mark-paid';
+            markPaidBtn.innerText = 'Kalan Bakiyeyi Tahsil Et (€' + Number(d.remainingAmount).toLocaleString() + ')';
+        } else {
+            markPaidForm.classList.add('hidden');
+        }
+
+        document.getElementById('drawerEditForm').action = '/admin/bookings/' + d.safeBid + '/edit';
+        const yachtSel = document.getElementById('drawerYachtSelect');
+        if (yachtSel && d.yachtId) yachtSel.value = String(d.yachtId);
+        document.getElementById('drawerCheckIn').value = d.checkIn || '';
+        document.getElementById('drawerCheckOut').value = d.checkOut || '';
+        document.getElementById('drawerGuests').value = Number(d.guests || 1);
+        document.getElementById('drawerTotalInput').value = Number(d.totalAmount || 0);
+        document.getElementById('drawerPaidInput').value = Number(d.paidAmount || 0);
+
+        document.getElementById('drawerRefundForm').action = '/admin/bookings/' + d.safeBid + '/refund';
+        const refInput = document.getElementById('drawerRefundInput');
+        refInput.max = String(Number(d.paidAmount || 0));
+        refInput.value = Number(d.refundedAmount || 0);
+        document.getElementById('drawerRefundNoteInput').value = d.isCancelled ? (d.refundRuleReason || '') : '';
+
+        document.getElementById('drawerAssignForm').action = '/admin/bookings/' + d.safeBid + '/assign';
+        document.getElementById('drawerCaptainInput').value = d.assignedCaptain || '';
+        document.getElementById('drawerTransferInput').value = d.assignedTransfer || '';
+        document.getElementById('drawerAdminNoteInput').value = d.adminNote || '';
+
+        drawer.classList.add('drawer-open');
+        drawer.setAttribute('aria-hidden', 'false');
+        document.body.style.overflow = 'hidden';
     }
+
+    function openBookingDrawerFromBtn(btn) {
+        if (!btn || !btn.dataset.bookingPayload) return;
+        try {
+            const parsed = JSON.parse(decodeURIComponent(btn.dataset.bookingPayload));
+            openBookingDrawer(parsed);
+        } catch (err) {}
+    }
+
+    function closeBookingDrawer() {
+        const drawer = document.getElementById('bookingDetailDrawer');
+        if (!drawer) return;
+        drawer.classList.remove('drawer-open');
+        drawer.setAttribute('aria-hidden', 'true');
+        document.body.style.overflow = '';
+    }
+
+    document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape') closeBookingDrawer();
+    });
 
     let statusFilter = 'all';
     const bookingSearch = document.getElementById('bookingSearchInput');
@@ -1279,13 +1812,9 @@
         const q = bookingSearch ? bookingSearch.value.trim().toLowerCase() : '';
         document.querySelectorAll('.booking-row').forEach(row => {
             const stOk = statusFilter === 'all' || row.dataset.bookingStatus === statusFilter;
-            const detailId = row.dataset.detailTarget;
-            const detailRow = detailId ? document.getElementById(detailId) : null;
-            const combinedText = (row.innerText + ' ' + (detailRow ? detailRow.innerText : '')).toLowerCase();
-            const txtOk = !q || combinedText.includes(q);
-            const show = stOk && txtOk;
-            row.classList.toggle('hidden', !show);
-            if (!show && detailRow) detailRow.classList.add('hidden');
+            const hay = (row.dataset.searchText || row.innerText || '').toLowerCase();
+            const txtOk = !q || hay.includes(q);
+            row.classList.toggle('hidden', !(stOk && txtOk));
         });
     }
     document.querySelectorAll('.status-filter-btn').forEach(btn => {
