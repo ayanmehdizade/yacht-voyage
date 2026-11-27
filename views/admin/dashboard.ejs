@@ -105,9 +105,12 @@
         const buildWaLinkForRow = (bookingObj) => {
             if (bookingObj && bookingObj.whatsappUrl) return bookingObj.whatsappUrl;
             const cleanPh = String((bookingObj && bookingObj.phone) || '').replace(/\D/g, '');
+            const st = normalizeBookingStatus(bookingObj && bookingObj.status);
+            const isCancRow = st === 'İptal Edildi';
             const tot = Number((bookingObj && bookingObj.totalAmount) || 0);
             const pd = Number((bookingObj && bookingObj.paidAmount) || 0);
-            const rem = Math.max(0, tot - pd);
+            const rem = isCancRow ? 0 : Math.max(0, tot - pd);
+            const ref = Number((bookingObj && bookingObj.refundedAmount) || 0);
             const mapObj = {
                 '{pnr}': (bookingObj && bookingObj.id) || '',
                 '{customer}': (bookingObj && bookingObj.customer) || 'Misafir',
@@ -119,11 +122,18 @@
                 '{totalAmount}': tot.toLocaleString(),
                 '{paidAmount}': pd.toLocaleString(),
                 '{remainingAmount}': rem.toLocaleString(),
+                '{refundedAmount}': ref.toLocaleString(),
+                '{status}': st,
                 '{captain}': (bookingObj && bookingObj.assignedCaptain) || '-',
                 '{transfer}': (bookingObj && bookingObj.assignedTransfer) || '-',
                 '{notes}': (bookingObj && bookingObj.notes) || '-'
             };
-            let msg = activeWaTemplate;
+            let msg = isCancRow
+                ? ('Merhaba ' + mapObj['{customer}'] + ', ' + mapObj['{yacht}'] + ' (' + mapObj['{pnr}'] + ') rezervasyonunuz İPTAL EDİLMİŞTİR.\n' +
+                   'İade Tutarı: €' + mapObj['{refundedAmount}'] + ' | Kalan Bakiye: €0\n' +
+                   'Tarih: ' + mapObj['{checkIn}'] + ' - ' + mapObj['{checkOut}'] + '\n' +
+                   'Not: ' + mapObj['{notes}'])
+                : activeWaTemplate;
             Object.keys(mapObj).forEach(k => { msg = msg.split(k).join(mapObj[k]); });
             return cleanPh
                 ? ('https://wa.me/' + encodeURIComponent(cleanPh) + '?text=' + encodeURIComponent(msg))
@@ -143,7 +153,6 @@
         <% }) %>
     </datalist>
 
-<!-- MOBİL ÜST BAR -->
 <div class="md:hidden sticky top-0 z-40 bg-[#0B1F3A] text-white px-4 py-3 flex items-center justify-between shadow-md">
     <div class="flex items-center space-x-2.5">
         <div class="w-9 h-9 rounded-xl bg-white/10 flex items-center justify-center">
@@ -169,7 +178,6 @@
     </div>
 </div>
 
-<!-- MOBİL MENÜ -->
 <div id="adminMobileDrawer" class="hidden md:hidden bg-[#08172E] text-slate-200 border-b border-white/10 px-4 py-3 space-y-1.5 text-xs z-30">
     <button type="button" data-admin-tab="dashboard" class="admin-nav-btn w-full text-left flex items-center space-x-2.5 px-3.5 py-2.5 rounded-xl bg-teal-600 text-white font-bold">
         <i class="fa-solid fa-chart-pie w-4"></i><span>Dashboard</span>
@@ -196,7 +204,6 @@
     </div>
 </div>
 
-<!-- MASAÜSTÜ SIDEBAR -->
 <aside id="adminDesktopSidebar" class="admin-sidebar hidden md:flex w-64 bg-[#0B1F3A] text-slate-300 p-6 flex-col justify-between shrink-0">
     <div>
         <div class="text-white font-extrabold text-lg mb-7 flex items-center justify-between gap-2">
@@ -249,7 +256,6 @@
     </div>
 </aside>
 
-<!-- ANA İÇERİK -->
 <main class="admin-main-wrap flex-1 p-6 md:p-8 space-y-6 min-w-0">
     <div class="admin-top-header flex flex-wrap items-center justify-between gap-3">
         <div class="flex items-center gap-3">
@@ -291,7 +297,6 @@
         </div>
     <% } %>
 
-    <!-- 1. DASHBOARD -->
     <section id="view-dashboard" class="admin-view space-y-6">
         <%
             const isCancelled = b => normalizeBookingStatus(b && b.status) === 'İptal Edildi';
@@ -526,10 +531,8 @@
         </div>
     </section>
 
-    <!-- 2. REZERVASYONLAR + MANUEL REZERV + WHATSAPP ŞABLONU -->
     <section id="view-rezervasyonlar" class="admin-view hidden space-y-6">
         <div class="grid grid-cols-1 xl:grid-cols-12 gap-6">
-            <!-- Manuel Rezervasyon Yaratma Formu -->
             <div class="xl:col-span-7 bg-white p-5 sm:p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
                 <div class="flex items-center justify-between gap-2">
                     <div>
@@ -631,7 +634,6 @@
                 </form>
             </div>
 
-            <!-- WhatsApp Mesaj Şablonu Editörü -->
             <div class="xl:col-span-5 bg-white p-5 sm:p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
                 <div>
                     <h3 class="font-extrabold text-slate-900 text-base">WhatsApp Mesaj Şablonu</h3>
@@ -639,7 +641,7 @@
                 </div>
 
                 <div class="flex flex-wrap gap-1.5">
-                    <% const waVars = ['{pnr}', '{customer}', '{yacht}', '{checkIn}', '{checkOut}', '{timeSlot}', '{guests}', '{totalAmount}', '{paidAmount}', '{remainingAmount}', '{captain}', '{transfer}', '{notes}']; %>
+                    <% const waVars = ['{pnr}', '{customer}', '{yacht}', '{checkIn}', '{checkOut}', '{timeSlot}', '{guests}', '{totalAmount}', '{paidAmount}', '{remainingAmount}', '{refundedAmount}', '{status}', '{captain}', '{transfer}', '{notes}']; %>
                     <% waVars.forEach(tag => { %>
                         <button type="button" onclick="insertWaTag('<%= tag %>')" class="px-2 py-1 rounded-md bg-slate-100 hover:bg-teal-50 hover:text-teal-800 text-[10px] font-mono font-bold text-slate-700 border border-slate-200 transition">
                             + <%= tag %>
@@ -684,7 +686,7 @@
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-slate-100">
-                        <% safeBookings.forEach((b, idx) => { %>
+                        <% safeBookings.forEach((b) => { %>
                             <%
                                 const normStatus = normalizeBookingStatus(b.status);
                                 const isCanc = normStatus === 'İptal Edildi';
@@ -704,7 +706,8 @@
                                 const extrasText = Array.isArray(b.extras) && b.extras.length
                                     ? b.extras.join(', ')
                                     : (b.extras || b.extrasCsv || 'Seçilmedi');
-                                const rowWaUrl = buildWaLinkForRow(b);
+                                const bookingWithRef = Object.assign({}, b, { refundedAmount: refAmt });
+                                const rowWaUrl = buildWaLinkForRow(bookingWithRef);
                                 const autoRefundReason = b.refundRuleReason
                                     || (daysLeft !== null && daysLeft >= 7
                                         ? ('Check-in tarihine ' + daysLeft + ' gün kaldığı için (7+ gün kuralı) tam iade.')
@@ -820,11 +823,9 @@
         </div>
     </section>
 
-    <!-- PUSH / SLIDE-OVER REZERVASYON DETAY PANELİ -->
     <div id="bookingDetailDrawer" class="fixed inset-0 z-50 pointer-events-none" aria-hidden="true">
         <div id="bookingDrawerBackdrop" onclick="closeBookingDrawer()" class="fixed inset-0 bg-slate-950/45 backdrop-blur-[1px] opacity-0 transition-opacity duration-200"></div>
         <aside id="bookingDrawerPanel" class="fixed top-0 right-0 h-full w-full max-w-xl bg-white shadow-2xl border-l border-slate-200 translate-x-full transition-transform duration-200 flex flex-col">
-            <!-- Panel Başlığı -->
             <div class="px-5 py-4 bg-[#0B1F3A] text-white flex items-center justify-between gap-3 shrink-0">
                 <div>
                     <div class="flex items-center gap-2">
@@ -838,9 +839,7 @@
                 </button>
             </div>
 
-            <!-- Panel İçeriği -->
             <div class="p-5 overflow-y-auto space-y-5 flex-1 text-xs">
-                <!-- Özet Kartı -->
                 <div class="bg-slate-50 p-4 rounded-2xl border border-slate-200 space-y-3">
                     <div class="flex items-center justify-between">
                         <span class="font-extrabold text-[#0B1F3A] uppercase text-[11px]">Müşteri &amp; Ödeme Özeti</span>
@@ -875,7 +874,6 @@
                     </div>
                 </div>
 
-                <!-- Tarih, Yat & Tutar Düzenle -->
                 <form id="drawerEditForm" action="#" method="POST" class="bg-white p-4 rounded-2xl border border-slate-200 space-y-3">
                     <div class="font-extrabold text-[#0B1F3A] uppercase text-[11px]">Tarih, Yat &amp; Tutar Düzenle</div>
                     <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
@@ -915,7 +913,6 @@
                     </div>
                 </form>
 
-                <!-- İade & Kaptan / Transfer Yan Yana -->
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <form id="drawerRefundForm" action="#" method="POST" class="bg-white p-4 rounded-2xl border border-slate-200 space-y-2.5">
                         <div class="font-extrabold text-rose-700 uppercase text-[11px]">İade Tutarı &amp; İzahı</div>
@@ -956,7 +953,6 @@
         </aside>
     </div>
 
-    <!-- 3. AKTİF FİLO & KAPASİTE DÜZENLEME -->
     <section id="view-filo-listesi" class="admin-view hidden space-y-5">
         <div class="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-wrap items-center justify-between gap-3">
             <div>
@@ -1135,7 +1131,6 @@
         </div>
     </section>
 
-    <!-- 4. YENİ TUR & YENİ KATEGORİ -->
     <section id="view-turlar-kategoriler" class="admin-view hidden grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div class="bg-white p-5 sm:p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
             <h3 class="font-extrabold text-slate-900 text-base">Yeni Tur Paketi Ekle</h3>
@@ -1232,7 +1227,6 @@
         </div>
     </section>
 
-    <!-- 5. SİTE, PROMOKOD, ÖDEME PLANI, SÖZLEŞME, SAAT ARALIKLARI, KAPTANLAR, FAQ & EKSTRALAR -->
     <section id="view-ayarlar" class="admin-view hidden space-y-6">
         <div class="bg-white p-5 sm:p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
             <div>
@@ -1281,7 +1275,6 @@
             </div>
         </div>
 
-        <!-- Saat Aralıkları -->
         <div class="bg-white p-5 sm:p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
             <h3 class="font-extrabold text-slate-900 text-base">Günlük / Saatlik Tur Saat Aralıkları</h3>
             <form action="/admin/time-slots/add" method="POST" class="grid grid-cols-1 sm:grid-cols-5 gap-3 text-xs">
@@ -1316,34 +1309,60 @@
             </div>
         </div>
 
-        <!-- Kaptanlar -->
         <div class="bg-white p-5 sm:p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
-            <h3 class="font-extrabold text-slate-900 text-base">Kaptan Kadrosu</h3>
-            <form action="/admin/captains/add" method="POST" enctype="multipart/form-data" class="grid grid-cols-1 sm:grid-cols-4 gap-3 text-xs">
-                <input type="text" name="name" placeholder="Kaptan Ad Soyad" required class="p-2.5 border border-slate-200 rounded-xl font-semibold">
-                <input type="text" name="roleTr" placeholder="Ünvan (Örn: Baş Kaptan)" class="p-2.5 border border-slate-200 rounded-xl">
-                <input type="number" name="experienceYears" min="1" value="12" placeholder="Tecrübe (Yıl)" class="p-2.5 border border-slate-200 rounded-xl font-bold">
-                <input type="text" name="region" placeholder="Bölge (Göcek & Marmaris)" class="p-2.5 border border-slate-200 rounded-xl">
-                <input type="text" name="languages" placeholder="Diller (Türkçe, English)" class="p-2.5 border border-slate-200 rounded-xl">
-                <input type="text" name="bioTr" placeholder="Kısa biyografi" class="sm:col-span-2 p-2.5 border border-slate-200 rounded-xl">
-                <button type="submit" class="bg-[#0B1F3A] hover:bg-sky-900 text-white rounded-xl font-bold py-2.5">+ Kaptan Ekle</button>
+            <div class="flex items-center justify-between gap-2">
+                <div>
+                    <h3 class="font-extrabold text-slate-900 text-base">Kaptan Kadrosu (Şəkil &amp; Bio)</h3>
+                    <p class="text-xs text-slate-500 mt-0.5">Müştəri ana səhifəsində görünən kapitanların şəklini, biosunu və məlumatlarını idarə edin.</p>
+                </div>
+                <span class="text-xs font-bold text-slate-500"><%= safeCaptains.length %> kapitan</span>
+            </div>
+
+            <form action="/admin/captains/add" method="POST" enctype="multipart/form-data" class="grid grid-cols-1 sm:grid-cols-4 gap-3 text-xs bg-slate-50 p-4 rounded-2xl border border-slate-200">
+                <input type="text" name="name" placeholder="Kaptan Ad Soyad" required class="p-2.5 bg-white border border-slate-200 rounded-xl font-semibold">
+                <input type="text" name="roleTr" placeholder="Ünvan (Məs: Baş Kaptan)" class="p-2.5 bg-white border border-slate-200 rounded-xl">
+                <input type="number" name="experienceYears" min="1" value="12" placeholder="Təcrübə (İl)" class="p-2.5 bg-white border border-slate-200 rounded-xl font-bold">
+                <input type="text" name="region" placeholder="Bölgə (Göcek & Marmaris)" class="p-2.5 bg-white border border-slate-200 rounded-xl">
+                <input type="text" name="languages" placeholder="Dillər (Türkçe, English)" class="p-2.5 bg-white border border-slate-200 rounded-xl">
+                <input type="file" name="photoFile" accept="image/*" class="p-2 bg-white border border-slate-200 rounded-xl text-[11px] text-slate-600 file:mr-2 file:py-1 file:px-2.5 file:rounded-lg file:border-0 file:text-[11px] file:font-bold file:bg-[#0B1F3A] file:text-white">
+                <input type="text" name="bioTr" placeholder="Kısa bio (müştəri ana səhifəsində görünəcək)" class="sm:col-span-2 p-2.5 bg-white border border-slate-200 rounded-xl">
+                <div class="sm:col-span-4 flex justify-end">
+                    <button type="submit" class="px-5 py-2.5 bg-[#0B1F3A] hover:bg-sky-900 text-white rounded-xl font-bold text-xs transition">+ Kaptan Əlavə Et</button>
+                </div>
             </form>
-            <div class="divide-y divide-slate-100 border-t border-slate-100 text-xs">
+
+            <div class="space-y-3 border-t border-slate-100 pt-4 text-xs">
                 <% safeCaptains.forEach(cp => { %>
-                    <div class="py-2.5 flex items-center justify-between gap-2">
-                        <div>
-                            <span class="font-bold text-slate-900"><%= cp.name %></span>
-                            <span class="text-slate-500 ml-2"><%= cp.roleTr || '' %> • <%= cp.experienceYears || 0 %> yıl • <%= cp.region || '' %></span>
+                    <% const cpImg = cp.photo || cp.image || cp.avatar || 'https://images.unsplash.com/photo-1560250097-0b93528c311a?auto=format&fit=crop&w=240&q=80'; %>
+                    <form action="/admin/captains/<%= encodeURIComponent(cp.id) %>/update" method="POST" enctype="multipart/form-data" class="p-3.5 bg-slate-50 rounded-2xl border border-slate-200 space-y-3">
+                        <div class="flex flex-col sm:flex-row sm:items-center gap-3">
+                            <img src="<%= cpImg %>" onerror="fallbackYachtImg(this)" alt="<%= cp.name %>" class="w-14 h-14 rounded-xl object-cover border border-slate-200 shrink-0">
+                            <div class="grid grid-cols-1 sm:grid-cols-4 gap-2 flex-1">
+                                <input type="text" name="name" value="<%= cp.name || '' %>" required placeholder="Ad Soyad" class="p-2 bg-white border border-slate-200 rounded-lg font-bold">
+                                <input type="text" name="roleTr" value="<%= cp.roleTr || '' %>" placeholder="Ünvan" class="p-2 bg-white border border-slate-200 rounded-lg">
+                                <input type="number" name="experienceYears" min="0" value="<%= Number(cp.experienceYears || 0) %>" placeholder="Təcrübə (İl)" class="p-2 bg-white border border-slate-200 rounded-lg font-bold">
+                                <input type="text" name="region" value="<%= cp.region || '' %>" placeholder="Bölgə" class="p-2 bg-white border border-slate-200 rounded-lg">
+                            </div>
                         </div>
-                        <form action="/admin/captains/<%= encodeURIComponent(cp.id) %>/delete" method="POST">
-                            <button type="submit" class="text-rose-600 font-bold text-[11px] px-2 py-1 hover:bg-rose-50 rounded-lg">Sil</button>
-                        </form>
-                    </div>
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                            <input type="text" name="languages" value="<%= cp.languages || '' %>" placeholder="Dillər" class="p-2 bg-white border border-slate-200 rounded-lg">
+                            <input type="text" name="bioTr" value="<%= cp.bioTr || cp.bio || '' %>" placeholder="Kapitan bio mətni" class="sm:col-span-2 p-2 bg-white border border-slate-200 rounded-lg">
+                        </div>
+                        <div class="flex flex-wrap items-center justify-between gap-2 pt-1">
+                            <label class="inline-flex items-center gap-2 text-[11px] text-slate-600 cursor-pointer">
+                                <span class="font-bold">Yeni Şəkil:</span>
+                                <input type="file" name="photoFile" accept="image/*" class="text-[11px] text-slate-600">
+                            </label>
+                            <div class="flex items-center gap-2">
+                                <button type="submit" class="px-3.5 py-1.5 bg-teal-600 hover:bg-teal-700 text-white rounded-lg font-bold text-[11px]">Yadda Saxla</button>
+                                <button type="submit" formaction="/admin/captains/<%= encodeURIComponent(cp.id) %>/delete" class="px-2.5 py-1.5 text-rose-600 hover:bg-rose-50 rounded-lg font-bold text-[11px]">Sil</button>
+                            </div>
+                        </div>
+                    </form>
                 <% }) %>
             </div>
         </div>
 
-        <!-- SSS (FAQ) -->
         <div class="bg-white p-5 sm:p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
             <h3 class="font-extrabold text-slate-900 text-base">Sıkça Sorulan Sorular (SSS)</h3>
             <form action="/admin/faqs/add" method="POST" class="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
@@ -1366,7 +1385,6 @@
             </div>
         </div>
 
-        <!-- Müşteri Yorumları -->
         <div class="bg-white p-5 sm:p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
             <h3 class="font-extrabold text-slate-900 text-base">Müşteri Yorumları (<%= safeReviews.length %>)</h3>
             <div class="divide-y divide-slate-100 border-t border-slate-100 text-xs">
@@ -1712,7 +1730,6 @@
     const params = new URLSearchParams(window.location.search);
     switchAdminTab(params.get('tab') || 'dashboard');
 
-    /* PUSH PANEL YÖNETİMİ */
     function openBookingDrawer(d) {
         const drawer = document.getElementById('bookingDetailDrawer');
         if (!drawer || !d) return;

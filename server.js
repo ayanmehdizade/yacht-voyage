@@ -6,6 +6,7 @@ const crypto = require('crypto');
 const ADMIN_EMAIL = process.env.ADMIN_EMAIL || 'admin@yachtvoyage.com';
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'Yacht2026!';
 const SESSION_SECRET = process.env.SESSION_SECRET || 'yv-secret-key-2026';
+const SESSION_TTL_SECONDS = 60 * 60 * 24; // 24 saat
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -535,7 +536,8 @@ function saveBase64Image(dataUri, prefix = 'yacht') {
     const m = dataUri.match(/^data:image\/(png|jpeg|jpg|webp|gif);base64,(.+)$/i);
     if (!m) return '';
     const ext = m[1].toLowerCase() === 'jpeg' ? '.jpg' : '.' + m[1].toLowerCase();
-    const fileName = `${prefix}-${Date.now()}-${Math.floor(Math.random() * 100000)}${ext}`;
+    const safePrefix = String(prefix || 'yacht').replace(/[^a-zA-Z0-9_-]/g, '');
+    const fileName = path.basename(`${safePrefix}-${Date.now()}-${Math.floor(Math.random() * 100000)}${ext}`);
     fs.writeFileSync(path.join(UPLOAD_DIR, fileName), Buffer.from(m[2], 'base64'));
     return `/uploads/${fileName}`;
 }
@@ -804,13 +806,15 @@ function getAllAdminUsers(db) {
 }
 
 function signAdminSession(user) {
+    const exp = Math.floor(Date.now() / 1000) + SESSION_TTL_SECONDS;
     const payload = Buffer.from(JSON.stringify({
         email: user.email,
-        role: user.role
+        role: user.role,
+        exp
     })).toString('base64url');
     const sig = crypto
         .createHmac('sha256', SESSION_SECRET)
-        .update(`${user.email}:${user.password}:${user.role}`)
+        .update(`${user.email}:${user.password}:${user.role}:${exp}`)
         .digest('hex');
     return `${payload}.${sig}`;
 }
@@ -829,13 +833,18 @@ function getAuthenticatedAdmin(req, db) {
         return null;
     }
 
+    const nowSec = Math.floor(Date.now() / 1000);
+    if (!payload || !payload.exp || Number(payload.exp) < nowSec) {
+        return null;
+    }
+
     const users = getAllAdminUsers(db || loadDB());
     const matchedUser = users.find(u => u.email === String(payload.email || '').toLowerCase());
     if (!matchedUser) return null;
 
     const expectedSig = crypto
         .createHmac('sha256', SESSION_SECRET)
-        .update(`${matchedUser.email}:${matchedUser.password}:${matchedUser.role}`)
+        .update(`${matchedUser.email}:${matchedUser.password}:${matchedUser.role}:${payload.exp}`)
         .digest('hex');
 
     const sigBuf = Buffer.from(sig, 'utf8');
@@ -1083,7 +1092,7 @@ function parseMultipartUpload(req) {
             }
 
             const buffer = Buffer.concat(chunks);
-            const fields = {};
+            const fields = Object.assign({}, req.body || {});
             const uploadedFiles = [];
 
             let pos = buffer.indexOf(boundary);
@@ -1109,9 +1118,9 @@ function parseMultipartUpload(req) {
 
                 const filenameMatch = headerStr.match(/filename="([^"]*)"/i);
                 if (filenameMatch && filenameMatch[1] && bodyBuf.length > 0) {
-                    const ext = path.extname(filenameMatch[1]).toLowerCase() || '.jpg';
+                    const ext = path.extname(path.basename(filenameMatch[1])).toLowerCase() || '.jpg';
                     const safeExt = ['.jpg', '.jpeg', '.png', '.webp', '.gif'].includes(ext) ? ext : '.jpg';
-                    const fileName = `yacht-${Date.now()}-${Math.floor(Math.random() * 100000)}${safeExt}`;
+                    const fileName = path.basename(`yacht-${Date.now()}-${Math.floor(Math.random() * 100000)}${safeExt}`);
                     const fullPath = path.join(UPLOAD_DIR, fileName);
                     fs.writeFileSync(fullPath, bodyBuf);
                     uploadedFiles.push({
@@ -1748,7 +1757,7 @@ app.post('/admin/login', (req, res) => {
 
     if (user) {
         const cookieToken = signAdminSession(user);
-        res.setHeader('Set-Cookie', `yv_admin=${cookieToken}; HttpOnly; Path=/; SameSite=Lax${cookieFlags()}`);
+        res.setHeader('Set-Cookie', `yv_admin=${cookieToken}; HttpOnly; Path=/; Max-Age=${SESSION_TTL_SECONDS}; SameSite=Lax${cookieFlags()}`);
         return res.redirect('/admin');
     }
     return res.redirect('/admin/login?error=' + encodeURIComponent('E-posta veya şifre hatalı.'));
@@ -1989,7 +1998,7 @@ app.post('/admin/faqs/:id/delete', requireAdmin, (req, res) => {
     res.redirect('/admin?tab=ayarlar&notice=' + encodeURIComponent('SSS maddesi silindi.'));
 });
 
-/* --- KOMMENT SİLME --- */
+/* --- YORUM SİLME --- */
 app.post('/admin/reviews/:yachtId/:reviewIndex/delete', requireAdmin, (req, res) => {
     const db = loadDB();
     const yacht = (db.yachts || []).find(y => Number(y.id) === Number(req.params.yachtId));
@@ -2296,9 +2305,22 @@ app.post('/admin/yachts/:id/update', requireAdmin, async (req, res) => {
             try {
                 const parsedGallery = JSON.parse(fields.imagesData);
                 if (Array.isArray(parsedGallery) && parsedGallery.length) {
-                    updatedGallery = parsedGallery
-                        .map(src => saveBase64Image(src, 'yacht'))
+                    const normalizedItems = parsedGallery
+                        .map(src => {
+                            if (typeof src !== 'string') return '';
+                            const trimmed = src.trim();
+                            if (trimmed.startsWith('data:image/')) {
+                                return saveBase64Image(trimmed, 'yacht');
+                            }
+                            if (trimmed.startsWith('/uploads/') || trimmed.startsWith('http://') || trimmed.startsWith('https://')) {
+                                return trimmed;
+                            }
+                            return '';
+                        })
                         .filter(Boolean);
+                    if (normalizedItems.length) {
+                        updatedGallery = normalizedItems;
+                    }
                 }
             } catch {
                 // mevcut galeri korunur
@@ -2851,6 +2873,16 @@ app.post('/admin/bookings/:id/delete', requireAdmin, (req, res) => {
     db.bookings = db.bookings.filter(b => b.id !== bookingId);
     saveDB(db);
     res.redirect('/admin?tab=rezervasyonlar&notice=' + encodeURIComponent('Rezervasyon kaydı silindi.'));
+});
+
+app.use((req, res) => {
+    res.status(404).redirect('/');
+});
+
+app.use((err, req, res, next) => {
+    console.error('❌ Beklenmeyen sunucu hatası:', err && err.stack ? err.stack : err);
+    if (res.headersSent) return next(err);
+    res.status(500).send(res.locals.isEn ? 'An unexpected server error occurred.' : 'Beklenmeyen bir sunucu hatası oluştu.');
 });
 
 if (!IS_VERCEL) {

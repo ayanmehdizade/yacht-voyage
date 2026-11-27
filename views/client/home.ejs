@@ -19,6 +19,7 @@
 ]; %>
 <% const defaultDep = depList[0] || { name: 'Göcek', desc: homeIsEn ? 'Coves & D-Marin departure' : 'Koylar & D-Marin kalkış' }; %>
 <% const homeCats = (typeof categories !== 'undefined' && Array.isArray(categories)) ? categories : []; %>
+<% const homeCaptains = (typeof captains !== 'undefined' && Array.isArray(captains)) ? captains : []; %>
 
 <section class="relative bg-[#0B1F3A] text-white overflow-x-clip">
     <img src="https://images.unsplash.com/photo-1567899378494-47b22a2ae96a?auto=format&fit=crop&w=1200&q=85"
@@ -313,6 +314,58 @@
         </div>
     <% } %>
 </section>
+
+<% if (homeCaptains.length > 0) { %>
+<section id="kaptanlar" class="max-w-7xl mx-auto px-4 sm:px-6 pt-16 space-y-8">
+    <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-3">
+        <div>
+            <span class="text-xs font-extrabold uppercase tracking-wider text-teal-600"><%= homeIsEn ? 'Experienced Crew' : 'Deneyimli Ekip' %></span>
+            <h2 class="text-2xl md:text-3xl font-extrabold text-[#0B1F3A] mt-1"><%= homeIsEn ? 'Our Licensed Captains' : 'Lisanslı Kaptanlarımız' %></h2>
+        </div>
+        <p class="text-xs text-slate-500"><%= homeIsEn ? 'Safe navigation and local cove expertise across Aegean & Mediterranean waters.' : 'Ege ve Akdeniz sularında güvenli seyir ve yerel koy bilgisi.' %></p>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <% homeCaptains.forEach(cp => { %>
+            <%
+                const cpName = cp.name || 'Kaptan';
+                const cpRole = (homeIsEn && cp.roleEn) ? cp.roleEn : (cp.roleTr || (homeIsEn ? 'Senior Captain' : 'Kaptan'));
+                const cpBio = (homeIsEn && cp.bioEn) ? cp.bioEn : (cp.bioTr || cp.bio || (homeIsEn ? 'Experienced coastal and offshore captain.' : 'Deneyimli kıyı ve açık deniz kaptanı.'));
+                const cpImg = cp.image || cp.avatar || 'https://images.unsplash.com/photo-1560250097-0b93528c311a?auto=format&fit=crop&w=600&q=80';
+                const cpExp = Number(cp.experienceYears || 0);
+            %>
+            <div class="bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-lg transition overflow-hidden flex flex-col justify-between">
+                <div class="p-5 space-y-4">
+                    <div class="flex items-center gap-4">
+                        <img src="<%= cpImg %>" onerror="fallbackYachtImg(this)" alt="<%= cpName %>" class="w-16 h-16 rounded-2xl object-cover border border-slate-200 shrink-0">
+                        <div class="min-w-0">
+                            <h3 class="font-extrabold text-slate-900 text-base truncate"><%= cpName %></h3>
+                            <p class="text-xs font-bold text-teal-700"><%= cpRole %></p>
+                            <div class="flex flex-wrap items-center gap-2 mt-1 text-[11px] text-slate-500">
+                                <% if (cpExp > 0) { %>
+                                    <span><i class="fa-solid fa-award text-amber-500 mr-1"></i><%= cpExp %> <%= homeIsEn ? 'yrs exp.' : 'yıl tecrübe' %></span>
+                                <% } %>
+                                <% if (cp.region) { %>
+                                    <span>• <i class="fa-solid fa-location-dot text-teal-600 mr-0.5"></i><%= cp.region %></span>
+                                <% } %>
+                            </div>
+                        </div>
+                    </div>
+
+                    <p class="text-xs text-slate-600 leading-relaxed"><%= cpBio %></p>
+                </div>
+
+                <% if (cp.languages) { %>
+                    <div class="px-5 py-3 bg-slate-50 border-t border-slate-100 text-[11px] text-slate-500 flex items-center justify-between">
+                        <span><i class="fa-solid fa-language text-teal-600 mr-1.5"></i><%= cp.languages %></span>
+                        <span class="font-bold text-emerald-700"><%= homeIsEn ? 'Licensed' : 'Lisanslı' %></span>
+                    </div>
+                <% } %>
+            </div>
+        <% }) %>
+    </div>
+</section>
+<% } %>
 
 <section id="rotalar" data-home-section class="hidden max-w-7xl mx-auto px-4 sm:px-6 pt-10 space-y-6">
     <div class="flex flex-col md:flex-row md:items-end justify-between gap-4">
