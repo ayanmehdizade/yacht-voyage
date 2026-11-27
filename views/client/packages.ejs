@@ -135,7 +135,7 @@
                                     <%= tpIsEn ? 'Yacht Details' : 'Yat Detayı' %>
                                 </a>
                             <% } %>
-                            <a href="/checkout?yachtId=<%= encodeURIComponent(targetYachtId) %>&tourId=<%= encodeURIComponent(pkg.id) %>&packageDays=<%= encodeURIComponent(daysNum) %>" class="bg-[#0B1F3A] hover:bg-sky-900 text-white text-xs font-bold px-4 py-2.5 rounded-xl transition">
+                            <a href="/checkout?yachtId=<%= encodeURIComponent(targetYachtId) %>&tourId=<%= encodeURIComponent(pkg.id) %>&packageName=<%= encodeURIComponent(pkgTitle || '') %>&packagePrice=<%= encodeURIComponent(pkgPrice) %>&packageDays=<%= encodeURIComponent(daysNum) %>&duration=<%= encodeURIComponent(pkgDuration || '') %>" class="bg-[#0B1F3A] hover:bg-sky-900 text-white text-xs font-bold px-4 py-2.5 rounded-xl transition">
                                 <%= tpIsEn ? 'Select Package →' : 'Paketi Seç →' %>
                             </a>
                         </div>

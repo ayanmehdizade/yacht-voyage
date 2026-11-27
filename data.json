@@ -352,7 +352,10 @@
       "refundedAmount": 3100,
       "paymentType": "Hisseli Ödeme",
       "paymentMethod": "Kredi / Banka Kartı",
-      "status": "İptal Edildi"
+      "status": "İptal Edildi",
+      "assignedCaptain": "",
+      "assignedTransfer": "",
+      "adminNote": ""
     },
     {
       "id": "YV2026-9445",
@@ -592,6 +595,13 @@
   "siteSettings": {
     "brandName": "YachtVoyage",
     "brandSubtext": "Yacht Charter",
+    "heroBadge": "Göcek • Marmaris • Fethiye • Bodrum",
+    "heroBadgeEn": "Göcek • Marmaris • Fethiye • Bodrum",
+    "heroTitle": "Eşsiz Yat Deneyimini Keşfedin",
+    "heroTitleEn": "Discover a Unique Yacht Experience",
+    "heroSubtitle": "Göcek, Marmaris, Fethiye ve Bodrum koylarında özel yat kiralama, günlük tur paketleri ve şeffaf içerik bilgisi.",
+    "heroSubtitleEn": "Private yacht charters, daily tour packages and transparent itinerary details across Göcek, Marmaris, Fethiye and Bodrum coves.",
+    "heroImage": "https://images.unsplash.com/photo-1567899378494-47b22a2ae96a?auto=format&fit=crop&w=1200&q=80",
     "phone": "+90 252 123 45 67",
     "whatsappNumber": "902521234567",
     "email": "hello@yachtvoyage.com",
@@ -632,6 +642,22 @@
       "id": 4,
       "name": "Bodrum",
       "desc": "Yalıkavak & Türkbükü"
+    }
+  ],
+  "promoCodes": [
+    {
+      "id": 1,
+      "code": "MAVI10",
+      "discountPercent": 10,
+      "expiresAt": "",
+      "isActive": true
+    },
+    {
+      "id": 2,
+      "code": "VIP15",
+      "discountPercent": 15,
+      "expiresAt": "",
+      "isActive": true
     }
   ]
 }

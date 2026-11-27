@@ -13,6 +13,11 @@
             font-family: 'Plus Jakarta Sans', sans-serif;
             overflow-x: hidden;
         }
+        @media (min-width: 768px) {
+            body.sidebar-collapsed .admin-sidebar {
+                display: none !important;
+            }
+        }
         @media (max-width: 767.98px) {
             .admin-main-wrap { padding: 1rem !important; }
             .admin-top-header { flex-direction: column; align-items: flex-start !important; gap: 0.75rem; }
@@ -31,6 +36,7 @@
         const safePayments = (typeof paymentOptions !== 'undefined' && Array.isArray(paymentOptions)) ? paymentOptions : [];
         const safeDepartures = (typeof departurePoints !== 'undefined' && Array.isArray(departurePoints)) ? departurePoints : [];
         const safeAdminUsers = (typeof adminUsers !== 'undefined' && Array.isArray(adminUsers)) ? adminUsers : [];
+        const safePromoCodes = (typeof promoCodes !== 'undefined' && Array.isArray(promoCodes)) ? promoCodes : [];
 
         const planCfg = (typeof paymentPlanSettings !== 'undefined' && paymentPlanSettings) ? paymentPlanSettings : {
             installmentPercent: 50,
@@ -52,6 +58,22 @@
             conciergeWelcome: 'Merhaba! Rota planlaması, özel menü veya tekne müsaitliği için hızlıca yazabilirsiniz.'
         };
         const isAdminEn = (typeof isEn !== 'undefined' && Boolean(isEn)) || (typeof lang !== 'undefined' && lang === 'en');
+
+        const normalizeBookingStatus = (raw) => {
+            const v = String(raw || '').trim();
+            if (v === 'Onaylandı' || v === 'confirmed' || v === 'approved') return 'Onaylandı';
+            if (v === 'İptal' || v === 'İptal Edildi' || v === 'cancelled' || v === 'rejected' || v === 'Reddedildi') return 'İptal Edildi';
+            return 'Beklemede';
+        };
+
+        const calcDaysUntilCheckIn = (checkInStr) => {
+            if (!checkInStr || !/^\d{4}-\d{2}-\d{2}$/.test(String(checkInStr))) return null;
+            const now = new Date();
+            const todayUtc = Date.UTC(now.getFullYear(), now.getMonth(), now.getDate());
+            const p = String(checkInStr).split('-').map(Number);
+            const targetUtc = Date.UTC(p[0], (p[1] || 1) - 1, p[2] || 1);
+            return Math.round((targetUtc - todayUtc) / 86400000);
+        };
     %>
 
 <!-- MOBİL ÜST BAR -->
@@ -95,7 +117,7 @@
         <i class="fa-solid fa-compass w-4"></i><span><%= isAdminEn ? 'Tours & Categories' : 'Turlar & Kategoriler' %></span>
     </button>
     <button type="button" data-admin-tab="ayarlar" class="admin-nav-btn w-full text-left flex items-center space-x-2.5 px-3.5 py-2.5 rounded-xl hover:bg-white/10 font-semibold">
-        <i class="fa-solid fa-sliders w-4"></i><span><%= isAdminEn ? 'Site, Payment & Contract' : 'Site, Ödeme & Sözleşme' %></span>
+        <i class="fa-solid fa-sliders w-4"></i><span><%= isAdminEn ? 'Site, Promo & Contract' : 'Site, Promokod & Sözleşme' %></span>
     </button>
     <div class="pt-2 border-t border-white/10 flex items-center justify-between text-[11px] text-slate-400">
         <span><%= (typeof adminUser !== 'undefined' && adminUser && adminUser.name) ? adminUser.name : 'CRM Panel' %></span>
@@ -108,16 +130,21 @@
 </div>
 
 <!-- MASAÜSTÜ SIDEBAR -->
-<aside class="admin-sidebar hidden md:flex w-64 bg-[#0B1F3A] text-slate-300 p-6 flex-col justify-between shrink-0">
+<aside id="adminDesktopSidebar" class="admin-sidebar hidden md:flex w-64 bg-[#0B1F3A] text-slate-300 p-6 flex-col justify-between shrink-0">
     <div>
-        <div class="text-white font-extrabold text-lg mb-7 flex items-center space-x-2.5">
-            <div class="w-9 h-9 rounded-xl bg-white/10 flex items-center justify-center">
-                <i class="fa-solid fa-sailboat text-sky-400"></i>
+        <div class="text-white font-extrabold text-lg mb-7 flex items-center justify-between gap-2">
+            <div class="flex items-center space-x-2.5">
+                <div class="w-9 h-9 rounded-xl bg-white/10 flex items-center justify-center">
+                    <i class="fa-solid fa-sailboat text-sky-400"></i>
+                </div>
+                <div>
+                    <span class="block leading-none">Yacht CRM</span>
+                    <span class="text-[10px] text-sky-300 tracking-[0.2em]">OPERATIONS</span>
+                </div>
             </div>
-            <div>
-                <span class="block leading-none">Yacht CRM</span>
-                <span class="text-[10px] text-sky-300 tracking-[0.2em]">OPERATIONS</span>
-            </div>
+            <button type="button" onclick="toggleDesktopSidebar()" title="Menüyü Gizle" class="w-8 h-8 rounded-lg bg-white/10 hover:bg-white/20 text-slate-200 flex items-center justify-center transition">
+                <i class="fa-solid fa-angles-left text-xs"></i>
+            </button>
         </div>
         <nav class="space-y-1.5 text-sm" id="adminSidebarNav">
             <button type="button" data-admin-tab="dashboard" class="admin-nav-btn w-full text-left flex items-center space-x-3 p-3 bg-teal-600 text-white rounded-xl font-semibold shadow transition">
@@ -133,7 +160,7 @@
                 <i class="fa-solid fa-compass w-4"></i><span>Turlar &amp; Kategoriler</span>
             </button>
             <button type="button" data-admin-tab="ayarlar" class="admin-nav-btn w-full text-left flex items-center space-x-3 p-3 hover:bg-white/10 rounded-xl transition">
-                <i class="fa-solid fa-sliders w-4"></i><span>Site, Ödeme &amp; Sözleşme</span>
+                <i class="fa-solid fa-sliders w-4"></i><span>Site, Promokod &amp; Sözleşme</span>
             </button>
             <a href="/" class="flex items-center space-x-3 p-3 hover:bg-white/10 rounded-xl transition">
                 <i class="fa-solid fa-globe w-4"></i><span>Müşteri Sitesi</span>
@@ -158,9 +185,15 @@
 <!-- ANA İÇERİK -->
 <main class="admin-main-wrap flex-1 p-6 md:p-8 space-y-6 min-w-0">
     <div class="admin-top-header flex flex-wrap items-center justify-between gap-3">
-        <div>
-            <h1 id="adminPageTitle" class="text-xl sm:text-2xl font-extrabold text-[#0B1F3A]">Dashboard &amp; Genel Bakış</h1>
-            <p id="adminPageSubtitle" class="text-xs text-slate-500 mt-0.5">Filo, turlar, kategoriler, ödemeler ve rezervasyon yönetimi</p>
+        <div class="flex items-center gap-3">
+            <button type="button" id="desktopSidebarToggleBtn" onclick="toggleDesktopSidebar()" class="hidden md:inline-flex items-center gap-2 px-3 py-2.5 rounded-xl bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-bold shadow-sm transition" title="Sol Menüyü Aç / Kapat">
+                <i id="desktopSidebarToggleIcon" class="fa-solid fa-bars-staggered text-teal-600"></i>
+                <span id="desktopSidebarToggleLabel">Menüyü Gizle</span>
+            </button>
+            <div>
+                <h1 id="adminPageTitle" class="text-xl sm:text-2xl font-extrabold text-[#0B1F3A]">Dashboard &amp; Genel Bakış</h1>
+                <p id="adminPageSubtitle" class="text-xs text-slate-500 mt-0.5">Filo, turlar, kategoriler, ödemeler ve rezervasyon yönetimi</p>
+            </div>
         </div>
         <a href="/" class="admin-action-btn text-xs bg-white border border-slate-200 px-4 py-2.5 rounded-xl font-bold text-slate-700 hover:bg-slate-50 shadow-sm">
             ← Müşteri Sayfasına Dön
@@ -168,20 +201,31 @@
     </div>
 
     <% if (typeof notice !== 'undefined' && notice) { %>
-        <div class="bg-emerald-50 border border-emerald-200 text-emerald-800 px-4 py-3 rounded-2xl text-xs font-bold flex items-center space-x-2">
-            <i class="fa-solid fa-circle-check text-emerald-600 shrink-0"></i>
-            <span><%= notice %></span>
+        <div id="adminNoticeBanner" class="bg-emerald-50 border border-emerald-200 text-emerald-800 px-4 py-3 rounded-2xl text-xs font-bold flex items-center justify-between gap-3">
+            <div class="flex items-center space-x-2 min-w-0">
+                <i class="fa-solid fa-circle-check text-emerald-600 shrink-0"></i>
+                <span><%= notice %></span>
+            </div>
+            <button
+                type="button"
+                onclick="dismissAdminNotice()"
+                aria-label="Bildirimi kapat"
+                title="Kapat"
+                class="w-6 h-6 rounded-lg text-emerald-700/70 hover:text-emerald-950 hover:bg-emerald-200/60 flex items-center justify-center shrink-0 transition text-xs leading-none"
+            >
+                ✕
+            </button>
         </div>
     <% } %>
 
     <!-- 1. DASHBOARD -->
     <section id="view-dashboard" class="admin-view space-y-6">
         <%
-            const isCancelled = b => b && (b.status === 'İptal Edildi' || b.status === 'İptal');
+            const isCancelled = b => normalizeBookingStatus(b && b.status) === 'İptal Edildi';
             const activeBookings = safeBookings.filter(b => !isCancelled(b));
             const cancelledBookings = safeBookings.filter(b => isCancelled(b));
-            const approvedCount = safeBookings.filter(b => b && b.status === 'Onaylandı').length;
-            const pendingCount = safeBookings.filter(b => b && (b.status === 'Beklemede' || b.status === 'Ödeme Bekliyor')).length;
+            const approvedCount = safeBookings.filter(b => normalizeBookingStatus(b && b.status) === 'Onaylandı').length;
+            const pendingCount = safeBookings.filter(b => normalizeBookingStatus(b && b.status) === 'Beklemede').length;
             const cancelledCount = cancelledBookings.length;
 
             const grossVolume = activeBookings.reduce((sum, b) => sum + Number(b.totalAmount || 0), 0);
@@ -227,7 +271,7 @@
                 <h3 class="text-3xl font-extrabold text-[#0B1F3A] mt-2"><%= safeBookings.length %></h3>
                 <div class="mt-2 flex flex-wrap gap-1.5 text-[11px] font-semibold">
                     <span class="text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md"><%= approvedCount %> onaylı</span>
-                    <span class="text-amber-700 bg-amber-50 px-2 py-0.5 rounded-md"><%= pendingCount %> beklemede</span>
+                    <span class="text-amber-700 bg-amber-50 px-2 py-0.5 rounded-md"><%= pendingCount %> onay bekliyor</span>
                     <span class="text-rose-700 bg-rose-50 px-2 py-0.5 rounded-md"><%= cancelledCount %> iptal</span>
                 </div>
             </div>
@@ -267,7 +311,7 @@
                 </div>
                 <h3 class="text-3xl font-extrabold text-amber-600 mt-2">€<%= avgDailyPrice.toLocaleString() %></h3>
                 <span class="text-[11px] text-slate-500 mt-2 block">
-                    <%= safeExtras.filter(e => e && e.active !== false).length %> aktif ekstra • <%= safePayments.filter(p => p && p.active !== false).length %> ödeme yöntemi
+                    <%= safePromoCodes.filter(p => p && p.isActive !== false).length %> aktif promokod • <%= safePayments.filter(p => p && p.active !== false).length %> ödeme yöntemi
                 </span>
             </div>
         </div>
@@ -362,12 +406,12 @@
                 <table class="admin-table w-full text-left text-xs">
                     <thead class="bg-slate-50 text-slate-400 uppercase text-[10px]">
                         <tr>
-                            <th class="p-4">PNR</th>
-                            <th class="p-4">Müşteri</th>
-                            <th class="p-4">Yat</th>
-                            <th class="p-4">Tarih</th>
-                            <th class="p-4">Tutar / Ödeme</th>
-                            <th class="p-4">Durum</th>
+                            <th class="p-4 whitespace-nowrap">PNR</th>
+                            <th class="p-4 whitespace-nowrap">Müşteri</th>
+                            <th class="p-4 whitespace-nowrap">Yat</th>
+                            <th class="p-4 whitespace-nowrap">Tarih</th>
+                            <th class="p-4 whitespace-nowrap">Tutar / Ödeme</th>
+                            <th class="p-4 whitespace-nowrap">Durum</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-slate-100">
@@ -377,27 +421,27 @@
                             </tr>
                         <% } else { %>
                             <% safeBookings.slice(0, 5).forEach(b => { %>
-                                <% const st = (b.status === 'İptal') ? 'İptal Edildi' : ((b.status === 'Ödeme Bekliyor') ? 'Beklemede' : (b.status || 'Beklemede')); %>
+                                <% const st = normalizeBookingStatus(b.status); %>
                                 <% const isRef = st === 'İptal Edildi'; %>
                                 <tr class="hover:bg-slate-50/70">
-                                    <td class="p-4 font-mono font-bold text-[#0B1F3A]"><%= b.id %></td>
-                                    <td class="p-4 font-bold text-slate-900"><%= b.customer %></td>
-                                    <td class="p-4 text-slate-700"><%= b.yacht %></td>
-                                    <td class="p-4 text-slate-600"><%= b.checkIn %> → <%= b.checkOut %></td>
-                                    <td class="p-4 font-extrabold text-slate-900">
+                                    <td class="p-4 font-mono font-bold text-[#0B1F3A] whitespace-nowrap"><%= b.id %></td>
+                                    <td class="p-4 font-bold text-slate-900 whitespace-nowrap"><%= b.customer %></td>
+                                    <td class="p-4 text-slate-700 whitespace-nowrap"><%= b.yacht %></td>
+                                    <td class="p-4 text-slate-600 whitespace-nowrap"><%= b.checkIn %> → <%= b.checkOut %></td>
+                                    <td class="p-4 font-extrabold text-slate-900 whitespace-nowrap">
                                         <% if (isRef) { %>
                                             <span class="text-rose-700">İade / İptal (€<%= Number(b.refundedAmount || b.paidAmount || 0).toLocaleString() %>)</span>
                                         <% } else { %>
                                             <span>€<%= Number(b.totalAmount || 0).toLocaleString() %> <span class="text-[11px] font-semibold text-emerald-700">(Ödenen: €<%= Number(b.paidAmount || 0).toLocaleString() %>)</span></span>
                                         <% } %>
                                     </td>
-                                    <td class="p-4">
+                                    <td class="p-4 whitespace-nowrap">
                                         <% if (st === 'Onaylandı') { %>
                                             <span class="bg-emerald-100 text-emerald-700 px-2.5 py-1 rounded-full font-bold text-[11px]">Onaylandı</span>
                                         <% } else if (isRef) { %>
                                             <span class="bg-rose-100 text-rose-700 px-2.5 py-1 rounded-full font-bold text-[11px]">İptal Edildi</span>
                                         <% } else { %>
-                                            <span class="bg-amber-100 text-amber-800 px-2.5 py-1 rounded-full font-bold text-[11px]">Beklemede</span>
+                                            <span class="bg-amber-100 text-amber-800 px-2.5 py-1 rounded-full font-bold text-[11px]">Admin Onayı Bekliyor</span>
                                         <% } %>
                                     </td>
                                 </tr>
@@ -415,82 +459,170 @@
             <div class="flex flex-wrap items-center gap-2">
                 <span class="font-extrabold text-slate-900 text-sm sm:text-base mr-1">Rezervasyonlar (<%= safeBookings.length %>)</span>
                 <button type="button" data-status-filter="all" class="status-filter-btn px-3 py-1.5 rounded-lg text-[11px] font-bold bg-[#0B1F3A] text-white">Tümü</button>
-                <button type="button" data-status-filter="Onaylandı" class="status-filter-btn px-3 py-1.5 rounded-lg text-[11px] font-bold bg-slate-100 text-slate-700">Onaylandı</button>
-                <button type="button" data-status-filter="Beklemede" class="status-filter-btn px-3 py-1.5 rounded-lg text-[11px] font-bold bg-slate-100 text-slate-700">Beklemede</button>
-                <button type="button" data-status-filter="İptal Edildi" class="status-filter-btn px-3 py-1.5 rounded-lg text-[11px] font-bold bg-slate-100 text-slate-700">İptal Edildi</button>
+                <button type="button" data-status-filter="Beklemede" class="status-filter-btn px-3 py-1.5 rounded-lg text-[11px] font-bold bg-slate-100 text-slate-700">Bekleyen (<%= pendingCount %>)</button>
+                <button type="button" data-status-filter="Onaylandı" class="status-filter-btn px-3 py-1.5 rounded-lg text-[11px] font-bold bg-slate-100 text-slate-700">Onaylı (<%= approvedCount %>)</button>
+                <button type="button" data-status-filter="İptal Edildi" class="status-filter-btn px-3 py-1.5 rounded-lg text-[11px] font-bold bg-slate-100 text-slate-700">İptal (<%= cancelledCount %>)</button>
             </div>
-            <input id="bookingSearchInput" type="text" placeholder="PNR, müşteri veya yat ara..." class="px-3.5 py-2 text-xs border border-slate-200 rounded-xl w-full lg:w-64 focus:outline-none">
+            <input id="bookingSearchInput" type="text" placeholder="PNR, müşteri veya yat ara..." class="px-3.5 py-2 text-xs border border-slate-200 rounded-xl w-full lg:w-64 focus:outline-none focus:border-teal-600">
         </div>
 
         <div class="overflow-x-auto">
             <table class="admin-table w-full text-left text-xs">
-                <thead class="bg-slate-50 text-slate-400 uppercase text-[10px]">
+                <thead class="bg-slate-50 text-slate-400 uppercase text-[10px] tracking-wider">
                     <tr>
-                        <th class="p-4">PNR</th>
-                        <th class="p-4">Müşteri</th>
-                        <th class="p-4">Yat</th>
-                        <th class="p-4">Tarih &amp; Kişi</th>
-                        <th class="p-4">Rezervasyon Durumu</th>
-                        <th class="p-4">Ödeme &amp; İade Durumu</th>
-                        <th class="p-4 text-right">İşlem</th>
+                        <th class="px-4 py-3 whitespace-nowrap">PNR</th>
+                        <th class="px-4 py-3 whitespace-nowrap">Müşteri</th>
+                        <th class="px-4 py-3 whitespace-nowrap">Yat &amp; Paket</th>
+                        <th class="px-4 py-3 whitespace-nowrap">Tarih &amp; Kişi</th>
+                        <th class="px-4 py-3 whitespace-nowrap">Durum</th>
+                        <th class="px-4 py-3 whitespace-nowrap">Ödeme</th>
+                        <th class="px-4 py-3 whitespace-nowrap text-right">İşlem</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-slate-100">
-                    <% safeBookings.forEach(b => { %>
-                        <% const normStatus = (b.status === 'İptal') ? 'İptal Edildi' : ((b.status === 'Ödeme Bekliyor') ? 'Beklemede' : (b.status || 'Beklemede')); %>
-                        <% const isCanc = normStatus === 'İptal Edildi'; %>
-                        <% const payAmt = Number(b.paidAmount || 0); %>
-                        <% const totAmt = Number(b.totalAmount || 0); %>
-                        <% const refAmt = isCanc ? ((b.refundedAmount !== undefined && b.refundedAmount !== null) ? Number(b.refundedAmount || 0) : payAmt) : Number(b.refundedAmount || 0); %>
-                        <% const payBadge = b.paymentStatus || (isCanc ? (refAmt > 0 ? 'İade Edildi / İptal' : 'Ödeme İptal') : (payAmt >= totAmt ? 'Tam Ödendi' : (payAmt > 0 ? 'Ön Ödeme Alındı' : 'Ödeme Bekliyor'))); %>
-                        <% const safeBid = encodeURIComponent(b.id); %>
-                        <tr class="booking-row hover:bg-slate-50/70" data-booking-status="<%= normStatus %>">
-                            <td class="p-4 font-mono font-bold text-[#0B1F3A]"><%= b.id %></td>
-                            <td class="p-4">
+                    <% safeBookings.forEach((b, idx) => { %>
+                        <%
+                            const normStatus = normalizeBookingStatus(b.status);
+                            const isCanc = normStatus === 'İptal Edildi';
+                            const isApproved = normStatus === 'Onaylandı';
+                            const payAmt = Number(b.paidAmount || 0);
+                            const totAmt = Number(b.totalAmount || 0);
+                            const daysLeft = calcDaysUntilCheckIn(b.checkIn);
+                            const eligibleFullRefund = daysLeft !== null && daysLeft >= 7;
+                            const refAmt = isCanc
+                                ? ((b.refundedAmount !== undefined && b.refundedAmount !== null) ? Number(b.refundedAmount || 0) : (eligibleFullRefund ? payAmt : 0))
+                                : Number(b.refundedAmount || 0);
+                            const payBadge = b.paymentStatus || (isCanc
+                                ? (refAmt > 0 ? 'İade Edildi' : 'İptal Edildi')
+                                : (payAmt >= totAmt && totAmt > 0 ? 'Tam Ödendi' : (payAmt > 0 ? 'Ön Ödeme' : 'Ödeme Bekliyor')));
+                            const safeBid = encodeURIComponent(b.id);
+                            const detailRowId = 'booking-detail-row-' + idx;
+                            const extrasText = Array.isArray(b.extras) && b.extras.length
+                                ? b.extras.join(', ')
+                                : (b.extras || b.extrasCsv || 'Seçilmedi');
+                        %>
+                        <tr class="booking-row hover:bg-slate-50/70 align-middle" data-booking-status="<%= normStatus %>" data-detail-target="<%= detailRowId %>">
+                            <td class="px-4 py-3 font-mono font-bold text-[#0B1F3A] whitespace-nowrap"><%= b.id %></td>
+                            <td class="px-4 py-3 whitespace-nowrap">
                                 <div class="font-bold text-slate-900"><%= b.customer %></div>
-                                <div class="text-[11px] text-slate-400"><%= b.email || '' %> <%= b.phone ? ('• ' + b.phone) : '' %></div>
+                                <div class="text-[11px] text-slate-500"><%= b.email || '' %></div>
                             </td>
-                            <td class="p-4 font-semibold text-slate-700"><%= b.yacht %></td>
-                            <td class="p-4 text-slate-600">
-                                <div><%= b.checkIn %> → <%= b.checkOut %></div>
-                                <div class="text-[11px] font-bold text-slate-800"><%= b.guests %> Kişi (<%= b.days || 1 %> Gün)</div>
+                            <td class="px-4 py-3 whitespace-nowrap">
+                                <div class="font-bold text-slate-800"><%= b.yacht %></div>
+                                <div class="text-[11px] text-slate-500"><%= b.packageName || b.charterType || 'Özel Kiralama' %></div>
                             </td>
-                            <td class="p-4">
-                                <% if (normStatus === 'Onaylandı') { %>
-                                    <span class="inline-flex items-center whitespace-nowrap shrink-0 bg-emerald-100 text-emerald-700 px-3 py-1 rounded-full font-bold text-[11px]">Onaylandı</span>
+                            <td class="px-4 py-3 whitespace-nowrap text-slate-700">
+                                <div class="font-medium"><%= b.checkIn %> → <%= b.checkOut %></div>
+                                <div class="text-[11px] font-bold text-slate-900 mt-0.5"><%= b.guests %> Kişi • <%= b.days || 1 %> Gün</div>
+                            </td>
+                            <td class="px-4 py-3 whitespace-nowrap">
+                                <% if (isApproved) { %>
+                                    <span class="inline-flex items-center bg-emerald-100 text-emerald-700 px-2.5 py-1 rounded-full font-bold text-[11px]">Onaylandı</span>
                                 <% } else if (isCanc) { %>
-                                    <span class="inline-flex items-center whitespace-nowrap shrink-0 bg-rose-100 text-rose-700 px-3 py-1 rounded-full font-bold text-[11px]">İptal Edildi</span>
+                                    <span class="inline-flex items-center bg-rose-100 text-rose-700 px-2.5 py-1 rounded-full font-bold text-[11px]">İptal Edildi</span>
                                 <% } else { %>
-                                    <span class="inline-flex items-center whitespace-nowrap shrink-0 bg-amber-100 text-amber-800 px-3 py-1 rounded-full font-bold text-[11px]">Beklemede</span>
+                                    <span class="inline-flex items-center bg-amber-100 text-amber-800 px-2.5 py-1 rounded-full font-bold text-[11px]">Onay Bekliyor</span>
+                                <% } %>
+                                <% if (!isCanc && daysLeft !== null && daysLeft >= 0) { %>
+                                    <div class="text-[10px] text-slate-500 mt-1"><%= daysLeft %> gün kaldı (<%= daysLeft >= 7 ? '%100 iade' : '<7 gün' %>)</div>
                                 <% } %>
                             </td>
-                            <td class="p-4 space-y-1">
-                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-md text-[11px] font-bold <%= isCanc ? 'bg-rose-50 text-rose-700 border border-rose-200' : 'bg-sky-50 text-sky-800 border border-sky-200' %>">
+                            <td class="px-4 py-3 whitespace-nowrap">
+                                <span class="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-bold <%= isCanc ? 'bg-rose-50 text-rose-700 border border-rose-200' : 'bg-sky-50 text-sky-800 border border-sky-200' %>">
                                     <%= payBadge %>
                                 </span>
-                                <div class="text-[11px] text-slate-600">
-                                    Toplam: <strong>€<%= totAmt.toLocaleString() %></strong> • Aktif Tahsilat: <strong class="text-emerald-700">€<%= (isCanc ? 0 : payAmt).toLocaleString() %></strong>
+                                <div class="text-[11px] text-slate-700 font-semibold mt-1">
+                                    Toplam: €<%= totAmt.toLocaleString() %>
                                 </div>
-                                <% if (refAmt > 0) { %>
-                                    <div class="text-[11px] font-bold text-rose-700">İade Tutarı: €<%= refAmt.toLocaleString() %></div>
+                                <% if (isCanc) { %>
+                                    <div class="text-[11px] font-bold text-rose-700">İade: €<%= refAmt.toLocaleString() %></div>
+                                <% } else { %>
+                                    <div class="text-[11px] font-semibold text-emerald-700">Ödenen: €<%= payAmt.toLocaleString() %></div>
                                 <% } %>
                             </td>
-                            <td class="p-4 text-right whitespace-nowrap space-x-1">
-                                <form action="/admin/bookings/<%= safeBid %>/status" method="POST" class="inline">
-                                    <input type="hidden" name="status" value="Onaylandı">
-                                    <button type="submit" class="admin-action-btn px-2.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg font-bold transition">Onayla</button>
-                                </form>
-                                <form action="/admin/bookings/<%= safeBid %>/status" method="POST" class="inline">
-                                    <input type="hidden" name="status" value="Beklemede">
-                                    <button type="submit" class="admin-action-btn px-2.5 py-1.5 bg-amber-100 hover:bg-amber-200 text-amber-800 rounded-lg font-bold transition">Beklet</button>
-                                </form>
-                                <form action="/admin/bookings/<%= safeBid %>/status" method="POST" class="inline">
-                                    <input type="hidden" name="status" value="İptal Edildi">
-                                    <button type="submit" class="admin-action-btn px-2.5 py-1.5 bg-rose-600 hover:bg-rose-700 text-white rounded-lg font-bold transition">İptal Et</button>
-                                </form>
-                                <form action="/admin/bookings/<%= safeBid %>/delete" method="POST" class="inline">
-                                    <button type="submit" class="admin-action-btn px-2 py-1.5 text-slate-400 hover:text-rose-600 rounded-lg transition" title="Sil"><i class="fa-solid fa-trash"></i></button>
-                                </form>
+                            <td class="px-4 py-3 text-right whitespace-nowrap">
+                                <div class="inline-flex items-center gap-1.5">
+                                    <button type="button" onclick="toggleBookingDetail('<%= detailRowId %>')" class="admin-action-btn px-2.5 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-lg font-bold transition">
+                                        Detay
+                                    </button>
+                                    <% if (!isApproved && !isCanc) { %>
+                                        <form action="/admin/bookings/<%= safeBid %>/status" method="POST" class="inline">
+                                            <input type="hidden" name="status" value="Onaylandı">
+                                            <button type="submit" class="admin-action-btn px-2.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg font-bold transition">Onayla</button>
+                                        </form>
+                                    <% } %>
+                                    <% if (!isCanc) { %>
+                                        <form action="/admin/bookings/<%= safeBid %>/status" method="POST" class="inline">
+                                            <input type="hidden" name="status" value="İptal Edildi">
+                                            <button type="submit" class="admin-action-btn px-2.5 py-1.5 bg-rose-600 hover:bg-rose-700 text-white rounded-lg font-bold transition">İptal</button>
+                                        </form>
+                                    <% } %>
+                                    <form action="/admin/bookings/<%= safeBid %>/delete" method="POST" class="inline">
+                                        <button type="submit" class="admin-action-btn px-2 py-1.5 text-slate-400 hover:text-rose-600 rounded-lg transition" title="Sil"><i class="fa-solid fa-trash"></i></button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr id="<%= detailRowId %>" class="booking-detail-row hidden bg-slate-50/90">
+                            <td colspan="7" class="p-4 sm:p-5 whitespace-normal">
+                                <div class="grid grid-cols-1 lg:grid-cols-12 gap-4 items-start">
+                                    <div class="lg:col-span-6 bg-white p-4 rounded-xl border border-slate-200 space-y-2 text-xs">
+                                        <div class="font-extrabold text-[#0B1F3A] uppercase text-[11px]">Rezervasyon &amp; Operasyon Detayları</div>
+                                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-slate-600">
+                                            <div><strong>Telefon:</strong> <%= b.phone || '-' %></div>
+                                            <div><strong>Ödeme Yöntemi:</strong> <%= b.paymentMethod || 'Belirtilmedi' %></div>
+                                            <div><strong>Ödeme Planı:</strong> <%= b.paymentPlan === 'full' ? 'Tam Ödeme' : ('Hisseli (%' + (b.installmentPercent || planCfg.installmentPercent) + ')') %></div>
+                                            <div><strong>Ödeme Durumu:</strong> <%= payBadge %></div>
+                                            <div><strong>Toplam Tutar:</strong> €<%= totAmt.toLocaleString() %></div>
+                                            <div><strong>Ödenen Tutar:</strong> <span class="text-emerald-700 font-bold">€<%= payAmt.toLocaleString() %></span></div>
+                                            <div><strong>Kalan Bakiye:</strong> €<%= Math.max(0, totAmt - payAmt).toLocaleString() %></div>
+                                            <div><strong>Promokod:</strong> <%= b.promoCode || 'Yok' %></div>
+                                            <% if (isCanc) { %>
+                                                <%
+                                                    const autoRefundReason = b.refundRuleReason
+                                                        || (daysLeft !== null && daysLeft >= 7
+                                                            ? ('Check-in tarihine ' + daysLeft + ' gün kaldığı için (7+ gün kuralı) tam iade.')
+                                                            : (refAmt > 0 && payAmt > 0 && refAmt < payAmt
+                                                                ? ('Ödenen €' + payAmt.toLocaleString() + ' tutarın kısmi/yarısı (€' + refAmt.toLocaleString() + ') iade edildi.')
+                                                                : (daysLeft !== null && daysLeft < 0
+                                                                    ? 'Check-in tarihi geçtiği için standart kurala göre iade uygulanmadı.'
+                                                                    : (daysLeft !== null
+                                                                        ? ('Check-in tarihine ' + daysLeft + ' gün kaldığı için (7 günden az) iade uygulanmadı.')
+                                                                        : 'İptal kuralına göre iade hesaplandı.'))));
+                                                %>
+                                                <div><strong>İade Edilen:</strong> <span class="text-rose-700 font-bold">€<%= refAmt.toLocaleString() %></span></div>
+                                                <div class="sm:col-span-2 bg-rose-50 border border-rose-200 text-rose-800 px-3 py-2 rounded-lg">
+                                                    <strong>İade Gerekçesi:</strong> <%= autoRefundReason %>
+                                                </div>
+                                            <% } %>
+                                            <div class="sm:col-span-2"><strong>Ekstralar:</strong> <%= extrasText %></div>
+                                            <div class="sm:col-span-2"><strong>Müşteri Notu:</strong> <%= b.notes || b.specialRequests || 'Not girilmemiş.' %></div>
+                                        </div>
+                                    </div>
+
+                                    <form action="/admin/bookings/<%= safeBid %>/assign" method="POST" class="lg:col-span-6 bg-white p-4 rounded-xl border border-slate-200 space-y-3 text-xs">
+                                        <div class="font-extrabold text-[#0B1F3A] uppercase text-[11px]">Kaptan &amp; VIP Transfer Ataması</div>
+                                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                                            <div>
+                                                <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">Atanan Kaptan</label>
+                                                <input type="text" name="assignedCaptain" value="<%= b.assignedCaptain || '' %>" placeholder="Örn: Kaptan Ahmet Yılmaz" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-xs font-semibold">
+                                            </div>
+                                            <div>
+                                                <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">VIP Transfer</label>
+                                                <input type="text" name="assignedTransfer" value="<%= b.assignedTransfer || '' %>" placeholder="Örn: Dalaman Havalimanı VIP" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-xs font-semibold">
+                                            </div>
+                                            <div class="sm:col-span-2">
+                                                <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">Operasyon Notu</label>
+                                                <input type="text" name="adminNote" value="<%= b.adminNote || '' %>" placeholder="İskele no, ikram vb." class="w-full px-3 py-2 border border-slate-200 rounded-lg text-xs">
+                                            </div>
+                                        </div>
+                                        <div class="flex justify-end">
+                                            <button type="submit" class="px-4 py-2 bg-[#0B1F3A] hover:bg-sky-900 text-white rounded-lg font-bold text-xs transition">
+                                                Kaydet
+                                            </button>
+                                        </div>
+                                    </form>
+                                </div>
                             </td>
                         </tr>
                     <% }) %>
@@ -557,8 +689,7 @@
                     const currentImg = yImages[0];
                     const ySchedules = safeBookings.filter(b =>
                         (Number(b.yachtId) === Number(y.id) || String(b.yacht || '').toLowerCase() === String(y.name || '').toLowerCase()) &&
-                        b.status !== 'İptal Edildi' &&
-                        b.status !== 'İptal'
+                        !isCancelled(b)
                     );
                     const safeYid = encodeURIComponent(y.id);
                 %>
@@ -655,7 +786,7 @@
                                         <% ySchedules.forEach(sc => { %>
                                             <div class="text-[11px] text-slate-700 flex items-center justify-between bg-white px-2 py-1 rounded border border-slate-100">
                                                 <span class="font-semibold"><%= sc.checkIn %> → <%= sc.checkOut %></span>
-                                                <span class="font-mono text-[10px] text-slate-400">#<%= sc.id %> • <%= sc.status %></span>
+                                                <span class="font-mono text-[10px] text-slate-400">#<%= sc.id %> • <%= normalizeBookingStatus(sc.status) %></span>
                                             </div>
                                         <% }) %>
                                     </div>
@@ -776,8 +907,55 @@
         </div>
     </section>
 
-    <!-- 5. SİTE, İLETİŞİM, ÖDEME PLANI, SÖZLEŞME & EKSTRALAR -->
+    <!-- 5. SİTE, PROMOKOD, ÖDEME PLANI, SÖZLEŞME & EKSTRALAR -->
     <section id="view-ayarlar" class="admin-view hidden space-y-6">
+        <div class="bg-white p-5 sm:p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+            <div>
+                <h3 class="font-extrabold text-slate-900 text-base">Promokod &amp; İndirim Kuponu Yönetimi</h3>
+                <p class="text-xs text-slate-500 mt-0.5">Buradan oluşturduğunuz aktif promokodlar müşteri <strong>/checkout</strong> sayfasında anında doğrulanır ve sepet tutarına uygulanır.</p>
+            </div>
+
+            <form action="/admin/promocodes/add" method="POST" class="grid grid-cols-1 sm:grid-cols-4 gap-3">
+                <input type="text" name="code" placeholder="Kupon Kodu (Örn: YACHT15)" required class="p-2.5 text-xs border border-slate-200 rounded-xl font-mono font-bold uppercase">
+                <input type="number" name="discountPercent" placeholder="İndirim Oranı (%)" min="1" max="90" required class="p-2.5 text-xs border border-slate-200 rounded-xl font-bold">
+                <input type="date" name="expiresAt" class="p-2.5 text-xs border border-slate-200 rounded-xl font-medium">
+                <button type="submit" class="bg-teal-600 text-white text-xs font-bold rounded-xl py-2.5 hover:bg-teal-700 transition">
+                    + Promokod Oluştur
+                </button>
+            </form>
+
+            <div class="divide-y divide-slate-100 border-t border-slate-100 pt-2 text-xs">
+                <% if (safePromoCodes.length === 0) { %>
+                    <p class="py-3 text-slate-400">Henüz tanımlı promokod bulunmuyor.</p>
+                <% } else { %>
+                    <% safePromoCodes.forEach(function(pc) { %>
+                        <% const safePcId = encodeURIComponent(pc.id || pc.code); %>
+                        <div class="py-2.5 flex flex-wrap items-center justify-between gap-2">
+                            <div class="flex items-center flex-wrap gap-2">
+                                <span class="font-mono font-extrabold text-[#0B1F3A] bg-slate-100 px-2.5 py-1 rounded-lg"><%= pc.code %></span>
+                                <span class="font-bold text-teal-700">%<%= Number(pc.discountPercent || 0) %> indirim</span>
+                                <% if (pc.expiresAt) { %>
+                                    <span class="text-[11px] text-slate-500">• Son Tarih: <%= pc.expiresAt %></span>
+                                <% } else { %>
+                                    <span class="text-[11px] text-slate-400">• Süresiz</span>
+                                <% } %>
+                            </div>
+                            <div class="flex items-center space-x-2">
+                                <form action="/admin/promocodes/<%= safePcId %>/toggle" method="POST">
+                                    <button type="submit" class="px-2.5 py-1 rounded-full font-bold text-[11px] <%= pc.isActive !== false ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-200 text-slate-600' %>">
+                                        <%= pc.isActive !== false ? 'Aktif' : 'Pasif' %>
+                                    </button>
+                                </form>
+                                <form action="/admin/promocodes/<%= safePcId %>/delete" method="POST">
+                                    <button type="submit" class="text-rose-600 font-bold text-[11px] px-2 py-1 hover:bg-rose-50 rounded-lg">Sil</button>
+                                </form>
+                            </div>
+                        </div>
+                    <% }) %>
+                <% } %>
+            </div>
+        </div>
+
         <div class="bg-white p-5 sm:p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
             <div>
                 <h3 class="font-extrabold text-slate-900 text-base">Panel Yetkilileri / İşçi Erişimi</h3>
@@ -994,6 +1172,44 @@
 </main>
 
 <script>
+    function applySidebarCollapsedState(collapsed) {
+        document.body.classList.toggle('sidebar-collapsed', collapsed);
+        const label = document.getElementById('desktopSidebarToggleLabel');
+        const icon = document.getElementById('desktopSidebarToggleIcon');
+        if (label) label.innerText = collapsed ? 'Menüyü Göster' : 'Menüyü Gizle';
+        if (icon) {
+            icon.className = collapsed
+                ? 'fa-solid fa-table-columns text-teal-600'
+                : 'fa-solid fa-bars-staggered text-teal-600';
+        }
+    }
+
+    function dismissAdminNotice() {
+        const banner = document.getElementById('adminNoticeBanner');
+        if (banner) banner.remove();
+        try {
+            const url = new URL(window.location.href);
+            if (url.searchParams.has('notice')) {
+                url.searchParams.delete('notice');
+                window.history.replaceState({}, '', url.pathname + url.search + url.hash);
+            }
+        } catch (e) {}
+    }
+
+    function toggleDesktopSidebar() {
+        const nextState = !document.body.classList.contains('sidebar-collapsed');
+        applySidebarCollapsedState(nextState);
+        try {
+            localStorage.setItem('yv_admin_sidebar_collapsed', nextState ? '1' : '0');
+        } catch (e) {}
+    }
+
+    try {
+        if (localStorage.getItem('yv_admin_sidebar_collapsed') === '1') {
+            applySidebarCollapsedState(true);
+        }
+    } catch (e) {}
+
     document.querySelectorAll('.dash-progress-bar').forEach(bar => {
         const w = Math.max(0, Math.min(100, Number(bar.dataset.width) || 0));
         bar.style.width = w + '%';
@@ -1001,10 +1217,10 @@
 
     const tabMeta = {
         'dashboard': { title: 'Dashboard & Genel Bakış', subtitle: 'Filo, turlar, kategoriler, ödemeler ve rezervasyon yönetimi' },
-        'rezervasyonlar': { title: 'Rezervasyon Yönetimi', subtitle: 'Onayla, Beklet veya İptal et işlemleri ve ödeme/iade durumu' },
+        'rezervasyonlar': { title: 'Rezervasyon Yönetimi', subtitle: 'Admin onayı, kaptan & transfer ataması ve 7 gün iade kuralı yönetimi' },
         'filo-listesi': { title: 'Aktif Filo & Kapasite', subtitle: 'Kişi, kabin, mürettebat, günlük fiyat, çoklu fotoğraf ve operasyon takvimi' },
         'turlar-kategoriler': { title: 'Turlar & Kategoriler', subtitle: 'Fotoğraflı tur paketleri ve yat kategorileri tanımlayın' },
-        'ayarlar': { title: 'Site, Ödeme & Sözleşme', subtitle: 'Yetkililer, marka/iletişim, ödeme planı oranları, sözleşme ve ekstraları yönetin' }
+        'ayarlar': { title: 'Site, Promokod & Sözleşme', subtitle: 'Promokodlar, yetkililer, marka/iletişim, ödeme planı oranları ve sözleşmeyi yönetin' }
     };
 
     const mobileBtn = document.getElementById('adminMobileMenuBtn');
@@ -1036,14 +1252,24 @@
     const params = new URLSearchParams(window.location.search);
     switchAdminTab(params.get('tab') || 'dashboard');
 
+    function toggleBookingDetail(rowId) {
+        const detailRow = document.getElementById(rowId);
+        if (detailRow) detailRow.classList.toggle('hidden');
+    }
+
     let statusFilter = 'all';
     const bookingSearch = document.getElementById('bookingSearchInput');
     function filterBookings() {
         const q = bookingSearch ? bookingSearch.value.trim().toLowerCase() : '';
         document.querySelectorAll('.booking-row').forEach(row => {
             const stOk = statusFilter === 'all' || row.dataset.bookingStatus === statusFilter;
-            const txtOk = !q || row.innerText.toLowerCase().includes(q);
-            row.classList.toggle('hidden', !(stOk && txtOk));
+            const detailId = row.dataset.detailTarget;
+            const detailRow = detailId ? document.getElementById(detailId) : null;
+            const combinedText = (row.innerText + ' ' + (detailRow ? detailRow.innerText : '')).toLowerCase();
+            const txtOk = !q || combinedText.includes(q);
+            const show = stOk && txtOk;
+            row.classList.toggle('hidden', !show);
+            if (!show && detailRow) detailRow.classList.add('hidden');
         });
     }
     document.querySelectorAll('.status-filter-btn').forEach(btn => {

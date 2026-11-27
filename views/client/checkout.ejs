@@ -6,6 +6,7 @@
     installmentInterestPercent: 0,
     fullPaymentDiscountPercent: 10
 }; %>
+<% const activePromoList = (typeof activePromoCodes !== 'undefined' && Array.isArray(activePromoCodes)) ? activePromoCodes : []; %>
 <% const pkgData = (typeof selectedPackage !== 'undefined' && selectedPackage) ? selectedPackage : null; %>
 <% const contractCfg = (typeof rentalContract !== 'undefined' && rentalContract) ? rentalContract : {
     title: coIsEn ? 'YachtVoyage Yacht Charter & Cancellation Agreement' : 'YachtVoyage Tekne Kiralama ve İptal Sözleşmesi',
@@ -38,6 +39,8 @@
      data-pkg-days="<%= pkgData && pkgData.days ? Number(pkgData.days) : 0 %>"
      data-pkg-duration="<%= pkgData && pkgData.duration ? pkgData.duration : '' %>"
      class="hidden"></div>
+
+<script id="activePromoCodesJson" type="application/json"><%- JSON.stringify(activePromoList) %></script>
 
 <main class="max-w-6xl mx-auto px-4 sm:px-6 pt-8 pb-12">
     <div class="flex items-center justify-center space-x-3 md:space-x-8 mb-8 text-xs md:text-sm">
@@ -87,11 +90,13 @@
         <input type="hidden" id="packageNameInput" name="packageName" value="<%= pkgData && pkgData.name ? pkgData.name : '' %>">
         <input type="hidden" id="packagePriceInput" name="packagePrice" value="<%= pkgData && pkgData.price ? Number(pkgData.price) : 0 %>">
         <input type="hidden" id="daysInput" name="days" value="0">
+        <input type="hidden" id="nightsInput" name="nights" value="0">
         <input type="hidden" id="discountInput" name="discount" value="0">
+        <input type="hidden" id="promoCodeAppliedInput" name="promoCodeApplied" value="">
         <input type="hidden" id="extrasTotalInput" name="extrasTotal" value="0">
         <input type="hidden" id="totalAmountInput" name="totalAmount" value="0">
         <input type="hidden" id="paidAmountInput" name="paidAmount" value="0">
-        <input type="hidden" id="paymentStatusHintInput" name="paymentStatusHint" value="pending_verification">
+        <input type="hidden" id="paymentStatusHintInput" name="paymentStatusHint" value="pending_admin_approval">
 
         <div class="lg:col-span-2 space-y-6">
             <div id="step1Box" class="bg-white p-6 md:p-8 rounded-2xl border border-slate-200 shadow-sm space-y-6">
@@ -109,27 +114,27 @@
                             <input type="radio" name="charterType" value="Özel Yat Kiralama (Konaklamalı)" checked class="charter-type-radio text-[#0B1F3A]">
                             <div>
                                 <div class="font-bold text-xs text-slate-900"><%= coIsEn ? 'Private Yacht Charter' : 'Özel Yat Kiralama' %></div>
-                                <div class="text-[11px] text-slate-500"><%= coIsEn ? 'Full-day and multi-day private route' : 'Tam gün ve çok günlük özel rota' %></div>
+                                <div class="text-[11px] text-slate-500"><%= coIsEn ? 'Full-day & multi-day (select next day for 1 day)' : 'Tam gün ve çok günlük (1 gün için ertesi günü seçin)' %></div>
                             </div>
                         </label>
                         <label class="charter-card p-3.5 border border-slate-200 bg-white rounded-xl cursor-pointer flex items-center space-x-3 hover:bg-slate-50 transition">
                             <input type="radio" name="charterType" value="Günlük VIP Koy Turu" class="charter-type-radio text-[#0B1F3A]">
                             <div>
                                 <div class="font-bold text-xs text-slate-900"><%= coIsEn ? 'Daily VIP Cove Tour' : 'Günlük VIP Koy Turu' %></div>
-                                <div class="text-[11px] text-slate-500"><%= coIsEn ? 'Single-day tour (10:00 - 18:00)' : 'Tek günlük tur (10:00 - 18:00)' %></div>
+                                <div class="text-[11px] text-slate-500"><%= coIsEn ? 'Same-day departure & return (10:30 - 18:00)' : 'Aynı gün çıkış ve dönüş (10:30 - 18:00)' %></div>
                             </div>
                         </label>
                     </div>
                 </div>
 
-                <div id="dailyTourTimeBox" class="hidden bg-sky-50/70 border border-sky-200 rounded-xl p-3.5 flex flex-wrap items-center justify-between gap-3 text-xs">
+                <div id="dailyTourTimeBox" class="bg-sky-50/70 border border-sky-200 rounded-xl p-3.5 flex flex-wrap items-center justify-between gap-3 text-xs">
                     <div>
-                        <span class="font-bold text-[#0B1F3A] block"><%= coIsEn ? 'Daily Tour Hours' : 'Günlük Tur Saat Aralığı' %></span>
-                        <span class="text-slate-600"><%= coIsEn ? 'Single-day departure & return on the selected date' : 'Seçili tarihte tek günlük kalkış ve dönüş' %></span>
+                        <span id="timeSlotTitle" class="font-bold text-[#0B1F3A] block"><%= coIsEn ? 'Departure & Return Hours' : 'Çıkış ve Dönüş Saat Aralığı' %></span>
+                        <span id="timeSlotDesc" class="text-slate-600"><%= coIsEn ? 'Displayed on your booking summary & voucher' : 'Rezervasyon özetinde ve voucher belgesinde görünür' %></span>
                     </div>
-                    <select id="tourTimeSlot" name="tourTimeSlot" class="p-2 text-xs font-bold border border-sky-200 rounded-lg bg-white text-[#0B1F3A]">
+                    <select id="tourTimeSlot" name="tourTimeSlot" class="calc-trigger p-2 text-xs font-bold border border-sky-200 rounded-lg bg-white text-[#0B1F3A]">
+                        <option value="10:30 - 18:00" selected>10:30 - 18:00</option>
                         <option value="10:00 - 18:00">10:00 - 18:00</option>
-                        <option value="10:30 - 18:30">10:30 - 18:30</option>
                         <option value="09:30 - 17:30">09:30 - 17:30</option>
                     </select>
                 </div>
@@ -282,8 +287,8 @@
 
                 <div id="paymentStatusNotice" class="hidden bg-amber-50 border border-amber-200 text-amber-900 px-4 py-3 rounded-xl text-xs font-semibold">
                     <%= coIsEn
-                        ? 'Status will remain "Payment Pending" until bank transfer or marina confirmation is recorded.'
-                        : 'Havale/EFT veya marinada ödeme seçildiğinde rezervasyon durumu "Ödeme Bekliyor" olarak kaydedilir.' %>
+                        ? 'Your booking will be held pending admin approval and payment settlement.'
+                        : 'Rezervasyonunuz admin onayı ve ödeme süreci tamamlanana kadar beklemede tutulur.' %>
                 </div>
 
                 <div>
@@ -405,8 +410,8 @@
                     <div class="font-mono bg-white p-2.5 rounded-lg border border-teal-200 select-all">TR48 0006 2000 4120 0009 0845 12</div>
                     <p class="text-slate-500">
                         <%= coIsEn
-                            ? 'Your booking is recorded as "Payment Pending" until bank transfer confirmation is completed.'
-                            : 'Havale onayı tamamlanana kadar rezervasyonunuz "Ödeme Bekliyor" durumunda tutulur.' %>
+                            ? 'Your booking is held pending admin approval and bank transfer verification.'
+                            : 'Rezervasyonunuz admin onayı ve havale doğrulaması tamamlanana kadar beklemede tutulur.' %>
                     </p>
                 </div>
 
@@ -414,8 +419,8 @@
                     <div class="font-bold text-amber-900 text-sm"><%= coIsEn ? 'Payment at Marina on Boarding Day' : 'Biniş Günü Marinada Ödeme' %></div>
                     <p>
                         <%= coIsEn
-                            ? 'No immediate charge is taken now; status stays "Payment Pending" until marina collection.'
-                            : 'Şimdi ödeme çekilmez; marinada tahsilat tamamlanana kadar durum "Ödeme Bekliyor" kalır.' %>
+                            ? 'Held pending admin approval; settlement is completed at the marina according to your payment plan.'
+                            : 'Admin onayı için beklemede tutulur; tahsilat ödeme planınıza göre marinada tamamlanır.' %>
                     </p>
                 </div>
 
@@ -423,10 +428,10 @@
                     <input type="checkbox" id="contractAgreeCb" required class="mt-0.5 rounded text-[#0B1F3A] cursor-pointer">
                     <label for="contractAgreeCb" class="cursor-pointer select-none">
                         <% if (coIsEn) { %>
-                            I have read and agree to the <strong>free cancellation policy</strong> (100% refund up to 7 days before the tour) and the
+                            I have read and agree to the <strong>free cancellation policy</strong> (7-day refund policy applies) and the
                             <button type="button" id="openContractModalBtn" class="font-extrabold text-[#0B1F3A] underline hover:text-teal-700">charter agreement</button>.
                         <% } else { %>
-                            <strong>Ücretsiz iptal politikasını</strong> (tura 7 gün kalaya kadar %100 iade) ve
+                            <strong>İptal ve iade politikasını</strong> (7 günlük kural geçerlidir) ve
                             <button type="button" id="openContractModalBtn" class="font-extrabold text-[#0B1F3A] underline hover:text-teal-700">kiralama sözleşmesini</button>
                             okudum, onaylıyorum.
                         <% } %>
@@ -434,7 +439,7 @@
                 </div>
 
                 <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white py-4 rounded-xl font-bold text-sm transition shadow-lg">
-                    <i class="fa-solid fa-lock mr-2"></i><%= coIsEn ? 'Confirm Booking' : 'Rezervasyonu Onayla' %> (<span id="payBtnAmount" data-no-auto-translate="true">€0</span>)
+                    <i class="fa-solid fa-lock mr-2"></i><%= coIsEn ? 'Submit Booking Request' : 'Rezervasyon Talebi Gönder' %> (<span id="payBtnAmount" data-no-auto-translate="true"><%= coIsEn ? 'Select dates' : 'Tarih seçin' %></span>)
                 </button>
             </div>
         </div>
@@ -472,12 +477,23 @@
                 </p>
             </div>
 
+            <div class="bg-slate-50 rounded-xl p-3 text-xs space-y-1 border border-slate-100">
+                <div class="flex justify-between">
+                    <span class="text-slate-500"><%= coIsEn ? 'Schedule:' : 'Saat Aralığı:' %></span>
+                    <strong id="sumTimeSlot" class="text-slate-900">10:30 - 18:00</strong>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-slate-500"><%= coIsEn ? 'Duration:' : 'Müddət / Süre:' %></span>
+                    <strong id="sumDurationBreakdown" class="text-slate-900"><%= coIsEn ? 'Select dates' : 'Tarih seçin' %></strong>
+                </div>
+            </div>
+
             <div class="pt-2 border-t border-slate-100">
                 <label class="block text-[11px] font-bold text-slate-400 uppercase mb-1.5">
-                    <%= coIsEn ? 'PROMO CODE (E.G. YACHT10)' : 'İndirim Kodu (Örn: YACHT10)' %>
+                    <%= coIsEn ? 'PROMO CODE' : 'İndirim Kodu' %>
                 </label>
                 <div class="flex space-x-2">
-                    <input type="text" id="promoCode" placeholder="<%= coIsEn ? 'Enter code' : 'Kodu girin' %>" class="flex-1 p-2.5 text-xs uppercase font-semibold border border-slate-200 rounded-xl">
+                    <input type="text" id="promoCode" placeholder="<%= coIsEn ? 'Enter active promo code' : 'Aktif kodu girin' %>" class="flex-1 p-2.5 text-xs uppercase font-semibold border border-slate-200 rounded-xl">
                     <button type="button" id="applyPromoBtn" class="px-4 py-2.5 bg-slate-900 text-white rounded-xl text-xs font-bold hover:bg-slate-800">
                         <%= coIsEn ? 'Apply' : 'Uygula' %>
                     </button>
@@ -487,8 +503,8 @@
 
             <div class="border-t border-slate-100 pt-4 space-y-2.5 text-xs">
                 <div class="flex justify-between text-slate-600">
-                    <span id="sumBaseLabel"><%= coIsEn ? 'Yacht Charter' : 'Yat Kirası' %> (<span id="sumDays">0</span> <%= coIsEn ? 'days' : 'gün' %>)</span>
-                    <span id="sumBase" class="font-bold text-slate-900">€0</span>
+                    <span id="sumBaseLabel"><%= coIsEn ? 'Yacht Charter' : 'Yat Kirası' %></span>
+                    <span id="sumBase" class="font-bold text-slate-900"><%= coIsEn ? 'Select dates' : 'Tarih seçin' %></span>
                 </div>
                 <div class="flex justify-between text-slate-600">
                     <span><%= coIsEn ? 'Extra Services' : 'Ekstra Hizmetler' %> (<span id="sumGuests"><%= guests || 1 %></span> <%= coIsEn ? 'guests' : 'kişi' %>)</span>
@@ -499,7 +515,7 @@
                     <span id="sumAutoDiscount">-€0</span>
                 </div>
                 <div id="discountRow" class="hidden flex justify-between text-emerald-600 font-bold">
-                    <span><%= coIsEn ? 'Promo Discount (10%)' : 'Promo İndirimi (%10)' %></span>
+                    <span id="discountRowLabel"><%= coIsEn ? 'Promo Discount' : 'Promo İndirimi' %></span>
                     <span id="sumDiscount">-€0</span>
                 </div>
                 <div id="planAdjustmentRow" class="hidden flex justify-between font-bold">
@@ -508,15 +524,15 @@
                 </div>
                 <div class="flex justify-between text-sm font-extrabold text-slate-900 pt-2 border-t border-slate-100">
                     <span><%= coIsEn ? 'Total Amount' : 'Toplam Tutar' %></span>
-                    <span id="sumTotal">€0</span>
+                    <span id="sumTotal"><%= coIsEn ? 'Select dates' : 'Tarih seçin' %></span>
                 </div>
                 <div class="flex justify-between text-sky-800 font-bold bg-sky-50 p-3 rounded-xl">
                     <span><%= coIsEn ? 'Pay Now' : 'Şimdi Ödenecek' %></span>
-                    <span id="sumPayNow">€0</span>
+                    <span id="sumPayNow"><%= coIsEn ? 'Select dates' : 'Tarih seçin' %></span>
                 </div>
                 <div class="flex justify-between text-slate-400 text-[11px]">
                     <span><%= coIsEn ? 'Remaining Balance at Marina' : 'Marinada Kalan Bakiye' %></span>
-                    <span id="sumRemaining">€0</span>
+                    <span id="sumRemaining"><%= coIsEn ? 'Select dates' : 'Tarih seçin' %></span>
                 </div>
             </div>
         </div>
@@ -566,6 +582,15 @@
     const installmentInterestPct = Number(planCfgEl && planCfgEl.dataset.interestPct) || 0;
     const fullPaymentDiscountPct = Number(planCfgEl && planCfgEl.dataset.fullDiscountPct) || 0;
 
+    let configuredPromoCodes = [];
+    try {
+        const promoJsonEl = document.getElementById('activePromoCodesJson');
+        const parsedPromos = promoJsonEl ? JSON.parse(promoJsonEl.textContent || '[]') : [];
+        if (Array.isArray(parsedPromos)) configuredPromoCodes = parsedPromos;
+    } catch (_) {
+        configuredPromoCodes = [];
+    }
+
     const pkgMetaEl = document.getElementById('packageMetaConfig');
     const urlParams = new URLSearchParams(window.location.search);
 
@@ -592,10 +617,14 @@
     }
 
     let discountPercent = 0;
+    let appliedPromoCode = '';
 
     const cInEl = document.getElementById('cIn');
     const cOutEl = document.getElementById('cOut');
     const guestsEl = document.getElementById('guestsCountInput');
+    const timeSlotEl = document.getElementById('tourTimeSlot');
+    const promoInputEl = document.getElementById('promoCode');
+    const promoAppliedInputEl = document.getElementById('promoCodeAppliedInput');
     const dateWarnBox = document.getElementById('dateOrderWarning');
     const dateWarnText = document.getElementById('dateOrderWarningText');
 
@@ -649,7 +678,7 @@
     }
 
     const paramCharter = (urlParams.get('charterType') || urlParams.get('type') || '').toLowerCase();
-    if (paramCharter.indexOf('günlük') !== -1 || paramCharter.indexOf('daily') !== -1) {
+    if (fixedPackageDays < 2 && (paramCharter.indexOf('günlük') !== -1 || paramCharter.indexOf('daily') !== -1)) {
         const dailyRadio = document.querySelector('.charter-type-radio[value="Günlük VIP Koy Turu"]');
         if (dailyRadio) dailyRadio.checked = true;
     }
@@ -672,12 +701,20 @@
 
     const paramIn = urlParams.get('checkIn') || '';
     const paramOut = urlParams.get('checkOut') || '';
-    if (paramIn && paramIn >= todayYmd) {
-        cInEl.value = paramIn;
-        if (isDailyTourSelected()) {
-            cOutEl.value = paramIn;
-        } else if (paramOut && paramOut > paramIn) {
-            cOutEl.value = paramOut;
+    if (paramIn) {
+        if (paramIn < todayYmd) {
+            showInlineWarning(isEnCo
+                ? ('Selected date (' + paramIn + ') is in the past. Please choose today or a future date.')
+                : ('Seçilen tarih (' + paramIn + ') geçmişte kalmış. Lütfen bugün veya ileri bir tarih seçin.'));
+        } else {
+            cInEl.value = paramIn;
+            if (isDailyTourSelected()) {
+                cOutEl.value = paramIn;
+            } else if (fixedPackageDays >= 2) {
+                cOutEl.value = addDaysYMD(paramIn, fixedPackageDays - 1);
+            } else if (paramOut && paramOut > paramIn) {
+                cOutEl.value = paramOut;
+            }
         }
     }
 
@@ -710,18 +747,44 @@
     }
 
     function syncCharterModeUI() {
+        const dailyRadio = document.querySelector('.charter-type-radio[value="Günlük VIP Koy Turu"]');
+        const privateRadio = document.querySelector('.charter-type-radio[value="Özel Yat Kiralama (Konaklamalı)"]');
+
+        if (fixedPackageDays >= 2) {
+            if (privateRadio) privateRadio.checked = true;
+            if (dailyRadio) {
+                dailyRadio.checked = false;
+                dailyRadio.disabled = true;
+                const dailyCard = dailyRadio.closest('.charter-card');
+                if (dailyCard) {
+                    dailyCard.classList.add('opacity-50', 'pointer-events-none');
+                }
+            }
+        } else if (dailyRadio) {
+            dailyRadio.disabled = false;
+            const dailyCard = dailyRadio.closest('.charter-card');
+            if (dailyCard) {
+                dailyCard.classList.remove('opacity-50', 'pointer-events-none');
+            }
+        }
+
         const isDaily = isDailyTourSelected();
-        const timeBox = document.getElementById('dailyTourTimeBox');
         const outWrap = document.getElementById('checkOutFieldWrap');
         const inLabel = document.getElementById('checkInLabel');
 
-        if (timeBox) timeBox.classList.toggle('hidden', !isDaily);
         if (outWrap) outWrap.classList.toggle('hidden', isDaily);
         if (inLabel) {
             inLabel.textContent = isDaily
                 ? (isEnCo ? 'TOUR DATE *' : 'Tur Tarihi *')
                 : (isEnCo ? 'CHECK-IN DATE *' : 'Giriş Tarihi *');
         }
+
+        const lockOutForPackage = fixedPackageDays >= 2 && !isDaily;
+        cOutEl.dataset.lockedByPackage = lockOutForPackage ? '1' : '0';
+        cOutEl.classList.toggle('bg-slate-100', lockOutForPackage);
+        cOutEl.classList.toggle('cursor-not-allowed', lockOutForPackage);
+        cOutEl.classList.toggle('bg-white', !lockOutForPackage);
+        cOutEl.classList.toggle('cursor-pointer', !lockOutForPackage);
 
         if (isDaily) {
             cOutEl.required = false;
@@ -730,7 +793,9 @@
             }
         } else {
             cOutEl.required = true;
-            if (cInEl.value && cOutEl.value && cOutEl.value <= cInEl.value) {
+            if (lockOutForPackage && cInEl.value && cInEl.value >= todayYmd) {
+                cOutEl.value = addDaysYMD(cInEl.value, fixedPackageDays - 1);
+            } else if (cInEl.value && cOutEl.value && cOutEl.value <= cInEl.value) {
                 cOutEl.value = '';
             }
         }
@@ -800,6 +865,10 @@
             cOutEl.value = cInEl.value;
             hideInlineWarning();
             return true;
+        }
+
+        if (fixedPackageDays >= 2) {
+            cOutEl.value = addDaysYMD(cInEl.value, fixedPackageDays - 1);
         }
 
         cOutEl.min = addDaysYMD(cInEl.value, 1);
@@ -878,7 +947,7 @@
         const statusNotice = document.getElementById('paymentStatusNotice');
         const needsPending = isTransfer || isMarina;
         if (statusHintInput) {
-            statusHintInput.value = needsPending ? 'payment_pending' : 'card_payment';
+            statusHintInput.value = 'pending_admin_approval';
         }
         if (statusNotice) {
             statusNotice.classList.toggle('hidden', !needsPending);
@@ -992,21 +1061,74 @@
         });
     });
 
-    document.getElementById('applyPromoBtn').addEventListener('click', function() {
-        const code = document.getElementById('promoCode').value.trim().toUpperCase();
+    function findActivePromo(codeStr) {
+        const normalized = String(codeStr || '').trim().toUpperCase();
+        if (!normalized) return null;
+        return configuredPromoCodes.find(function(item) {
+            if (!item || !item.code) return false;
+            const itemCode = String(item.code).trim().toUpperCase();
+            if (itemCode !== normalized) return false;
+            if (item.active === false || item.isActive === false) return false;
+            if (item.expiresAt && /^\d{4}-\d{2}-\d{2}$/.test(String(item.expiresAt)) && String(item.expiresAt) < todayYmd) {
+                return false;
+            }
+            return Number(item.discountPercent || 0) > 0;
+        }) || null;
+    }
+
+    function evaluatePromoCode(silentWhenEmpty) {
+        const code = promoInputEl ? promoInputEl.value.trim().toUpperCase() : '';
         const msg = document.getElementById('promoMsg');
-        msg.classList.remove('hidden');
-        if (code === 'YACHT10') {
-            discountPercent = 10;
-            msg.className = 'text-[11px] mt-1 text-emerald-600 font-semibold';
-            msg.innerText = isEnCo ? '✓ 10% promo discount applied!' : '✓ %10 promo indirimi uygulandı!';
+        if (!code) {
+            discountPercent = 0;
+            appliedPromoCode = '';
+            if (promoAppliedInputEl) promoAppliedInputEl.value = '';
+            if (msg && silentWhenEmpty) msg.classList.add('hidden');
+            return;
+        }
+        const matched = findActivePromo(code);
+        if (msg) msg.classList.remove('hidden');
+        if (matched) {
+            discountPercent = Number(matched.discountPercent || 0);
+            appliedPromoCode = String(matched.code || code).trim().toUpperCase();
+            if (promoAppliedInputEl) promoAppliedInputEl.value = appliedPromoCode;
+            if (msg) {
+                msg.className = 'text-[11px] mt-1 text-emerald-600 font-semibold';
+                msg.innerText = isEnCo
+                    ? ('✓ ' + discountPercent + '% promo discount applied (' + appliedPromoCode + ')!')
+                    : ('✓ %' + discountPercent + ' promo indirimi uygulandı (' + appliedPromoCode + ')!');
+            }
         } else {
             discountPercent = 0;
-            msg.className = 'text-[11px] mt-1 text-rose-600 font-semibold';
-            msg.innerText = isEnCo ? 'Invalid code. Try: YACHT10' : 'Geçersiz kod. Denemek için: YACHT10';
+            appliedPromoCode = '';
+            if (promoAppliedInputEl) promoAppliedInputEl.value = '';
+            if (msg) {
+                msg.className = 'text-[11px] mt-1 text-rose-600 font-semibold';
+                msg.innerText = isEnCo
+                    ? 'Promo code is invalid or inactive.'
+                    : 'Promosyon kodu geçersiz veya aktif değil.';
+            }
         }
+    }
+
+    document.getElementById('applyPromoBtn').addEventListener('click', function() {
+        evaluatePromoCode(false);
         recalculate();
     });
+
+    if (promoInputEl) {
+        promoInputEl.addEventListener('change', function() {
+            evaluatePromoCode(true);
+            recalculate();
+        });
+        promoInputEl.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                evaluatePromoCode(false);
+                recalculate();
+            }
+        });
+    }
 
     function checkAvailability() {
         const isDaily = isDailyTourSelected();
@@ -1041,11 +1163,17 @@
         if (conflict) {
             badge.className = 'text-xs font-bold px-3 py-1 rounded-full bg-rose-50 text-rose-700';
             badge.innerHTML = '<i class="fa-solid fa-circle-xmark mr-1"></i>' + (isEnCo ? 'Booked' : 'Dolu') + ' (' + conflict.checkIn + ' - ' + conflict.checkOut + ')';
+            showInlineWarning(isEnCo
+                ? ('Selected dates overlap with an existing booking (' + conflict.checkIn + ' - ' + conflict.checkOut + ').')
+                : ('Seçilen tarih aralığı mevcut bir rezervasyonla çakışıyor (' + conflict.checkIn + ' - ' + conflict.checkOut + ').'));
             btn.disabled = true;
             btn.classList.add('opacity-50', 'cursor-not-allowed');
         } else {
             badge.className = 'text-xs font-bold px-3 py-1 rounded-full bg-emerald-50 text-emerald-700';
             badge.innerHTML = '<i class="fa-solid fa-circle-check mr-1"></i>' + (isEnCo ? 'Selected Dates Available' : 'Seçilen Tarihler Müsait');
+            if (dateWarnBox && dateWarnText && dateWarnText.innerText.indexOf(isEnCo ? 'overlap' : 'çakışıyor') !== -1) {
+                hideInlineWarning();
+            }
             btn.disabled = false;
             btn.classList.remove('opacity-50', 'cursor-not-allowed');
         }
@@ -1054,6 +1182,7 @@
     function recalculate() {
         checkAvailability();
 
+        const selectDateLabel = isEnCo ? 'Select dates' : 'Tarih seçin';
         const isDaily = isDailyTourSelected();
         let guestsVal = Math.max(1, Number(guestsEl.value) || 1);
         if (guestsVal > maxGuests) {
@@ -1067,6 +1196,30 @@
         } else if (cInEl.value && cOutEl.value && cInEl.value >= todayYmd && cOutEl.value > cInEl.value) {
             const diff = diffDaysYMD(cInEl.value, cOutEl.value);
             if (!isNaN(diff) && diff >= 1) selectedDays = diff;
+        }
+
+        const hasFixedPackage = fixedPackagePrice > 0;
+        const hasValidDates = selectedDays > 0;
+        const effectiveDays = hasFixedPackage
+            ? (fixedPackageDays > 0 ? fixedPackageDays : selectedDays)
+            : selectedDays;
+        const nightsCount = isDaily ? 0 : Math.max(0, effectiveDays - 1);
+
+        const timeSlotVal = (timeSlotEl && timeSlotEl.value) ? timeSlotEl.value : '10:30 - 18:00';
+        const sumTimeSlotEl = document.getElementById('sumTimeSlot');
+        if (sumTimeSlotEl) sumTimeSlotEl.textContent = timeSlotVal;
+
+        const sumDurEl = document.getElementById('sumDurationBreakdown');
+        if (sumDurEl) {
+            if (!hasValidDates) {
+                sumDurEl.textContent = selectDateLabel;
+            } else if (isDaily) {
+                sumDurEl.textContent = isEnCo ? '1 Day / 0 Nights (Same Day)' : '1 Gün / 0 Gece (Aynı Gün)';
+            } else {
+                const dWord = isEnCo ? (effectiveDays === 1 ? 'Day' : 'Days') : 'Gün';
+                const nWord = isEnCo ? (nightsCount === 1 ? 'Night' : 'Nights') : 'Gece';
+                sumDurEl.textContent = `${effectiveDays} ${dWord} / ${nightsCount} ${nWord}`;
+            }
         }
 
         const guestUnit = isEnCo ? (guestsVal === 1 ? 'guest' : 'guests') : 'kişi';
@@ -1083,19 +1236,48 @@
             }
         });
 
-        const hasFixedPackage = fixedPackagePrice > 0;
-        const hasValidDates = selectedDays > 0;
-        const effectiveDays = hasFixedPackage
-            ? (fixedPackageDays > 0 ? fixedPackageDays : selectedDays)
-            : selectedDays;
-
-        let baseTotal = 0;
-        if (hasFixedPackage) {
-            baseTotal = hasValidDates ? fixedPackagePrice : 0;
-        } else {
-            baseTotal = selectedDays * rate;
+        const baseLabelEl = document.getElementById('sumBaseLabel');
+        if (baseLabelEl) {
+            const titlePart = hasFixedPackage
+                ? (packageName || (isEnCo ? 'Tour Package' : 'Tur Paketi'))
+                : (isEnCo ? 'Yacht Charter' : 'Yat Kirası');
+            if (!hasValidDates && hasFixedPackage) {
+                baseLabelEl.textContent = titlePart;
+            } else {
+                const dayWord = isEnCo ? (effectiveDays === 1 ? 'day' : 'days') : 'gün';
+                baseLabelEl.textContent = `${titlePart} (${effectiveDays} ${dayWord})`;
+            }
         }
 
+        document.getElementById('sumGuests').innerText = guestsVal;
+        document.getElementById('sumExtras').innerText = '€' + extrasTotal.toLocaleString();
+
+        const autoRow = document.getElementById('autoDiscountRow');
+        const discRow = document.getElementById('discountRow');
+        const adjRow = document.getElementById('planAdjustmentRow');
+
+        if (!hasValidDates) {
+            autoRow.classList.add('hidden');
+            discRow.classList.add('hidden');
+            adjRow.classList.add('hidden');
+            document.getElementById('daysInput').value = hasFixedPackage && fixedPackageDays > 0 ? fixedPackageDays : 0;
+            document.getElementById('nightsInput').value = 0;
+            document.getElementById('discountInput').value = 0;
+            document.getElementById('extrasTotalInput').value = extrasTotal;
+            document.getElementById('totalAmountInput').value = 0;
+            document.getElementById('paidAmountInput').value = 0;
+
+            document.getElementById('sumBase').innerText = hasFixedPackage
+                ? ('€' + fixedPackagePrice.toLocaleString() + ' (' + selectDateLabel + ')')
+                : selectDateLabel;
+            document.getElementById('sumTotal').innerText = selectDateLabel;
+            document.getElementById('sumPayNow').innerText = selectDateLabel;
+            document.getElementById('sumRemaining').innerText = selectDateLabel;
+            document.getElementById('payBtnAmount').innerText = selectDateLabel;
+            return;
+        }
+
+        const baseTotal = hasFixedPackage ? fixedPackagePrice : (selectedDays * rate);
         const autoDisc = (!hasFixedPackage && selectedDays >= 5) ? Math.round(baseTotal * 0.05) : 0;
         const subBeforePromo = baseTotal - autoDisc + extrasTotal;
         const promoDisc = Math.round(subBeforePromo * (discountPercent / 100));
@@ -1107,7 +1289,6 @@
 
         let grandTotal = subTotal;
         let planDelta = 0;
-        const adjRow = document.getElementById('planAdjustmentRow');
         const adjLabel = document.getElementById('planAdjustmentLabel');
         const adjVal = document.getElementById('sumPlanAdjustment');
 
@@ -1134,26 +1315,15 @@
         const payNow = isCard ? plannedPayNow : 0;
         const remaining = Math.max(0, grandTotal - payNow);
 
-        const baseLabelEl = document.getElementById('sumBaseLabel');
-        if (baseLabelEl) {
-            const titlePart = hasFixedPackage
-                ? (packageName || (isEnCo ? 'Tour Package' : 'Tur Paketi'))
-                : (isEnCo ? 'Yacht Charter' : 'Yat Kirası');
-            const dayWord = isEnCo ? (effectiveDays === 1 ? 'day' : 'days') : 'gün';
-            baseLabelEl.textContent = `${titlePart} (${effectiveDays} ${dayWord})`;
-        }
-
         document.getElementById('daysInput').value = effectiveDays;
+        document.getElementById('nightsInput').value = nightsCount;
         document.getElementById('discountInput').value = autoDisc + promoDisc;
         document.getElementById('extrasTotalInput').value = extrasTotal;
         document.getElementById('totalAmountInput').value = grandTotal;
         document.getElementById('paidAmountInput').value = payNow;
 
-        document.getElementById('sumGuests').innerText = guestsVal;
         document.getElementById('sumBase').innerText = '€' + baseTotal.toLocaleString();
-        document.getElementById('sumExtras').innerText = '€' + extrasTotal.toLocaleString();
 
-        const autoRow = document.getElementById('autoDiscountRow');
         if (autoDisc > 0) {
             autoRow.classList.remove('hidden');
             document.getElementById('sumAutoDiscount').innerText = '-€' + autoDisc.toLocaleString();
@@ -1161,9 +1331,14 @@
             autoRow.classList.add('hidden');
         }
 
-        const discRow = document.getElementById('discountRow');
         if (promoDisc > 0) {
             discRow.classList.remove('hidden');
+            const discLabelEl = document.getElementById('discountRowLabel');
+            if (discLabelEl) {
+                discLabelEl.innerText = isEnCo
+                    ? ('Promo Discount (' + appliedPromoCode + ' - ' + discountPercent + '%)')
+                    : ('Promo İndirimi (' + appliedPromoCode + ' - %' + discountPercent + ')');
+            }
             document.getElementById('sumDiscount').innerText = '-€' + promoDisc.toLocaleString();
         } else {
             discRow.classList.add('hidden');
@@ -1229,6 +1404,8 @@
                         cInEl.value = ymd;
                         if (isDailyTourSelected()) {
                             cOutEl.value = ymd;
+                        } else if (fixedPackageDays >= 2) {
+                            cOutEl.value = addDaysYMD(ymd, fixedPackageDays - 1);
                         } else if (cOutEl.value && cOutEl.value <= cInEl.value) {
                             cOutEl.value = '';
                         }
@@ -1266,6 +1443,7 @@
 
     cOutEl.addEventListener('mousedown', function(e) {
         e.preventDefault();
+        if (this.dataset.lockedByPackage === '1') return;
         openPicker('out', cOutEl);
     });
 
@@ -1300,6 +1478,8 @@
     cInEl.addEventListener('change', function() {
         if (isDailyTourSelected()) {
             cOutEl.value = cInEl.value;
+        } else if (fixedPackageDays >= 2 && cInEl.value >= todayYmd) {
+            cOutEl.value = addDaysYMD(cInEl.value, fixedPackageDays - 1);
         } else if (cOutEl.value && cOutEl.value <= cInEl.value) {
             cOutEl.value = '';
         }

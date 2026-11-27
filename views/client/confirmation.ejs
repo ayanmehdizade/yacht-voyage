@@ -6,15 +6,30 @@
     whatsappNumber: '902521234567'
 }; %>
 <% const cleanWaNum = String(cSite.whatsappNumber || '902521234567').replace(/\D/g, '') || '902521234567'; %>
+
+<% const rawConfStatus = String(booking.status || ''); %>
+<% const isCancelled = ['İptal Edildi', 'İptal', 'Cancelled'].includes(rawConfStatus); %>
+<% const isRejected = ['Reddedildi', 'Reddedildi (Hava Muhalefeti)', 'Rejected'].includes(rawConfStatus); %>
+<% const isApproved = !isCancelled && !isRejected && ['Onaylandı', 'Approved', 'Confirmed'].includes(rawConfStatus); %>
+<% const isPendingApproval = !isCancelled && !isRejected && !isApproved; %>
+
 <% const bTotal = Number(booking.totalAmount || 0); %>
 <% const bPaid = Number(booking.paidAmount || 0); %>
 <% const bRefunded = Number(booking.refundedAmount || 0); %>
-<% const isCancelled = booking.status === 'İptal Edildi' || booking.status === 'İptal' || booking.status === 'Cancelled'; %>
-<% const isPaymentPending = booking.status === 'Ödəniş gözlənilir' || booking.status === 'Ödeme Bekliyor' || booking.status === 'Beklemede' || booking.status === 'Payment Pending'; %>
-<% const remainingBal = isCancelled ? 0 : Math.max(0, bTotal - bPaid); %>
+<% const remainingBal = (isCancelled || isRejected) ? 0 : Math.max(0, bTotal - bPaid); %>
+
 <% const statusDisplay = confIsEn
-    ? (isCancelled ? 'Cancelled' : (isPaymentPending ? 'Payment Pending' : (booking.status === 'Onaylandı' ? 'Confirmed' : (booking.status || 'Confirmed'))))
-    : (isCancelled ? 'İptal Edildi' : (isPaymentPending ? 'Ödeme Bekliyor' : (booking.status || 'Onaylandı'))); %>
+    ? (isCancelled
+        ? 'Cancelled'
+        : (isRejected
+            ? 'Rejected'
+            : (isApproved ? 'Approved' : 'Pending Admin Approval')))
+    : (isCancelled
+        ? 'İptal Edildi'
+        : (isRejected
+            ? 'Reddedildi'
+            : (isApproved ? 'Onaylandı' : 'Admin Onayı Bekliyor'))); %>
+
 <% const charterTypeMap = {
     'Özel Yat Kiralama (Konaklamalı)': 'Private Yacht Charter (Overnight)',
     'Özel Yat Kiralama': 'Private Yacht Charter',
@@ -23,6 +38,7 @@
 <% const charterDisplay = confIsEn
     ? (booking.charterTypeEn || charterTypeMap[booking.charterType] || booking.charterType || 'Private Yacht Charter')
     : (booking.charterType || 'Özel Yat Kiralama'); %>
+
 <% const payTypeMap = {
     'Hisseli Ödeme': 'Installment Plan',
     'Tam Ödeme (İndirimli)': 'Full Payment (Discounted)',
@@ -41,6 +57,7 @@
 <% const payMethodDisplay = confIsEn
     ? (booking.paymentMethodEn || payMethodMap[booking.paymentMethod] || booking.paymentMethod || 'Card')
     : (booking.paymentMethod || 'Kart'); %>
+
 <% const extrasTrToEn = {
     'VIP Havalimanı Transferi': 'VIP Airport Transfer',
     'Özel Şef & Gurme Menü': 'Private Chef & Gourmet Menu',
@@ -51,11 +68,19 @@
 <% const guestsCount = Number(booking.guests || 1); %>
 <% const confImgSrc = (yacht && Array.isArray(yacht.images) && yacht.images[0]) ? yacht.images[0] : 'https://images.unsplash.com/photo-1567899378494-47b22a2ae96a?auto=format&fit=crop&w=1000&q=80'; %>
 
+<% const captainName = (booking.captainName || booking.assignedCaptain || '').trim(); %>
+<% const captainPhone = (booking.captainPhone || '').trim(); %>
+<% const transferPhone = (booking.transferPhone || booking.transferContactPhone || '').trim(); %>
+<% const transferDriver = (booking.transferContactName || booking.transferDriver || '').trim(); %>
+<% const boardingInfo = (booking.boardingDetails || booking.marinaPier || '').trim(); %>
+<% const rejectionReasonText = (booking.rejectionReason || booking.rejectReason || '').trim(); %>
+<% const refundRuleText = (booking.refundRuleReason || booking.refundPolicyNote || '').trim(); %>
+
 <main class="max-w-3xl mx-auto px-4 sm:px-6 py-12">
     <div class="bg-white rounded-3xl border border-slate-200 shadow-xl overflow-hidden">
         <div class="bg-[#0B1F3A] text-white p-8 text-center space-y-3">
-            <div class="w-16 h-16 rounded-full <%= isCancelled ? 'bg-rose-500/20 border-rose-400 text-rose-300' : (isPaymentPending ? 'bg-amber-500/20 border-amber-400 text-amber-300' : 'bg-emerald-500/20 border-emerald-400 text-emerald-300') %> border flex items-center justify-center mx-auto text-2xl">
-                <i class="fa-solid <%= isCancelled ? 'fa-ban' : (isPaymentPending ? 'fa-clock' : 'fa-check') %>"></i>
+            <div class="w-16 h-16 rounded-full <%= (isCancelled || isRejected) ? 'bg-rose-500/20 border-rose-400 text-rose-300' : (isPendingApproval ? 'bg-amber-500/20 border-amber-400 text-amber-300' : 'bg-emerald-500/20 border-emerald-400 text-emerald-300') %> border flex items-center justify-center mx-auto text-2xl">
+                <i class="fa-solid <%= (isCancelled || isRejected) ? 'fa-ban' : (isPendingApproval ? 'fa-hourglass-half' : 'fa-check') %>"></i>
             </div>
             <span class="inline-block bg-white/10 text-sky-200 text-xs font-bold px-3.5 py-1 rounded-full">
                 <%= confIsEn ? 'Status:' : 'Durum:' %> <%= statusDisplay %>
@@ -63,25 +88,31 @@
             <h1 class="text-2xl md:text-3xl font-extrabold">
                 <% if (isCancelled) { %>
                     <%= confIsEn ? 'Booking Cancelled' : 'Rezervasyon İptal Edildi' %>
-                <% } else if (isPaymentPending) { %>
-                    <%= confIsEn ? 'Booking Received — Payment Pending' : 'Rezervasyon Alındı — Ödeme Bekliyor' %>
+                <% } else if (isRejected) { %>
+                    <%= confIsEn ? 'Booking Rejected' : 'Rezervasyon Reddedildi' %>
+                <% } else if (isApproved) { %>
+                    <%= confIsEn ? 'Your Booking Is Approved!' : 'Rezervasyonunuz Onaylandı!' %>
                 <% } else { %>
-                    <%= confIsEn ? 'Your Booking Is Confirmed!' : 'Rezervasyonunuz Alındı!' %>
+                    <%= confIsEn ? 'Request Received — Awaiting Admin Approval' : 'Talep Alındı — Admin Onayı Bekleniyor' %>
                 <% } %>
             </h1>
             <p class="text-slate-300 text-sm">
                 <% if (isCancelled) { %>
                     <%= confIsEn
-                        ? 'Your reservation record has been updated to cancelled. You can review your voucher document below.'
-                        : 'Rezervasyon kaydınız iptal durumuna güncellendi. Voucher belgenizi aşağıdan inceleyebilirsiniz.' %>
-                <% } else if (isPaymentPending) { %>
+                        ? 'Your booking has been cancelled. Refund calculation and details are shown below.'
+                        : 'Rezervasyonunuz iptal edildi. İade hesaplaması ve detaylar aşağıda yer almaktadır.' %>
+                <% } else if (isRejected) { %>
                     <%= confIsEn
-                        ? 'Your booking voucher is ready. Payment is currently pending settlement via your selected payment method.'
-                        : 'Voucher belgeniz hazırdır. Seçtiğiniz ödeme yöntemiyle ödeme şu anda bekleniyor.' %>
+                        ? 'Your booking request could not be approved. Please review the reason below.'
+                        : 'Rezervasyon talebiniz onaylanamadı. Lütfen aşağıdaki red sebebini inceleyin.' %>
+                <% } else if (isApproved) { %>
+                    <%= confIsEn
+                        ? 'Your booking has been approved by our team. Assigned captain, transfer contact, and boarding details are included below.'
+                        : 'Rezervasyonunuz ekibimiz tarafından onaylandı. Atanan kaptan, transfer iletişim numarası ve biniş detayları aşağıdadır.' %>
                 <% } else { %>
                     <%= confIsEn
-                        ? 'Your blue cruise voucher has been generated. You can look up your booking anytime using your PNR code and email address.'
-                        : 'Mavi yolculuk voucher belgeniz oluşturuldu. PNR kodunuz ve e-posta adresiniz ile dilediğiniz zaman sorgulama yapabilirsiniz.' %>
+                        ? 'Your booking is pending admin approval. Captain assignment, transfer phone, and final boarding details will be shared once approved.'
+                        : 'Rezervasyonunuz admin onayı için beklemede tutulmaktadır. Onaylandıktan sonra kaptan, transfer numarası ve biniş detayları paylaşılacaktır.' %>
                 <% } %>
             </p>
 
@@ -94,6 +125,65 @@
         </div>
 
         <div class="p-6 md:p-8 space-y-6">
+            <% if (isRejected) { %>
+                <div class="bg-rose-50 border border-rose-200 rounded-2xl p-4 text-xs text-rose-900 space-y-1">
+                    <div class="font-extrabold text-sm text-rose-800">
+                        <%= confIsEn ? 'Reason for Rejection' : 'Red Sebebi' %>
+                    </div>
+                    <p><%= rejectionReasonText || (confIsEn ? 'Weather conditions or operational unavailability.' : 'Hava koşulları veya operasyonel uygunsuzluk.') %></p>
+                    <% if (refundRuleText || bRefunded > 0) { %>
+                        <p class="font-semibold pt-1">
+                            <%= confIsEn ? 'Refunded Amount:' : 'İade Edilen Tutar:' %> €<%= bRefunded.toLocaleString() %>
+                            <% if (refundRuleText) { %> — <%= refundRuleText %><% } %>
+                        </p>
+                    <% } %>
+                </div>
+            <% } %>
+
+            <% if (isApproved) { %>
+                <div class="bg-emerald-50/80 border border-emerald-200 rounded-2xl p-5 space-y-3 text-xs text-slate-800">
+                    <div class="font-extrabold text-sm text-emerald-900">
+                        <%= confIsEn ? 'Captain, Transfer & Boarding Details' : 'Kaptan, Transfer ve Biniş Bilgileri' %>
+                    </div>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div class="bg-white/90 border border-emerald-200/80 rounded-xl p-3">
+                            <span class="text-[11px] font-bold uppercase text-slate-400 block"><%= confIsEn ? 'Captain' : 'Kaptan' %></span>
+                            <strong class="text-sm text-slate-900 block mt-0.5"><%= captainName || (confIsEn ? 'Assigned Captain' : 'Atanan Kaptan') %></strong>
+                            <% if (captainPhone) { %>
+                                <span class="text-emerald-800 font-semibold block mt-0.5"><i class="fa-solid fa-phone mr-1"></i><%= captainPhone %></span>
+                            <% } %>
+                        </div>
+                        <div class="bg-white/90 border border-emerald-200/80 rounded-xl p-3">
+                            <span class="text-[11px] font-bold uppercase text-slate-400 block"><%= confIsEn ? 'Transfer Contact' : 'Transfer İletişim' %></span>
+                            <strong class="text-sm text-slate-900 block mt-0.5"><%= transferPhone || (confIsEn ? 'Shared by Operations' : 'Operasyon Tarafından Paylaşılır') %></strong>
+                            <% if (transferDriver) { %>
+                                <span class="text-slate-600 block mt-0.5"><%= confIsEn ? 'Driver / Contact:' : 'Sürücü / İletişim:' %> <%= transferDriver %></span>
+                            <% } %>
+                        </div>
+                    </div>
+                    <% if (boardingInfo) { %>
+                        <div class="bg-white/90 border border-emerald-200/80 rounded-xl p-3">
+                            <span class="text-[11px] font-bold uppercase text-slate-400 block"><%= confIsEn ? 'Boarding & Marina Notes' : 'Biniş ve Marina Notları' %></span>
+                            <span class="text-slate-800 font-medium block mt-0.5"><%= boardingInfo %></span>
+                        </div>
+                    <% } %>
+                </div>
+            <% } %>
+
+            <% if (isCancelled && (refundRuleText || bRefunded > 0)) { %>
+                <div class="bg-slate-50 border border-slate-200 rounded-2xl p-4 text-xs text-slate-800 space-y-1">
+                    <div class="font-extrabold text-sm text-rose-700">
+                        <%= confIsEn ? 'Refund Calculation & Policy' : 'İade Hesaplaması ve Kuralı' %>
+                    </div>
+                    <div>
+                        <strong><%= confIsEn ? 'Refunded Amount:' : 'İade Edilen Tutar:' %></strong> €<%= bRefunded.toLocaleString() %>
+                    </div>
+                    <% if (refundRuleText) { %>
+                        <p class="text-slate-600"><%= refundRuleText %></p>
+                    <% } %>
+                </div>
+            <% } %>
+
             <div class="flex flex-col sm:flex-row items-center gap-4 bg-slate-50 p-4 rounded-2xl border border-slate-100">
                 <img id="confYachtImg" src="<%= confImgSrc %>" alt="<%= booking.yacht %>" class="w-full sm:w-32 h-24 object-cover rounded-xl">
                 <div class="flex-1 text-center sm:text-left">
@@ -133,24 +223,15 @@
                     <strong class="text-sm text-[#0B1F3A] block">
                         <%= confIsEn ? 'Total Amount:' : 'Toplam Tutar:' %> €<%= bTotal.toLocaleString() %>
                     </strong>
-                    <% if (isCancelled) { %>
+                    <% if (isCancelled || isRejected) { %>
                         <span class="text-[11px] font-bold text-rose-700 block">
-                            <%= confIsEn ? 'Refunded / Cancelled Amount:' : 'İade Edilen / İptal Tutar:' %> €<%= (bRefunded > 0 ? bRefunded : bPaid).toLocaleString() %>
-                        </span>
-                    <% } else if (isPaymentPending) { %>
-                        <span class="text-[11px] font-bold text-amber-700 block">
-                            <%= confIsEn ? 'Status: Payment Pending' : 'Durum: Ödeme Bekliyor' %>
-                        </span>
-                        <span class="text-[11px] font-semibold text-slate-600 block">
-                            <%= confIsEn
-                                ? ('Paid: €' + bPaid.toLocaleString() + ' • Remaining: €' + remainingBal.toLocaleString())
-                                : ('Ödenen: €' + bPaid.toLocaleString() + ' • Kalan: €' + remainingBal.toLocaleString()) %>
+                            <%= confIsEn ? 'Refunded Amount:' : 'İade Edilen Tutar:' %> €<%= bRefunded.toLocaleString() %>
                         </span>
                     <% } else { %>
                         <span class="text-[11px] font-semibold text-emerald-700 block">
                             <%= confIsEn
-                                ? ('Paid: €' + bPaid.toLocaleString() + ' • Remaining at Marina: €' + remainingBal.toLocaleString())
-                                : ('Ödenen: €' + bPaid.toLocaleString() + ' • Marinada Kalan: €' + remainingBal.toLocaleString()) %>
+                                ? ('Paid: €' + bPaid.toLocaleString() + ' • Remaining: €' + remainingBal.toLocaleString())
+                                : ('Ödenen: €' + bPaid.toLocaleString() + ' • Kalan: €' + remainingBal.toLocaleString()) %>
                         </span>
                     <% } %>
                 </div>
@@ -230,8 +311,10 @@
     if (copyBtn && pnrText) {
         copyBtn.addEventListener('click', function() {
             const btn = this;
+            const origHtml = btn.innerHTML;
             const markCopied = function() {
                 btn.innerHTML = '<i class="fa-solid fa-check mr-1"></i>' + (isEnConf ? 'Copied' : 'Kopyalandı');
+                setTimeout(function() { btn.innerHTML = origHtml; }, 2000);
             };
             if (navigator.clipboard && navigator.clipboard.writeText) {
                 navigator.clipboard.writeText(pnrText).then(markCopied).catch(function() {

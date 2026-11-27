@@ -65,6 +65,10 @@ const initialData = {
         { id: 3, name: 'Fethiye', desc: 'Ece Marina & Ölüdeniz' },
         { id: 4, name: 'Bodrum', desc: 'Yalıkavak & Türkbükü' }
     ],
+    promoCodes: [
+        { id: 1, code: 'MAVI10', discountPercent: 10, expiresAt: '', isActive: true },
+        { id: 2, code: 'VIP15', discountPercent: 15, expiresAt: '', isActive: true }
+    ],
     rentalContract: {
         title: 'YachtVoyage Tekne Kiralama ve İptal Sözleşmesi',
         body: `1. Taraflar ve Konu
@@ -421,6 +425,28 @@ function getTodayYMD() {
     return formatLocalYMD(new Date());
 }
 
+function daysUntilYMD(targetYmd) {
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(String(targetYmd || ''))) return null;
+    const now = new Date();
+    const todayUtc = Date.UTC(now.getFullYear(), now.getMonth(), now.getDate());
+    const [y, m, d] = String(targetYmd).split('-').map(Number);
+    const targetUtc = Date.UTC(y, (m || 1) - 1, d || 1);
+    return Math.round((targetUtc - todayUtc) / 86400000);
+}
+
+function saveBase64Image(dataUri, prefix = 'yacht') {
+    if (!dataUri || typeof dataUri !== 'string') return '';
+    if (dataUri.startsWith('/uploads/') || dataUri.startsWith('http://') || dataUri.startsWith('https://')) {
+        return dataUri;
+    }
+    const m = dataUri.match(/^data:image\/(png|jpeg|jpg|webp|gif);base64,(.+)$/i);
+    if (!m) return '';
+    const ext = m[1].toLowerCase() === 'jpeg' ? '.jpg' : '.' + m[1].toLowerCase();
+    const fileName = `${prefix}-${Date.now()}-${Math.floor(Math.random() * 100000)}${ext}`;
+    fs.writeFileSync(path.join(UPLOAD_DIR, fileName), Buffer.from(m[2], 'base64'));
+    return `/uploads/${fileName}`;
+}
+
 function cookieFlags() {
     return IS_HTTPS_ENV ? '; Secure' : '';
 }
@@ -472,6 +498,9 @@ function loadDB() {
     parsed.departurePoints = (parsed.departurePoints && parsed.departurePoints.length)
         ? parsed.departurePoints
         : structuredClone(initialData.departurePoints);
+    parsed.promoCodes = Array.isArray(parsed.promoCodes)
+        ? parsed.promoCodes
+        : structuredClone(initialData.promoCodes);
     parsed.tours = (parsed.tours && parsed.tours.length)
         ? parsed.tours
         : structuredClone(initialData.tours);
@@ -785,6 +814,7 @@ app.use((req, res, next) => {
     res.locals.rentalContract = db.rentalContract;
     res.locals.categories = db.categories;
     res.locals.departurePoints = db.departurePoints;
+    res.locals.promoCodes = db.promoCodes || [];
     next();
 });
 
@@ -793,7 +823,7 @@ function parseMultipartUpload(req) {
         const contentType = req.headers['content-type'] || '';
         const match = contentType.match(/boundary=(?:"([^"]+)"|([^;]+))/i);
         if (!match) {
-            return resolve({ fields: req.body || {}, file: null, tooLarge: false });
+            return resolve({ fields: req.body || {}, files: [], file: null, tooLarge: false });
         }
         const boundary = Buffer.from('--' + (match[1] || match[2]));
         const chunks = [];
@@ -812,12 +842,12 @@ function parseMultipartUpload(req) {
 
         req.on('end', () => {
             if (tooLarge) {
-                return resolve({ fields: {}, file: null, tooLarge: true });
+                return resolve({ fields: {}, files: [], file: null, tooLarge: true });
             }
 
             const buffer = Buffer.concat(chunks);
             const fields = {};
-            let uploadedFile = null;
+            const uploadedFiles = [];
 
             let pos = buffer.indexOf(boundary);
             while (pos !== -1) {
@@ -844,19 +874,24 @@ function parseMultipartUpload(req) {
                 if (filenameMatch && filenameMatch[1] && bodyBuf.length > 0) {
                     const ext = path.extname(filenameMatch[1]).toLowerCase() || '.jpg';
                     const safeExt = ['.jpg', '.jpeg', '.png', '.webp', '.gif'].includes(ext) ? ext : '.jpg';
-                    const fileName = `yacht-${Date.now()}-${Math.floor(Math.random() * 10000)}${safeExt}`;
+                    const fileName = `yacht-${Date.now()}-${Math.floor(Math.random() * 100000)}${safeExt}`;
                     const fullPath = path.join(UPLOAD_DIR, fileName);
                     fs.writeFileSync(fullPath, bodyBuf);
-                    uploadedFile = {
+                    uploadedFiles.push({
                         fieldName,
                         url: `/uploads/${fileName}`
-                    };
+                    });
                 } else {
                     fields[fieldName] = bodyBuf.toString('utf8');
                 }
             }
 
-            resolve({ fields, file: uploadedFile, tooLarge: false });
+            resolve({
+                fields,
+                files: uploadedFiles,
+                file: uploadedFiles[0] || null,
+                tooLarge: false
+            });
         });
     });
 }
@@ -1080,6 +1115,11 @@ app.get('/checkout', (req, res) => {
 
     const activeExtras = (db.extras || []).filter(e => e.active !== false);
     const activePayments = (db.paymentOptions || []).filter(p => p.active !== false);
+    const activePromoCodes = (db.promoCodes || []).filter(p => {
+        if (p.isActive === false) return false;
+        if (p.expiresAt && /^\d{4}-\d{2}-\d{2}$/.test(p.expiresAt) && p.expiresAt < today) return false;
+        return true;
+    });
 
     const selectedPackage = matchedTour ? {
         id: matchedTour.id,
@@ -1104,6 +1144,7 @@ app.get('/checkout', (req, res) => {
         paymentOptions: activePayments,
         paymentPlanSettings: db.paymentPlanSettings,
         rentalContract: db.rentalContract,
+        promoCodes: activePromoCodes,
         selectedPackage,
         errorMsg: req.query.error || '',
         checkIn: checkInVal,
@@ -1117,7 +1158,7 @@ app.post('/checkout/confirm', (req, res) => {
     const {
         yachtId, customerName, email, phone, checkIn, checkOut,
         guests, charterType, tourTimeSlot, extras, notes, discount,
-        paymentType, paymentMethod
+        promoCode, paymentType, paymentMethod
     } = req.body;
 
     const matchedTour = findMatchedTour(db, req.body);
@@ -1188,8 +1229,24 @@ app.post('/checkout/confirm', (req, res) => {
 
     const baseTotal = hasFixedPkg ? fixedPkgPrice : (Number(yacht.price || 0) * days);
     const autoDisc = (!hasFixedPkg && days >= 5) ? Math.round(baseTotal * 0.05) : 0;
-    const discountAmt = Math.max(0, Number(discount) || 0);
-    const computedTotal = Math.max(0, baseTotal - autoDisc + extrasTotal - discountAmt);
+
+    const normPromoInput = String(promoCode || '').trim().toUpperCase();
+    const today = getTodayYMD();
+    const matchedPromo = normPromoInput
+        ? (db.promoCodes || []).find(p =>
+            p.isActive !== false &&
+            String(p.code || '').trim().toUpperCase() === normPromoInput &&
+            (!p.expiresAt || !/^\d{4}-\d{2}-\d{2}$/.test(p.expiresAt) || p.expiresAt >= today)
+        )
+        : null;
+
+    const promoDiscAmt = matchedPromo
+        ? Math.round((baseTotal + extrasTotal) * (Number(matchedPromo.discountPercent || 0) / 100))
+        : 0;
+
+    const manualDiscAmt = Math.max(0, Number(discount) || 0);
+    const totalDiscountAmt = autoDisc + promoDiscAmt + manualDiscAmt;
+    const computedTotal = Math.max(0, baseTotal + extrasTotal - totalDiscountAmt);
 
     const planCfg = db.paymentPlanSettings || {
         installmentPercent: 50,
@@ -1211,7 +1268,7 @@ app.post('/checkout/confirm', (req, res) => {
         : Math.round(finalAmount * (Number(planCfg.installmentPercent || 50) / 100));
 
     const paidAmt = isDeferredPayment ? 0 : plannedPaidAmt;
-    const bookingStatus = isDeferredPayment ? 'Ödeme Bekleniyor' : 'Onaylandı';
+    const bookingStatus = isDeferredPayment ? 'pending_admin_approval' : 'Beklemede';
     const pnr = `YV2026-${Math.floor(1000 + Math.random() * 9000)}`;
     const normEmail = (email || '').trim().toLowerCase();
 
@@ -1234,13 +1291,17 @@ app.post('/checkout/confirm', (req, res) => {
         extras: selectedExtraNames,
         extrasTotal,
         notes: (notes || '').trim(),
-        discount: discountAmt + autoDisc,
+        promoCode: matchedPromo ? matchedPromo.code : (normPromoInput || ''),
+        discount: totalDiscountAmt,
         totalAmount: finalAmount,
         paidAmount: paidAmt,
         refundedAmount: 0,
         refundStatus: 'none',
         paymentType: isFullPayment ? 'Tam Ödeme (İndirimli)' : 'Hisseli Ödeme',
         paymentMethod: selectedMethod,
+        assignedCaptain: '',
+        assignedTransfer: '',
+        adminNote: '',
         status: bookingStatus
     });
 
@@ -1321,17 +1382,41 @@ app.post('/my-booking/cancel', (req, res) => {
         (!emailQuery || String(b.email || '').toLowerCase() === emailQuery)
     );
 
+    // /my-booking/cancel içinde:
     if (booking && verified && verified.pnr === booking.id.toUpperCase() && verified.email === String(booking.email || '').toLowerCase()) {
         booking.status = 'İptal Edildi';
-        if (Number(booking.paidAmount || 0) > 0) {
-            booking.refundStatus = 'pending';
+        const daysLeft = daysUntilYMD(booking.checkIn);
+        const currentPaid = Number(booking.paidAmount || 0);
+    
+        if (currentPaid > 0) {
+            if (daysLeft !== null && daysLeft >= 7) {
+                booking.refundedAmount = currentPaid;
+                booking.refundStatus = 'full_refund_7plus_days';
+                booking.refundRuleReason = `Check-in tarihine ${daysLeft} gün kaldığı için (7+ gün kuralı) ödenen tutarın tamamı (€${currentPaid.toLocaleString()}) iade edildi.`;
+            } else if (daysLeft !== null && daysLeft >= 0) {
+                booking.refundedAmount = 0;
+                booking.refundStatus = 'non_refundable_under_7_days';
+                booking.refundRuleReason = `Check-in tarihine ${daysLeft} gün kaldığı için (7 günden az) iade uygulanmadı.`;
+            } else {
+                booking.refundedAmount = 0;
+                booking.refundStatus = 'past_date_no_refund';
+                booking.refundRuleReason = 'Check-in tarihi geçtiği için iade uygulanmadı.';
+            }
+        } else {
+            booking.refundedAmount = 0;
+            booking.refundStatus = 'no_payment';
+            booking.refundRuleReason = 'Tahsil edilmiş ödeme bulunmadığı için iade tutarı €0.';
         }
+    
         saveDB(db);
-        return res.redirect(`/my-booking?pnr=${encodeURIComponent(pnr)}&msg=${encodeURIComponent('Rezervasyonunuz iptal edildi; iade talebi kayda alındı.')}`);
+        const msg = Number(booking.refundedAmount || 0) > 0
+            ? `Rezervasyonunuz iptal edildi; 7+ gün kuralı kapsamında €${Number(booking.refundedAmount).toLocaleString()} iade talebi oluşturuldu.`
+            : 'Rezervasyonunuz iptal edildi (7 günden az süre kaldığı için iade uygulanmadı).';
+        return res.redirect(`/my-booking?pnr=${encodeURIComponent(pnr)}&msg=${encodeURIComponent(msg)}`);
     }
-
+    
     return res.redirect('/my-booking?err=' + encodeURIComponent('İptal işlemi için önce PNR ve e-posta ile doğrulama yapın.'));
-});
+    });
 
 app.get('/admin/login', (req, res) => {
     const db = loadDB();
@@ -1371,6 +1456,7 @@ app.get('/admin', requireAdmin, (req, res) => {
         bookings: db.bookings,
         categories: db.categories,
         departurePoints: db.departurePoints,
+        promoCodes: db.promoCodes || [],
         tours: db.tours,
         paymentOptions: db.paymentOptions,
         paymentPlanSettings: db.paymentPlanSettings,
@@ -1381,6 +1467,55 @@ app.get('/admin', requireAdmin, (req, res) => {
         totalRevenue,
         notice: req.query.notice || ''
     });
+});
+
+app.post('/admin/promocodes/add', requireAdmin, (req, res) => {
+    const db = loadDB();
+    const code = String(req.body.code || '').trim().toUpperCase();
+    const discountPercent = Math.min(90, Math.max(1, Number(req.body.discountPercent) || 0));
+    const expiresAt = /^\d{4}-\d{2}-\d{2}$/.test(String(req.body.expiresAt || '').trim())
+        ? String(req.body.expiresAt).trim()
+        : '';
+
+    if (code && discountPercent >= 1) {
+        db.promoCodes = db.promoCodes || [];
+        const existing = db.promoCodes.find(p => String(p.code || '').toUpperCase() === code);
+        if (existing) {
+            existing.discountPercent = discountPercent;
+            existing.expiresAt = expiresAt;
+            existing.isActive = true;
+        } else {
+            const nextId = db.promoCodes.reduce((max, p) => Math.max(max, Number(p.id) || 0), 0) + 1;
+            db.promoCodes.push({
+                id: nextId,
+                code,
+                discountPercent,
+                expiresAt,
+                isActive: true
+            });
+        }
+        saveDB(db);
+    }
+    res.redirect('/admin?tab=ayarlar&notice=' + encodeURIComponent('Promokod kaydedildi.'));
+});
+
+app.post('/admin/promocodes/:id/toggle', requireAdmin, (req, res) => {
+    const db = loadDB();
+    const target = decodeURIComponent(req.params.id);
+    const item = (db.promoCodes || []).find(p => String(p.id) === target || String(p.code).toUpperCase() === target.toUpperCase());
+    if (item) {
+        item.isActive = item.isActive === false ? true : false;
+        saveDB(db);
+    }
+    res.redirect('/admin?tab=ayarlar&notice=' + encodeURIComponent('Promokod durumu güncellendi.'));
+});
+
+app.post('/admin/promocodes/:id/delete', requireAdmin, (req, res) => {
+    const db = loadDB();
+    const target = decodeURIComponent(req.params.id);
+    db.promoCodes = (db.promoCodes || []).filter(p => String(p.id) !== target && String(p.code).toUpperCase() !== target.toUpperCase());
+    saveDB(db);
+    res.redirect('/admin?tab=ayarlar&notice=' + encodeURIComponent('Promokod silindi.'));
 });
 
 app.post('/admin/departures/add', requireAdmin, (req, res) => {
@@ -1508,7 +1643,7 @@ app.post('/admin/payment-plan/update', requireAdmin, (req, res) => {
 
 app.post('/admin/add-yacht', requireAdmin, async (req, res) => {
     const db = loadDB();
-    const { fields, file, tooLarge } = await parseMultipartUpload(req);
+    const { fields, files, tooLarge } = await parseMultipartUpload(req);
 
     if (tooLarge) {
         return res.redirect('/admin?tab=filo-listesi&notice=' + encodeURIComponent('Yüklenen dosya boyutu 10 MB sınırını aştı.'));
@@ -1519,19 +1654,29 @@ app.post('/admin/add-yacht', requireAdmin, async (req, res) => {
     const matchedCat = (db.categories || []).find(c => c.key === categoryKey || c.nameTr === categoryKey);
     const categoryTr = (fields.categoryTr || (matchedCat && matchedCat.nameTr) || categoryKey).trim();
 
-    let imgUrl = DEFAULT_IMG;
-    if (file && file.url) {
-        imgUrl = file.url;
-    } else if (fields.imageData && fields.imageData.startsWith('data:image/')) {
-        const m = fields.imageData.match(/^data:image\/(png|jpeg|jpg|webp|gif);base64,(.+)$/i);
-        if (m) {
-            const ext = m[1].toLowerCase() === 'jpeg' ? '.jpg' : '.' + m[1].toLowerCase();
-            const fileName = `yacht-${Date.now()}-${Math.floor(Math.random() * 10000)}${ext}`;
-            fs.writeFileSync(path.join(UPLOAD_DIR, fileName), Buffer.from(m[2], 'base64'));
-            imgUrl = `/uploads/${fileName}`;
+    const collectedImages = [];
+    (files || []).forEach(f => {
+        if (f && f.url) collectedImages.push(f.url);
+    });
+    if (fields.imagesData) {
+        try {
+            const parsedArr = JSON.parse(fields.imagesData);
+            if (Array.isArray(parsedArr)) {
+                parsedArr.forEach(item => {
+                    const saved = saveBase64Image(item, 'yacht');
+                    if (saved && !collectedImages.includes(saved)) collectedImages.push(saved);
+                });
+            }
+        } catch {
+            // JSON olmayan değerler atlanır
         }
     }
+    if (fields.imageData) {
+        const savedSingle = saveBase64Image(fields.imageData, 'yacht');
+        if (savedSingle && !collectedImages.includes(savedSingle)) collectedImages.unshift(savedSingle);
+    }
 
+    const finalImages = collectedImages.length ? collectedImages : [DEFAULT_IMG];
     const descTr = (fields.description || 'Özel mavi yolculuk ve günlük tur için özenle hazırlanan tekne.').trim();
     const descEn = (fields.descriptionEn || descTr).trim();
 
@@ -1561,16 +1706,16 @@ app.post('/admin/add-yacht', requireAdmin, async (req, res) => {
         reviewList: [],
         description: descTr,
         descriptionEn: descEn,
-        images: [imgUrl, DEFAULT_IMG]
+        images: finalImages
     });
 
     saveDB(db);
-    res.redirect('/admin?tab=filo-listesi&notice=' + encodeURIComponent('Yeni yat ve yüklenen fotoğraf sisteme kaydedildi.'));
+    res.redirect('/admin?tab=filo-listesi&notice=' + encodeURIComponent('Yeni yat ve fotoğrafları sisteme kaydedildi.'));
 });
 
 app.post('/admin/yachts/:id/update', requireAdmin, async (req, res) => {
     const db = loadDB();
-    const { fields, file, tooLarge } = await parseMultipartUpload(req);
+    const { fields, files, tooLarge } = await parseMultipartUpload(req);
 
     if (tooLarge) {
         return res.redirect('/admin?tab=filo-listesi&notice=' + encodeURIComponent('Yüklenen dosya boyutu 10 MB sınırını aştı.'));
@@ -1608,28 +1753,34 @@ app.post('/admin/yachts/:id/update', requireAdmin, async (req, res) => {
         if (!isNaN(newCabins) && newCabins >= 1) yacht.cabins = newCabins;
         if (!isNaN(newCrew) && newCrew >= 1) yacht.crew = newCrew;
 
-        let newImgUrl = '';
-        if (file && file.url) {
-            newImgUrl = file.url;
-        } else if (fields.imageData && fields.imageData.startsWith('data:image/')) {
-            const m = fields.imageData.match(/^data:image\/(png|jpeg|jpg|webp|gif);base64,(.+)$/i);
-            if (m) {
-                const ext = m[1].toLowerCase() === 'jpeg' ? '.jpg' : '.' + m[1].toLowerCase();
-                const fileName = `yacht-${Date.now()}-${Math.floor(Math.random() * 10000)}${ext}`;
-                fs.writeFileSync(path.join(UPLOAD_DIR, fileName), Buffer.from(m[2], 'base64'));
-                newImgUrl = `/uploads/${fileName}`;
+        let updatedGallery = Array.isArray(yacht.images) && yacht.images.length ? [...yacht.images] : [DEFAULT_IMG];
+        if (fields.imagesData) {
+            try {
+                const parsedGallery = JSON.parse(fields.imagesData);
+                if (Array.isArray(parsedGallery) && parsedGallery.length) {
+                    updatedGallery = parsedGallery
+                        .map(src => saveBase64Image(src, 'yacht'))
+                        .filter(Boolean);
+                }
+            } catch {
+                // mevcut galeri korunur
             }
         }
 
-        if (newImgUrl) {
-            yacht.images = Array.isArray(yacht.images) && yacht.images.length
-                ? [newImgUrl, ...yacht.images.slice(1)]
-                : [newImgUrl, DEFAULT_IMG];
+        const uploadedUrls = (files || []).map(f => f && f.url).filter(Boolean);
+        if (uploadedUrls.length) {
+            updatedGallery = [...updatedGallery, ...uploadedUrls];
+        } else if (fields.imageData) {
+            const savedSingle = saveBase64Image(fields.imageData, 'yacht');
+            if (savedSingle) {
+                updatedGallery = [savedSingle, ...updatedGallery];
+            }
         }
 
+        yacht.images = updatedGallery.length ? updatedGallery : [DEFAULT_IMG];
         saveDB(db);
     }
-    res.redirect('/admin?tab=filo-listesi&notice=' + encodeURIComponent('Yat bilgileri ve fotoğrafı güncellendi.'));
+    res.redirect('/admin?tab=filo-listesi&notice=' + encodeURIComponent('Yat bilgileri ve galeri fotoğrafları güncellendi.'));
 });
 
 app.post('/admin/yachts/:id/price', requireAdmin, (req, res) => {
@@ -1652,80 +1803,109 @@ app.post('/admin/yachts/:id/delete', requireAdmin, (req, res) => {
     res.redirect('/admin?tab=filo-listesi&notice=' + encodeURIComponent('Yat kaydı silindi.'));
 });
 
-app.post('/admin/tours/add', requireAdmin, (req, res) => {
+app.post('/admin/tours/add', requireAdmin, async (req, res) => {
     const db = loadDB();
+    const { fields, file, tooLarge } = await parseMultipartUpload(req);
+
+    if (tooLarge) {
+        return res.redirect('/admin?tab=turlar-kategoriler&notice=' + encodeURIComponent('Yüklenen dosya boyutu 10 MB sınırını aştı.'));
+    }
+
     const nextId = (db.tours || []).reduce((max, t) => Math.max(max, Number(t.id) || 0), 0) + 1;
-    const durationDays = Math.max(1, Number(req.body.durationDays) || 1);
-    const includedRaw = (req.body.includedText || '').trim();
-    const excludedRaw = (req.body.excludedText || '').trim();
-    const includedEnRaw = (req.body.includedTextEn || '').trim();
-    const excludedEnRaw = (req.body.excludedTextEn || '').trim();
+    const durationDays = Math.max(1, Number(fields.durationDays) || 1);
+    const includedRaw = (fields.includedText || '').trim();
+    const excludedRaw = (fields.excludedText || '').trim();
+    const includedEnRaw = (fields.includedTextEn || '').trim();
+    const excludedEnRaw = (fields.excludedTextEn || '').trim();
+
+    let tourImg = DEFAULT_IMG;
+    if (file && file.url) {
+        tourImg = file.url;
+    } else if (fields.imageData) {
+        tourImg = saveBase64Image(fields.imageData, 'tour') || DEFAULT_IMG;
+    } else if (fields.img && fields.img.trim()) {
+        tourImg = fields.img.trim();
+    }
 
     db.tours.unshift({
         id: nextId,
-        badge: (req.body.badge || 'TUR PAKETİ').trim(),
-        badgeEn: (req.body.badgeEn || '').trim(),
-        title: (req.body.title || 'Yeni Mavi Tur').trim(),
-        titleEn: (req.body.titleEn || '').trim(),
-        region: (req.body.region || 'Marmaris').trim(),
-        regionEn: (req.body.regionEn || '').trim(),
-        meetingPoint: (req.body.meetingPoint || '').trim(),
-        meetingPointEn: (req.body.meetingPointEn || '').trim(),
-        durationLabel: (req.body.durationLabel || `${durationDays} Günlük Rota`).trim(),
-        durationLabelEn: (req.body.durationLabelEn || '').trim(),
-        capacityLabel: (req.body.capacityLabel || 'En fazla 12 kişi').trim(),
+        badge: (fields.badge || 'TUR PAKETİ').trim(),
+        badgeEn: (fields.badgeEn || '').trim(),
+        title: (fields.title || 'Yeni Mavi Tur').trim(),
+        titleEn: (fields.titleEn || '').trim(),
+        region: (fields.region || 'Marmaris').trim(),
+        regionEn: (fields.regionEn || '').trim(),
+        meetingPoint: (fields.meetingPoint || '').trim(),
+        meetingPointEn: (fields.meetingPointEn || '').trim(),
+        durationLabel: (fields.durationLabel || `${durationDays} Günlük Rota`).trim(),
+        durationLabelEn: (fields.durationLabelEn || '').trim(),
+        capacityLabel: (fields.capacityLabel || 'En fazla 12 kişi').trim(),
         durationDays,
-        pricePerDay: Math.max(1, Number(req.body.pricePerDay) || 2500),
-        yachtId: Number(req.body.yachtId) || (db.yachts[0] && db.yachts[0].id) || 1,
-        img: (req.body.img || DEFAULT_IMG).trim(),
+        pricePerDay: Math.max(1, Number(fields.pricePerDay) || 2500),
+        yachtId: Number(fields.yachtId) || (db.yachts[0] && db.yachts[0].id) || 1,
+        img: tourImg,
         included: includedRaw ? includedRaw.split('|').map(s => s.trim()).filter(Boolean) : ['Lisanslı kaptan ve yakıt', 'Yüzme molaları ve ikramlar'],
         includedEn: includedEnRaw ? includedEnRaw.split('|').map(s => s.trim()).filter(Boolean) : [],
         excluded: excludedRaw ? excludedRaw.split('|').map(s => s.trim()).filter(Boolean) : ['Özel menü ve transfer'],
         excludedEn: excludedEnRaw ? excludedEnRaw.split('|').map(s => s.trim()).filter(Boolean) : [],
-        summary: (req.body.summary || 'Özel koy rotası ve tam gün tekne turu.').trim(),
-        summaryEn: (req.body.summaryEn || '').trim()
+        summary: (fields.summary || 'Özel koy rotası ve tam gün tekne turu.').trim(),
+        summaryEn: (fields.summaryEn || '').trim()
     });
     saveDB(db);
     res.redirect('/admin?tab=turlar-kategoriler&notice=' + encodeURIComponent('Yeni tur paketi eklendi.'));
 });
 
-app.post('/admin/tours/:id/update', requireAdmin, (req, res) => {
+app.post('/admin/tours/:id/update', requireAdmin, async (req, res) => {
     const db = loadDB();
+    const { fields, file, tooLarge } = await parseMultipartUpload(req);
+
+    if (tooLarge) {
+        return res.redirect('/admin?tab=turlar-kategoriler&notice=' + encodeURIComponent('Yüklenen dosya boyutu 10 MB sınırını aştı.'));
+    }
+
     const tour = (db.tours || []).find(t => Number(t.id) === Number(req.params.id));
     if (tour) {
-        if (req.body.title && req.body.title.trim()) tour.title = req.body.title.trim();
-        if (typeof req.body.titleEn === 'string') tour.titleEn = req.body.titleEn.trim();
-        if (req.body.region && req.body.region.trim()) tour.region = req.body.region.trim();
-        if (typeof req.body.regionEn === 'string') tour.regionEn = req.body.regionEn.trim();
-        if (req.body.badge && req.body.badge.trim()) tour.badge = req.body.badge.trim();
-        if (typeof req.body.badgeEn === 'string') tour.badgeEn = req.body.badgeEn.trim();
-        if (typeof req.body.meetingPoint === 'string') tour.meetingPoint = req.body.meetingPoint.trim();
-        if (typeof req.body.meetingPointEn === 'string') tour.meetingPointEn = req.body.meetingPointEn.trim();
-        if (req.body.durationLabel && req.body.durationLabel.trim()) tour.durationLabel = req.body.durationLabel.trim();
-        if (typeof req.body.durationLabelEn === 'string') tour.durationLabelEn = req.body.durationLabelEn.trim();
-        if (req.body.capacityLabel && req.body.capacityLabel.trim()) tour.capacityLabel = req.body.capacityLabel.trim();
-        if (req.body.img && req.body.img.trim()) tour.img = req.body.img.trim();
-        if (typeof req.body.summary === 'string' && req.body.summary.trim()) tour.summary = req.body.summary.trim();
-        if (typeof req.body.summaryEn === 'string') tour.summaryEn = req.body.summaryEn.trim();
+        if (fields.title && fields.title.trim()) tour.title = fields.title.trim();
+        if (typeof fields.titleEn === 'string') tour.titleEn = fields.titleEn.trim();
+        if (fields.region && fields.region.trim()) tour.region = fields.region.trim();
+        if (typeof fields.regionEn === 'string') tour.regionEn = fields.regionEn.trim();
+        if (fields.badge && fields.badge.trim()) tour.badge = fields.badge.trim();
+        if (typeof fields.badgeEn === 'string') tour.badgeEn = fields.badgeEn.trim();
+        if (typeof fields.meetingPoint === 'string') tour.meetingPoint = fields.meetingPoint.trim();
+        if (typeof fields.meetingPointEn === 'string') tour.meetingPointEn = fields.meetingPointEn.trim();
+        if (fields.durationLabel && fields.durationLabel.trim()) tour.durationLabel = fields.durationLabel.trim();
+        if (typeof fields.durationLabelEn === 'string') tour.durationLabelEn = fields.durationLabelEn.trim();
+        if (fields.capacityLabel && fields.capacityLabel.trim()) tour.capacityLabel = fields.capacityLabel.trim();
+        if (typeof fields.summary === 'string' && fields.summary.trim()) tour.summary = fields.summary.trim();
+        if (typeof fields.summaryEn === 'string') tour.summaryEn = fields.summaryEn.trim();
 
-        const dDays = Number(req.body.durationDays);
-        const pDay = Number(req.body.pricePerDay);
-        const yId = Number(req.body.yachtId);
+        if (file && file.url) {
+            tour.img = file.url;
+        } else if (fields.imageData) {
+            const savedTourImg = saveBase64Image(fields.imageData, 'tour');
+            if (savedTourImg) tour.img = savedTourImg;
+        } else if (fields.img && fields.img.trim()) {
+            tour.img = fields.img.trim();
+        }
+
+        const dDays = Number(fields.durationDays);
+        const pDay = Number(fields.pricePerDay);
+        const yId = Number(fields.yachtId);
         if (!isNaN(dDays) && dDays >= 1) tour.durationDays = dDays;
         if (!isNaN(pDay) && pDay >= 1) tour.pricePerDay = pDay;
         if (!isNaN(yId) && yId >= 1) tour.yachtId = yId;
 
-        if (typeof req.body.includedText === 'string' && req.body.includedText.trim()) {
-            tour.included = req.body.includedText.split('|').map(s => s.trim()).filter(Boolean);
+        if (typeof fields.includedText === 'string' && fields.includedText.trim()) {
+            tour.included = fields.includedText.split('|').map(s => s.trim()).filter(Boolean);
         }
-        if (typeof req.body.includedTextEn === 'string') {
-            tour.includedEn = req.body.includedTextEn.split('|').map(s => s.trim()).filter(Boolean);
+        if (typeof fields.includedTextEn === 'string') {
+            tour.includedEn = fields.includedTextEn.split('|').map(s => s.trim()).filter(Boolean);
         }
-        if (typeof req.body.excludedText === 'string' && req.body.excludedText.trim()) {
-            tour.excluded = req.body.excludedText.split('|').map(s => s.trim()).filter(Boolean);
+        if (typeof fields.excludedText === 'string' && fields.excludedText.trim()) {
+            tour.excluded = fields.excludedText.split('|').map(s => s.trim()).filter(Boolean);
         }
-        if (typeof req.body.excludedTextEn === 'string') {
-            tour.excludedEn = req.body.excludedTextEn.split('|').map(s => s.trim()).filter(Boolean);
+        if (typeof fields.excludedTextEn === 'string') {
+            tour.excludedEn = fields.excludedTextEn.split('|').map(s => s.trim()).filter(Boolean);
         }
         saveDB(db);
     }
@@ -1850,14 +2030,69 @@ app.post('/admin/extras/:id/delete', requireAdmin, (req, res) => {
     res.redirect('/admin?tab=ayarlar&notice=' + encodeURIComponent('Ekstra hizmet silindi.'));
 });
 
+app.post('/admin/bookings/:id/assign', requireAdmin, (req, res) => {
+    const db = loadDB();
+    const bookingId = decodeURIComponent(req.params.id);
+    const booking = db.bookings.find(b => b.id === bookingId);
+    if (booking) {
+        if (typeof req.body.assignedCaptain === 'string') {
+            booking.assignedCaptain = req.body.assignedCaptain.trim();
+        }
+        if (typeof req.body.assignedTransfer === 'string') {
+            booking.assignedTransfer = req.body.assignedTransfer.trim();
+        }
+        if (typeof req.body.adminNote === 'string') {
+            booking.adminNote = req.body.adminNote.trim();
+        }
+        saveDB(db);
+    }
+    res.redirect('/admin?tab=rezervasyonlar&notice=' + encodeURIComponent('Kaptan ve VIP transfer atamaları kaydedildi.'));
+});
+
 app.post('/admin/bookings/:id/status', requireAdmin, (req, res) => {
     const db = loadDB();
-    const booking = db.bookings.find(b => b.id === req.params.id);
+    const bookingId = decodeURIComponent(req.params.id);
+    const booking = db.bookings.find(b => b.id === bookingId);
     if (booking && req.body.status) {
-        booking.status = req.body.status;
-        if (booking.status === 'Onaylandı' && (!booking.paidAmount || booking.paidAmount === 0)) {
-            const pct = Number((db.paymentPlanSettings && db.paymentPlanSettings.installmentPercent) || 50) / 100;
-            booking.paidAmount = Math.round((booking.totalAmount || 0) * pct);
+        const nextStatus = String(req.body.status).trim();
+        const isAlreadyCancelled = booking.status === 'İptal Edildi' || booking.status === 'İptal';
+
+        if (isAlreadyCancelled && nextStatus === 'Onaylandı') {
+            return res.redirect('/admin?tab=rezervasyonlar&notice=' + encodeURIComponent('İptal edilmiş rezervasyon onaylanamaz.'));
+        }
+
+        booking.status = nextStatus;
+        if (booking.status === 'Onaylandı') {
+            if (!booking.paidAmount || booking.paidAmount === 0) {
+                const pct = Number((db.paymentPlanSettings && db.paymentPlanSettings.installmentPercent) || 50) / 100;
+                booking.paidAmount = Math.round((booking.totalAmount || 0) * pct);
+            }
+            booking.refundedAmount = 0;
+            booking.refundStatus = 'none';
+            booking.refundRuleReason = '';
+        } else if (booking.status === 'İptal Edildi') {
+            const daysLeft = daysUntilYMD(booking.checkIn);
+            const currentPaid = Number(booking.paidAmount || 0);
+
+            if (currentPaid > 0) {
+                if (daysLeft !== null && daysLeft >= 7) {
+                    booking.refundedAmount = currentPaid;
+                    booking.refundStatus = 'full_refund_7plus_days';
+                    booking.refundRuleReason = `Check-in tarihine ${daysLeft} gün kaldığı için (7+ gün kuralı) ödenen tutarın tamamı (€${currentPaid.toLocaleString()}) iade edildi.`;
+                } else if (daysLeft !== null && daysLeft >= 0) {
+                    booking.refundedAmount = 0;
+                    booking.refundStatus = 'non_refundable_under_7_days';
+                    booking.refundRuleReason = `Check-in tarihine ${daysLeft} gün kaldığı için (7 günden az) iade uygulanmadı.`;
+                } else {
+                    booking.refundedAmount = 0;
+                    booking.refundStatus = 'past_date_no_refund';
+                    booking.refundRuleReason = 'Check-in tarihi geçtiği için iade uygulanmadı.';
+                }
+            } else {
+                booking.refundedAmount = 0;
+                booking.refundStatus = 'no_payment';
+                booking.refundRuleReason = 'Tahsil edilmiş ödeme bulunmadığı için iade tutarı €0.';
+            }
         }
         saveDB(db);
     }
@@ -1866,7 +2101,8 @@ app.post('/admin/bookings/:id/status', requireAdmin, (req, res) => {
 
 app.post('/admin/bookings/:id/delete', requireAdmin, (req, res) => {
     const db = loadDB();
-    db.bookings = db.bookings.filter(b => b.id !== req.params.id);
+    const bookingId = decodeURIComponent(req.params.id);
+    db.bookings = db.bookings.filter(b => b.id !== bookingId);
     saveDB(db);
     res.redirect('/admin?tab=rezervasyonlar&notice=' + encodeURIComponent('Rezervasyon kaydı silindi.'));
 });

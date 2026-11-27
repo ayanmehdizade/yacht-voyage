@@ -61,25 +61,70 @@
     <% } %>
 
     <% if (booking) { %>
-        <% const isCancelled = (booking.status === 'İptal Edildi' || booking.status === 'İptal' || booking.status === 'Cancelled'); %>
-        <% const isPaymentPending = (booking.status === 'Ödəniş gözlənilir' || booking.status === 'Ödeme Bekliyor' || booking.status === 'Beklemede' || booking.status === 'Payment Pending'); %>
+        <% const rawStatus = String(booking.status || ''); %>
+        <% const isCancelled = ['İptal Edildi', 'İptal', 'Cancelled'].includes(rawStatus); %>
+        <% const isRejected = ['Reddedildi', 'Reddedildi (Hava Muhalefeti)', 'Rejected'].includes(rawStatus); %>
+        <% const isApproved = !isCancelled && !isRejected && ['Onaylandı', 'Approved', 'Confirmed'].includes(rawStatus); %>
+        <% const isPendingApproval = !isCancelled && !isRejected && !isApproved; %>
+
         <% const statusLabel = mbIsEn
-            ? (isCancelled ? 'Cancelled' : (isPaymentPending ? 'Payment Pending' : (booking.status === 'Onaylandı' ? 'Confirmed' : booking.status)))
-            : (isCancelled ? 'İptal Edildi' : (isPaymentPending ? 'Ödeme Bekliyor' : booking.status)); %>
+            ? (isCancelled
+                ? 'Cancelled'
+                : (isRejected
+                    ? 'Rejected'
+                    : (isApproved ? 'Approved' : 'Pending Admin Approval')))
+            : (isCancelled
+                ? 'İptal Edildi'
+                : (isRejected
+                    ? 'Reddedildi'
+                    : (isApproved ? 'Onaylandı' : 'Admin Onayı Bekleniyor'))); %>
+
+        <% const refundedAmt = Number(booking.refundedAmount || 0); %>
+        <% const paidAmt = Number(booking.paidAmount || 0); %>
+        <% const totalAmt = Number(booking.totalAmount || 0); %>
+
         <% const payStatusText = mbIsEn
             ? (isCancelled
-                ? (booking.refundStatus === 'refunded' ? 'Refunded' : 'Refund Pending')
-                : (isPaymentPending ? 'Payment Pending' : (Number(booking.paidAmount || 0) >= Number(booking.totalAmount || 0) ? 'Paid in Full' : 'Deposit Paid')))
+                ? (refundedAmt > 0
+                    ? (booking.refundStatus === 'refunded' ? 'Refund Completed' : 'Refund Pending')
+                    : 'No Refund Due')
+                : (isRejected
+                    ? (paidAmt > 0 ? (booking.refundStatus === 'refunded' ? 'Refunded' : 'Refund Pending') : 'No Charge Taken')
+                    : (paidAmt <= 0 ? 'Payment Pending' : (paidAmt >= totalAmt ? 'Paid in Full' : 'Deposit Paid'))))
             : (isCancelled
-                ? (booking.refundStatus === 'refunded' ? 'İade edildi' : 'İade bekliyor')
-                : (isPaymentPending ? 'Ödeme bekliyor' : (Number(booking.paidAmount || 0) >= Number(booking.totalAmount || 0) ? 'Tam Ödendi' : 'Ön Ödeme Alındı'))); %>
-        <% const refundedAmt = Number(booking.refundedAmount || 0); %>
+                ? (refundedAmt > 0
+                    ? (booking.refundStatus === 'refunded' ? 'İade Tamamlandı' : 'İade Bekliyor')
+                    : 'İade Gerektirmiyor')
+                : (isRejected
+                    ? (paidAmt > 0 ? (booking.refundStatus === 'refunded' ? 'İade Edildi' : 'İade Bekliyor') : 'Tahsilat Yapılmadı')
+                    : (paidAmt <= 0 ? 'Ödeme Bekliyor' : (paidAmt >= totalAmt ? 'Tam Ödendi' : 'Ön Ödeme Alındı')))); %>
+
         <% const daysNum = Number(booking.days || 1); %>
         <% const guestsNum = Number(booking.guests || 1); %>
         <% const portText = (yacht && yacht.location) ? (' (' + yacht.location + ')') : ''; %>
         <% const methodLabel = mbIsEn
             ? ({ 'Kart': 'Card', 'Kredi / Banka Kartı': 'Credit / Debit Card', 'Havale / EFT': 'Bank Transfer / EFT', 'Marinada Ödeme': 'Marina Payment', 'Nakit / Marina Ödemesi': 'Cash / Marina Payment' }[booking.paymentMethod] || booking.paymentMethod || 'Card')
             : (booking.paymentMethod || 'Kart'); %>
+
+        <% const captainName = (booking.captainName || booking.assignedCaptain || '').trim(); %>
+        <% const captainPhone = (booking.captainPhone || '').trim(); %>
+        <% const transferPhone = (booking.transferPhone || booking.transferContactPhone || '').trim(); %>
+        <% const transferDriver = (booking.transferContactName || booking.transferDriver || '').trim(); %>
+        <% const boardingInfo = (booking.boardingDetails || booking.marinaPier || '').trim(); %>
+        <% const rejectionReasonText = (booking.rejectionReason || booking.rejectReason || '').trim(); %>
+        <% const refundRuleText = (booking.refundRuleReason || booking.refundPolicyNote || '').trim(); %>
+        <% const refundReasonSummary = refundRuleText
+            || (refundedAmt > 0 && paidAmt > 0 && refundedAmt < paidAmt
+                ? (mbIsEn
+                    ? ('Partial refund of €' + refundedAmt.toLocaleString() + ' issued out of €' + paidAmt.toLocaleString() + ' paid.')
+                    : ('Ödenen €' + paidAmt.toLocaleString() + ' tutardan €' + refundedAmt.toLocaleString() + ' kısmi/yarım iade uygulandı.'))
+                : (refundedAmt > 0
+                    ? (mbIsEn
+                        ? 'Full paid amount refunded under the 7+ days cancellation policy.'
+                        : '7+ gün iptal kuralı kapsamında ödenen tutarın tamamı iade edildi.')
+                    : (mbIsEn
+                        ? 'No refund issued under the cancellation policy or payment status.'
+                        : 'İptal kuralı veya ödeme durumuna göre iade uygulanmadı.'))); %>
 
         <div class="bg-white rounded-3xl border border-slate-200 shadow-lg p-8 space-y-6">
             <div class="flex flex-wrap justify-between items-center gap-3 border-b border-slate-100 pb-4">
@@ -88,14 +133,97 @@
                     <span class="text-xl font-mono font-extrabold text-[#0B1F3A]">#<%= booking.id %></span>
                 </div>
                 <div class="flex flex-wrap gap-2">
-                    <span class="px-3.5 py-1.5 rounded-full text-xs font-bold <%= isCancelled ? 'bg-rose-100 text-rose-700' : (isPaymentPending ? 'bg-amber-100 text-amber-800' : 'bg-emerald-100 text-emerald-700') %>">
+                    <span class="px-3.5 py-1.5 rounded-full text-xs font-bold <%= (isCancelled || isRejected) ? 'bg-rose-100 text-rose-700' : (isPendingApproval ? 'bg-amber-100 text-amber-800' : 'bg-emerald-100 text-emerald-700') %>">
                         <%= mbIsEn ? 'Booking:' : 'Rezervasyon:' %> <%= statusLabel %>
                     </span>
-                    <span class="px-3.5 py-1.5 rounded-full text-xs font-bold <%= isPaymentPending ? 'bg-amber-100 text-amber-800' : 'bg-sky-100 text-sky-800' %>">
+                    <span class="px-3.5 py-1.5 rounded-full text-xs font-bold <%= paidAmt <= 0 ? 'bg-amber-100 text-amber-800' : 'bg-sky-100 text-sky-800' %>">
                         <%= mbIsEn ? 'Payment:' : 'Ödeme:' %> <%= payStatusText %>
                     </span>
                 </div>
             </div>
+
+            <% if (isPendingApproval) { %>
+                <div class="bg-amber-50/90 border border-amber-200 rounded-2xl p-4 text-xs text-amber-900 space-y-1">
+                    <div class="font-extrabold text-sm flex items-center gap-2">
+                        <i class="fa-solid fa-hourglass-half"></i>
+                        <span><%= mbIsEn ? 'Awaiting Admin Approval' : 'Admin Onayı Bekleniyor' %></span>
+                    </div>
+                    <p>
+                        <%= mbIsEn
+                            ? 'Your request is currently awaiting review by our operations team. Captain assignment, transfer contact number, and boarding pier details will appear here once approved.'
+                            : 'Talebiniz operasyon ekibimiz tarafından incelenmek üzere beklemede tutulmaktadır. Onaylandıktan sonra kaptan bilgisi, transfer iletişim numarası ve biniş detayları burada görüntülenecektir.' %>
+                    </p>
+                </div>
+            <% } %>
+
+            <% if (isRejected) { %>
+                <div class="bg-rose-50 border border-rose-200 rounded-2xl p-4 text-xs text-rose-900 space-y-1.5">
+                    <div class="font-extrabold text-sm flex items-center gap-2 text-rose-800">
+                        <i class="fa-solid fa-circle-xmark"></i>
+                        <span><%= mbIsEn ? 'Booking Rejected by Operations' : 'Rezervasyon Reddedildi' %></span>
+                    </div>
+                    <p>
+                        <strong><%= mbIsEn ? 'Rejection Reason:' : 'Red Sebebi:' %></strong>
+                        <%= rejectionReasonText || (mbIsEn ? 'Weather conditions or operational unavailability.' : 'Hava koşulları veya operasyonel uygunsuzluk.') %>
+                    </p>
+                    <% if (refundRuleText || refundedAmt > 0) { %>
+                        <p class="text-rose-800 font-semibold">
+                            <%= mbIsEn ? 'Refunded Amount:' : 'İade Edilen Tutar:' %> €<%= refundedAmt.toLocaleString() %>
+                            <% if (refundRuleText) { %> — <%= refundRuleText %><% } %>
+                        </p>
+                    <% } %>
+                </div>
+            <% } %>
+
+            <% if (isApproved) { %>
+                <div class="bg-emerald-50/80 border border-emerald-200 rounded-2xl p-5 space-y-3 text-xs text-slate-800">
+                    <div class="font-extrabold text-sm text-emerald-900 flex items-center gap-2">
+                        <i class="fa-solid fa-ship"></i>
+                        <span><%= mbIsEn ? 'Approved Crew, Transfer & Boarding Details' : 'Onaylanan Kaptan, Transfer ve Biniş Detayları' %></span>
+                    </div>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div class="bg-white/90 border border-emerald-200/80 rounded-xl p-3">
+                            <span class="text-[11px] font-bold uppercase text-slate-400 block"><%= mbIsEn ? 'Assigned Captain' : 'Atanan Kaptan' %></span>
+                            <strong class="text-sm text-slate-900 block mt-0.5"><%= captainName || (mbIsEn ? 'Assigned by Marina' : 'Marina Tarafından Atandı') %></strong>
+                            <% if (captainPhone) { %>
+                                <span class="text-emerald-800 font-semibold block mt-0.5"><i class="fa-solid fa-phone mr-1"></i><%= captainPhone %></span>
+                            <% } %>
+                        </div>
+                        <div class="bg-white/90 border border-emerald-200/80 rounded-xl p-3">
+                            <span class="text-[11px] font-bold uppercase text-slate-400 block"><%= mbIsEn ? 'Transfer Contact' : 'Transfer İletişim' %></span>
+                            <strong class="text-sm text-slate-900 block mt-0.5"><%= transferPhone || (mbIsEn ? 'Will be shared prior to pickup' : 'Alım öncesi paylaşılacaktır') %></strong>
+                            <% if (transferDriver) { %>
+                                <span class="text-slate-600 block mt-0.5"><%= mbIsEn ? 'Driver / Coordinator:' : 'Sürücü / Koordinatör:' %> <%= transferDriver %></span>
+                            <% } %>
+                        </div>
+                    </div>
+                    <% if (boardingInfo) { %>
+                        <div class="bg-white/90 border border-emerald-200/80 rounded-xl p-3">
+                            <span class="text-[11px] font-bold uppercase text-slate-400 block"><%= mbIsEn ? 'Marina / Boarding Instructions' : 'Marina / Biniş Bilgileri' %></span>
+                            <span class="text-slate-800 font-medium block mt-0.5"><%= boardingInfo %></span>
+                        </div>
+                    <% } %>
+                </div>
+            <% } %>
+
+            <% if (isCancelled) { %>
+                <div class="bg-slate-50 border border-slate-200 rounded-2xl p-4 text-xs text-slate-800 space-y-1">
+                    <div class="font-extrabold text-sm text-rose-700">
+                        <%= mbIsEn ? 'Cancellation & Refund Summary' : 'İptal ve İade Özeti' %>
+                    </div>
+                    <div>
+                        <strong><%= mbIsEn ? 'Refunded Amount:' : 'Geri Ödenen Tutar:' %></strong> €<%= refundedAmt.toLocaleString() %>
+                    </div>
+                    <% if (booking.cancelReason) { %>
+                        <p class="text-slate-600">
+                            <strong><%= mbIsEn ? 'Cancellation Reason:' : 'İptal Sebebi:' %></strong> <%= booking.cancelReason %>
+                        </p>
+                    <% } %>
+                    <p class="text-slate-600">
+                        <strong><%= mbIsEn ? 'Refund Reason:' : 'İade Gerekçesi:' %></strong> <%= refundReasonSummary %>
+                    </p>
+                </div>
+            <% } %>
 
             <% if (booking.packageName) { %>
                 <div class="bg-teal-50/80 border border-teal-200 rounded-xl px-4 py-3 text-xs text-teal-900 font-bold">
@@ -125,8 +253,8 @@
                     <span class="text-slate-400 block"><%= mbIsEn ? 'Payment & Balance' : 'Ödeme & Bakiye' %> (<%= methodLabel %>)</span>
                     <strong class="text-sm text-[#0B1F3A] block">
                         <%= mbIsEn
-                            ? ('Paid: €' + Number(booking.paidAmount || 0).toLocaleString() + ' / Total: €' + Number(booking.totalAmount || 0).toLocaleString())
-                            : ('Tahsil Edilen: €' + Number(booking.paidAmount || 0).toLocaleString() + ' / Toplam: €' + Number(booking.totalAmount || 0).toLocaleString()) %>
+                            ? ('Paid: €' + paidAmt.toLocaleString() + ' / Total: €' + totalAmt.toLocaleString())
+                            : ('Tahsil Edilen: €' + paidAmt.toLocaleString() + ' / Toplam: €' + totalAmt.toLocaleString()) %>
                     </strong>
                     <% if (refundedAmt > 0) { %>
                         <span class="text-[11px] font-bold text-amber-700 block">
@@ -148,15 +276,28 @@
                 </div>
             <% } %>
 
+            <% if (booking.notes) { %>
+                <div class="bg-amber-50/70 border border-amber-200 p-4 rounded-xl text-xs text-amber-900">
+                    <strong><%= mbIsEn ? 'Guest Note:' : 'Misafir Notu:' %></strong> <%= booking.notes %>
+                </div>
+            <% } %>
+
             <div class="flex flex-wrap justify-between items-center gap-3 pt-4 border-t border-slate-100">
                 <a href="/confirmation/<%= encodeURIComponent(booking.id) %>" class="px-5 py-2.5 bg-[#0B1F3A] text-white rounded-xl text-xs font-bold hover:bg-sky-900">
                     <%= mbIsEn ? 'View Official Voucher' : 'Resmi Voucher Görüntüle' %>
                 </a>
 
-                <% if (!isCancelled) { %>
-                    <form id="cancelBookingForm" action="/my-booking/cancel" method="POST" class="flex items-center gap-2">
+                <% if (!isCancelled && !isRejected) { %>
+                    <form id="cancelBookingForm" action="/my-booking/cancel" method="POST" class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full sm:w-auto">
                         <input type="hidden" name="pnr" value="<%= booking.id %>">
-                        <button type="submit" id="cancelBookingBtn" class="px-5 py-2.5 bg-rose-50 hover:bg-rose-100 text-rose-700 rounded-xl text-xs font-bold transition">
+                        <select name="cancelReason" id="cancelReasonSelect" class="px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-700 focus:outline-none focus:border-[#0B1F3A]">
+                            <option value="<%= mbIsEn ? 'Plan change' : 'Plan değişikliği' %>"><%= mbIsEn ? 'Plan change' : 'Plan değişikliği' %></option>
+                            <option value="<%= mbIsEn ? 'Travel / flight delay' : 'Seyahat / uçuş aksaklığı' %>"><%= mbIsEn ? 'Travel / flight delay' : 'Seyahat / uçuş aksaklığı' %></option>
+                            <option value="<%= mbIsEn ? 'Weather / personal reason' : 'Kişisel / hava durumu sebebi' %>"><%= mbIsEn ? 'Weather / personal reason' : 'Kişisel / hava durumu sebebi' %></option>
+                            <option value="other"><%= mbIsEn ? 'Other (specify below)' : 'Diğer (aşağıda belirtin)' %></option>
+                        </select>
+                        <input type="text" name="cancelReasonCustom" id="cancelReasonCustom" placeholder="<%= mbIsEn ? 'Cancellation reason...' : 'İptal sebebiniz...' %>" class="hidden px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl text-xs text-slate-800 focus:outline-none focus:border-[#0B1F3A]">
+                        <button type="submit" id="cancelBookingBtn" class="px-5 py-2.5 bg-rose-50 hover:bg-rose-100 text-rose-700 rounded-xl text-xs font-bold transition shrink-0">
                             <%= mbIsEn ? 'Cancel Booking' : 'Rezervasyonu İptal Et' %>
                         </button>
                     </form>
@@ -169,11 +310,33 @@
 <script>
     const isEnMb = document.documentElement.dataset.yvEn === '1';
     const cancelForm = document.getElementById('cancelBookingForm');
+    const reasonSelect = document.getElementById('cancelReasonSelect');
+    const reasonCustom = document.getElementById('cancelReasonCustom');
+
+    if (reasonSelect && reasonCustom) {
+        reasonSelect.addEventListener('change', function() {
+            const isOther = this.value === 'other';
+            reasonCustom.classList.toggle('hidden', !isOther);
+            if (isOther) reasonCustom.focus();
+        });
+    }
+
     if (cancelForm) {
         cancelForm.addEventListener('submit', function(e) {
+            if (reasonSelect && reasonSelect.value === 'other') {
+                const customVal = (reasonCustom && reasonCustom.value.trim()) || '';
+                if (!customVal) {
+                    e.preventDefault();
+                    alert(isEnMb ? 'Please enter a cancellation reason.' : 'Lütfen iptal sebebini yazın.');
+                    if (reasonCustom) reasonCustom.focus();
+                    return;
+                }
+                reasonSelect.value = customVal;
+            }
+
             const confirmMsg = isEnMb
-                ? 'Are you sure you want to cancel this booking? After cancellation, the refund process starts as pending.'
-                : 'Bu rezervasyonu iptal etmek istediğinize emin misiniz? İptal sonrası iade işlemi beklemede olarak kaydedilir.';
+                ? 'Are you sure you want to cancel this booking? Refunds are calculated according to the 7-day policy.'
+                : 'Bu rezervasyonu iptal etmek istediğinize emin misiniz? İade tutarı 7 günlük kurala göre hesaplanır.';
             const ok = confirm(confirmMsg);
             if (!ok) e.preventDefault();
         });
