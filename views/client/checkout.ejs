@@ -391,7 +391,7 @@
                         </div>
                         <div class="sm:col-span-2">
                             <label class="block text-[11px] font-bold text-slate-500 uppercase mb-1"><%= coIsEn ? 'CARD NUMBER *' : 'Kart Numarası *' %></label>
-                            <input type="text" id="cardNumberInput" name="cardNumber" maxlength="19" placeholder="4543 •••• •••• 1234" class="card-required-field w-full p-3 text-sm font-mono bg-white border border-slate-200 rounded-xl">
+                            <input type="text" id="cardNumberInput" name="cardNumber" maxlength="23" placeholder="4543 •••• •••• 1234" class="card-required-field w-full p-3 text-sm font-mono bg-white border border-slate-200 rounded-xl">
                         </div>
                         <div>
                             <label class="block text-[11px] font-bold text-slate-500 uppercase mb-1"><%= coIsEn ? 'EXPIRY DATE (MM/YY) *' : 'Son Kullanma (AA/YY) *' %></label>
@@ -404,16 +404,26 @@
                     </div>
                 </div>
 
-                <div id="ibanSection" class="hidden bg-teal-50/70 border border-teal-200 rounded-2xl p-5 space-y-2 text-xs text-slate-700">
+                <div id="ibanSection" class="hidden bg-teal-50/70 border border-teal-200 rounded-2xl p-5 space-y-2.5 text-xs text-slate-700">
                     <div class="font-bold text-teal-900 text-sm">
                         <%= coIsEn ? 'YachtVoyage Tourism & Yachting Inc. — Euro (EUR) Account' : 'YachtVoyage Turizm Yatçılık A.Ş. — Euro (EUR) Hesabı' %>
                     </div>
                     <div><strong><%= coIsEn ? 'Bank:' : 'Banka:' %></strong> Garanti BBVA — Göcek <%= coIsEn ? 'Branch' : 'Şubesi' %></div>
                     <div class="font-mono bg-white p-2.5 rounded-lg border border-teal-200 select-all">TR48 0006 2000 4120 0009 0845 12</div>
+                    <div class="bg-white/90 border border-teal-200/80 rounded-xl p-3 space-y-1 text-slate-800">
+                        <div class="flex justify-between">
+                            <span><%= coIsEn ? 'Amount to Transfer by Bank:' : 'Banka Havalesi / EFT ile Ödenecek:' %></span>
+                            <strong id="ibanTransferAmount" class="text-teal-900 font-extrabold">-</strong>
+                        </div>
+                        <div class="flex justify-between">
+                            <span><%= coIsEn ? 'Remaining Balance at Marina:' : 'Marinada Ödenecek Kalan Bakiye:' %></span>
+                            <strong id="ibanMarinaAmount" class="text-slate-900 font-bold">-</strong>
+                        </div>
+                    </div>
                     <p class="text-slate-500">
                         <%= coIsEn
-                            ? 'Your booking is held pending admin approval and bank transfer verification.'
-                            : 'Rezervasyonunuz admin onayı ve havale doğrulaması tamamlanana kadar beklemede tutulur.' %>
+                            ? 'No card charge is taken on the website (€0 charged now). Your booking is held pending admin approval and bank transfer verification.'
+                            : 'Sayfadan kartla anında tahsilat yapılmaz (€0 çekilir). Rezervasyonunuz admin onayı ve havale doğrulaması tamamlanana kadar beklemede tutulur.' %>
                     </p>
                 </div>
 
@@ -528,13 +538,19 @@
                     <span><%= coIsEn ? 'Total Amount' : 'Toplam Tutar' %></span>
                     <span id="sumTotal"><%= coIsEn ? 'Select dates' : 'Tarih seçin' %></span>
                 </div>
+
+                <div id="transferBreakdownRow" class="hidden justify-between text-teal-900 font-bold bg-teal-50 border border-teal-200/80 p-3 rounded-xl">
+                    <span><%= coIsEn ? 'Bank Transfer Amount' : 'Banka Havalesi / EFT Tutarı' %></span>
+                    <span id="sumTransferDue"><%= coIsEn ? 'Select dates' : 'Tarih seçin' %></span>
+                </div>
+
                 <div class="flex justify-between text-sky-800 font-bold bg-sky-50 p-3 rounded-xl">
-                    <span><%= coIsEn ? 'Pay Now' : 'Şimdi Ödenecek' %></span>
+                    <span id="payNowLabel"><%= coIsEn ? 'Pay Now' : 'Şimdi Ödenecek' %></span>
                     <span id="sumPayNow"><%= coIsEn ? 'Select dates' : 'Tarih seçin' %></span>
                 </div>
-                <div class="flex justify-between text-slate-400 text-[11px]">
+                <div class="flex justify-between text-slate-500 text-[11px]">
                     <span><%= coIsEn ? 'Remaining Balance at Marina' : 'Marinada Kalan Bakiye' %></span>
-                    <span id="sumRemaining"><%= coIsEn ? 'Select dates' : 'Tarih seçin' %></span>
+                    <span id="sumRemaining" class="font-semibold text-slate-700"><%= coIsEn ? 'Select dates' : 'Tarih seçin' %></span>
                 </div>
             </div>
         </div>
@@ -657,6 +673,7 @@
     const todayYmd = toYMD(nowRef);
 
     function showStep1Error(msg) {
+        hideInlineWarning();
         if (step1ErrorBox) {
             step1ErrorBox.textContent = msg;
             step1ErrorBox.classList.remove('hidden');
@@ -981,6 +998,29 @@
         }
     }
 
+    function isValidLuhn(digits) {
+        if (!/^\d{13,19}$/.test(digits)) return false;
+        let sum = 0;
+        let shouldDouble = false;
+        for (let i = digits.length - 1; i >= 0; i--) {
+            let d = Number(digits[i]);
+            if (shouldDouble) {
+                d *= 2;
+                if (d > 9) d -= 9;
+            }
+            sum += d;
+            shouldDouble = !shouldDouble;
+        }
+        return sum % 10 === 0;
+    }
+
+    function detectCardBrand(digits) {
+        if (/^3[47]/.test(digits)) return 'AMEX';
+        if (/^4/.test(digits)) return 'VISA';
+        if (/^(5[1-5]|222[1-9]|22[3-9]\d|2[3-6]\d{2}|27[01]\d|2720)/.test(digits)) return 'MC';
+        return 'OTHER';
+    }
+
     function isExpiryNotPast(mmYyStr) {
         const match = /^(\d{2})\/(\d{2})$/.exec(mmYyStr);
         if (!match) return false;
@@ -1003,14 +1043,18 @@
         const numDigits = cardNumberInput ? cardNumberInput.value.replace(/\D/g, '') : '';
         const expVal = cardExpInput ? cardExpInput.value.trim() : '';
         const cvvDigits = cardCvvInput ? cardCvvInput.value.replace(/\D/g, '') : '';
+        const brand = detectCardBrand(numDigits);
+        const expectedCvvLen = brand === 'AMEX' ? 4 : 3;
 
         if (!holderVal) {
             showCardError(isEnCo ? 'Please enter the cardholder name.' : 'Lütfen kart üzerindeki adı soyadı girin.');
             if (cardHolderInput) cardHolderInput.focus();
             return false;
         }
-        if (numDigits.length < 13 || numDigits.length > 19) {
-            showCardError(isEnCo ? 'Please enter a valid card number (13-19 digits).' : 'Lütfen geçerli bir kart numarası (13-19 hane) girin.');
+        if (!isValidLuhn(numDigits)) {
+            showCardError(isEnCo
+                ? 'Please enter a valid card number.'
+                : 'Lütfen geçerli bir kart numarası girin.');
             if (cardNumberInput) cardNumberInput.focus();
             return false;
         }
@@ -1021,8 +1065,10 @@
             if (cardExpInput) cardExpInput.focus();
             return false;
         }
-        if (cvvDigits.length < 3 || cvvDigits.length > 4) {
-            showCardError(isEnCo ? 'Please enter a 3 or 4 digit CVV security code.' : 'Lütfen 3 veya 4 haneli CVV güvenlik kodunu girin.');
+        if (cvvDigits.length !== expectedCvvLen) {
+            showCardError(isEnCo
+                ? ('Please enter a ' + expectedCvvLen + '-digit CVV security code.')
+                : ('Lütfen ' + expectedCvvLen + ' haneli CVV güvenlik kodunu girin.'));
             if (cardCvvInput) cardCvvInput.focus();
             return false;
         }
@@ -1041,7 +1087,7 @@
     if (cardNumberInput) {
         cardNumberInput.addEventListener('input', function() {
             hideCardError();
-            const val = this.value.replace(/\D/g, '').substring(0, 16);
+            const val = this.value.replace(/\D/g, '').substring(0, 19);
             this.value = val.replace(/(.{4})/g, '$1 ').trim();
             document.getElementById('previewCardNum').innerText = this.value || '•••• •••• •••• ••••';
         });
@@ -1282,11 +1328,19 @@
         const autoRow = document.getElementById('autoDiscountRow');
         const discRow = document.getElementById('discountRow');
         const adjRow = document.getElementById('planAdjustmentRow');
+        const transferRow = document.getElementById('transferBreakdownRow');
+        const payNowLabelEl = document.getElementById('payNowLabel');
+        const ibanTransferEl = document.getElementById('ibanTransferAmount');
+        const ibanMarinaEl = document.getElementById('ibanMarinaAmount');
 
         if (!hasValidDates) {
             autoRow.classList.add('hidden');
             discRow.classList.add('hidden');
             adjRow.classList.add('hidden');
+            if (transferRow) {
+                transferRow.classList.add('hidden');
+                transferRow.classList.remove('flex');
+            }
             document.getElementById('daysInput').value = hasFixedPackage && fixedPackageDays > 0 ? fixedPackageDays : 0;
             document.getElementById('nightsInput').value = 0;
             document.getElementById('discountInput').value = 0;
@@ -1301,6 +1355,8 @@
             document.getElementById('sumPayNow').innerText = selectDateLabel;
             document.getElementById('sumRemaining').innerText = selectDateLabel;
             document.getElementById('payBtnAmount').innerText = selectDateLabel;
+            if (ibanTransferEl) ibanTransferEl.innerText = selectDateLabel;
+            if (ibanMarinaEl) ibanMarinaEl.innerText = selectDateLabel;
             return;
         }
 
@@ -1335,12 +1391,14 @@
             adjRow.classList.add('hidden');
         }
 
-        const { isCard } = getSelectedMethodFlags();
+        const { isCard, isTransfer } = getSelectedMethodFlags();
         const plannedPayNow = isFullPayment
             ? grandTotal
             : Math.round(grandTotal * (installmentPct / 100));
         const payNow = isCard ? plannedPayNow : 0;
-        const remaining = Math.max(0, grandTotal - payNow);
+        const remaining = isTransfer
+            ? Math.max(0, grandTotal - plannedPayNow)
+            : Math.max(0, grandTotal - payNow);
 
         document.getElementById('daysInput').value = effectiveDays;
         document.getElementById('nightsInput').value = nightsCount;
@@ -1372,6 +1430,27 @@
         }
 
         document.getElementById('sumTotal').innerText = '€' + grandTotal.toLocaleString();
+
+        if (transferRow) {
+            if (isTransfer) {
+                transferRow.classList.remove('hidden');
+                transferRow.classList.add('flex');
+                document.getElementById('sumTransferDue').innerText = '€' + plannedPayNow.toLocaleString();
+            } else {
+                transferRow.classList.add('hidden');
+                transferRow.classList.remove('flex');
+            }
+        }
+
+        if (payNowLabelEl) {
+            payNowLabelEl.innerText = isCard
+                ? (isEnCo ? 'Pay Now' : 'Şimdi Ödenecek')
+                : (isEnCo ? 'Charged on Site Now' : 'Sayfadan Şimdi Çekilecek');
+        }
+
+        if (ibanTransferEl) ibanTransferEl.innerText = '€' + plannedPayNow.toLocaleString();
+        if (ibanMarinaEl) ibanMarinaEl.innerText = '€' + remaining.toLocaleString();
+
         document.getElementById('sumPayNow').innerText = '€' + payNow.toLocaleString();
         document.getElementById('sumRemaining').innerText = '€' + remaining.toLocaleString();
         document.getElementById('payBtnAmount').innerText = '€' + payNow.toLocaleString();
@@ -1565,7 +1644,6 @@
             const missMsg = isEnCo
                 ? 'Please fill in Full Name, Email and Phone fields.'
                 : 'Lütfen Ad Soyad, E-posta ve Telefon alanlarını doldurun.';
-            showInlineWarning(missMsg);
             showStep1Error(missMsg);
             if (!name && nameEl) nameEl.focus();
             else if (!email && emailEl) emailEl.focus();
