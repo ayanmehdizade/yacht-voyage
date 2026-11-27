@@ -1551,7 +1551,14 @@
         setStepTwoActive(false);
     });
 
+    let isBookingSubmitting = false;
+
     document.getElementById('bookingForm').addEventListener('submit', function(e) {
+        if (isBookingSubmitting) {
+            e.preventDefault();
+            return;
+        }
+
         if (!isDateSelectionValid(true)) {
             e.preventDefault();
             recalculate();
@@ -1564,7 +1571,29 @@
         if (contractAgreeCb && !contractAgreeCb.checked) {
             e.preventDefault();
             if (contractModal) contractModal.classList.remove('hidden');
+            return;
         }
+
+        recalculate();
+        isBookingSubmitting = true;
+
+        const submitBtn = this.querySelector('button[type="submit"]');
+        if (submitBtn) {
+            submitBtn.disabled = true;
+            submitBtn.classList.add('opacity-70', 'cursor-not-allowed');
+            submitBtn.dataset.originalHtml = submitBtn.innerHTML;
+            submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i>' +
+                (isEnCo ? 'Processing...' : 'Gönderiliyor...');
+        }
+
+        window.setTimeout(function() {
+            isBookingSubmitting = false;
+            if (submitBtn && submitBtn.dataset.originalHtml) {
+                submitBtn.disabled = false;
+                submitBtn.classList.remove('opacity-70', 'cursor-not-allowed');
+                submitBtn.innerHTML = submitBtn.dataset.originalHtml;
+            }
+        }, 10000);
     });
 
     syncCharterModeUI();

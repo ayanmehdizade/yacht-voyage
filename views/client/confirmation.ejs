@@ -170,17 +170,25 @@
                 </div>
             <% } %>
 
-            <% if (isCancelled && (refundRuleText || bRefunded > 0)) { %>
+            <% if (isCancelled) { %>
+                <% const confRefundReason = refundRuleText || (bRefunded > 0
+                    ? (confIsEn ? 'Refund applied per cancellation policy.' : 'İptal kuralına göre iade uygulandı.')
+                    : (confIsEn ? 'No refund due under cancellation policy.' : 'İptal kuralına göre iade uygulanmadı.')); %>
                 <div class="bg-slate-50 border border-slate-200 rounded-2xl p-4 text-xs text-slate-800 space-y-1">
                     <div class="font-extrabold text-sm text-rose-700">
-                        <%= confIsEn ? 'Refund Calculation & Policy' : 'İade Hesaplaması ve Kuralı' %>
+                        <%= confIsEn ? 'Cancellation & Refund Summary' : 'İptal ve İade Özeti' %>
                     </div>
                     <div>
                         <strong><%= confIsEn ? 'Refunded Amount:' : 'İade Edilen Tutar:' %></strong> €<%= bRefunded.toLocaleString() %>
                     </div>
-                    <% if (refundRuleText) { %>
-                        <p class="text-slate-600"><%= refundRuleText %></p>
+                    <% if (booking.cancelReason) { %>
+                        <p class="text-slate-600">
+                            <strong><%= confIsEn ? 'Cancellation Reason:' : 'İptal Sebebi:' %></strong> <%= booking.cancelReason %>
+                        </p>
                     <% } %>
+                    <p class="text-slate-600">
+                        <strong><%= confIsEn ? 'Refund Details:' : 'İade Detayı:' %></strong> <%= confRefundReason %>
+                    </p>
                 </div>
             <% } %>
 

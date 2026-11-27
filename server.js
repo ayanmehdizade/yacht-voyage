@@ -1168,24 +1168,32 @@ app.post('/checkout/confirm', (req, res) => {
     const normalizedCharter = charterType || (matchedTour ? 'Günlük VIP Koy Turu' : 'Özel Yat Kiralama (Konaklamalı)');
     const isDaily = isDailyCharter(normalizedCharter);
 
-    if (!isValidBookingRange(checkIn, checkOut, normalizedCharter)) {
+    const pkgDaysFromReq = Number(matchedTour && matchedTour.durationDays) || Number(req.body.packageDays || req.body.days) || 0;
+    const hasMultiDayPkg = !isDaily && pkgDaysFromReq >= 2;
+
+    const effectiveCheckOutForValidation = (!isDaily && hasMultiDayPkg && /^\d{4}-\d{2}-\d{2}$/.test(String(checkIn || '').trim()))
+        ? addDaysYMD(String(checkIn).trim(), pkgDaysFromReq - 1)
+        : checkOut;
+
+    if (!isValidBookingRange(checkIn, effectiveCheckOutForValidation, normalizedCharter)) {
         return res.redirect(`/checkout?yachtId=${yacht.id}&guests=${guestCount}&error=${encodeURIComponent('Lütfen bugün veya ileri bir tarih ve uygun bitiş tarihi seçin.')}`);
     }
 
     const startYmd = checkIn.trim();
-    const endYmd = (isDaily && (!checkOut || checkOut.trim() < startYmd))
+    const endYmd = isDaily
         ? startYmd
-        : checkOut.trim();
+        : (hasMultiDayPkg ? addDaysYMD(startYmd, pkgDaysFromReq - 1) : effectiveCheckOutForValidation.trim());
     const overlapEndYmd = isDaily ? addDaysYMD(startYmd, 1) : endYmd;
 
     const days = isDaily
-        ? Number(matchedTour && matchedTour.durationDays) || 1
-        : calcDays(startYmd, endYmd, normalizedCharter);
+        ? (Number(matchedTour && matchedTour.durationDays) || 1)
+        : (hasMultiDayPkg ? pkgDaysFromReq : calcDays(startYmd, endYmd, normalizedCharter));
 
     const conflict = db.bookings.find(b =>
         Number(b.yachtId) === Number(yacht.id) &&
         b.status !== 'İptal Edildi' &&
         b.status !== 'İptal' &&
+        b.status !== 'Reddedildi' &&
         isDateOverlap(startYmd, overlapEndYmd, b.checkIn, b.checkOut)
     );
 
@@ -1268,8 +1276,15 @@ app.post('/checkout/confirm', (req, res) => {
         : Math.round(finalAmount * (Number(planCfg.installmentPercent || 50) / 100));
 
     const paidAmt = isDeferredPayment ? 0 : plannedPaidAmt;
-    const bookingStatus = isDeferredPayment ? 'pending_admin_approval' : 'Beklemede';
-    const pnr = `YV2026-${Math.floor(1000 + Math.random() * 9000)}`;
+    const bookingStatus = 'Beklemede';
+    const paymentStatus = isDeferredPayment ? 'pending_payment' : (paidAmt >= finalAmount ? 'paid_full' : 'deposit_paid');
+
+    let pnr = '';
+    const existingIds = new Set((db.bookings || []).map(b => String(b.id || '').toUpperCase()));
+    do {
+        pnr = `YV2026-${Math.floor(1000 + Math.random() * 9000)}`;
+    } while (existingIds.has(pnr));
+
     const normEmail = (email || '').trim().toLowerCase();
 
     db.bookings.unshift({
@@ -1297,6 +1312,7 @@ app.post('/checkout/confirm', (req, res) => {
         paidAmount: paidAmt,
         refundedAmount: 0,
         refundStatus: 'none',
+        paymentStatus,
         paymentType: isFullPayment ? 'Tam Ödeme (İndirimli)' : 'Hisseli Ödeme',
         paymentMethod: selectedMethod,
         assignedCaptain: '',
@@ -1382,12 +1398,19 @@ app.post('/my-booking/cancel', (req, res) => {
         (!emailQuery || String(b.email || '').toLowerCase() === emailQuery)
     );
 
-    // /my-booking/cancel içinde:
     if (booking && verified && verified.pnr === booking.id.toUpperCase() && verified.email === String(booking.email || '').toLowerCase()) {
         booking.status = 'İptal Edildi';
+
+        const rawCancelReason = String(req.body.cancelReason || '').trim();
+        const customCancelReason = String(req.body.cancelReasonCustom || '').trim();
+        const resolvedCancelReason = rawCancelReason === 'other' ? customCancelReason : rawCancelReason;
+        if (resolvedCancelReason) {
+            booking.cancelReason = resolvedCancelReason;
+        }
+
         const daysLeft = daysUntilYMD(booking.checkIn);
         const currentPaid = Number(booking.paidAmount || 0);
-    
+
         if (currentPaid > 0) {
             if (daysLeft !== null && daysLeft >= 7) {
                 booking.refundedAmount = currentPaid;
@@ -1407,16 +1430,18 @@ app.post('/my-booking/cancel', (req, res) => {
             booking.refundStatus = 'no_payment';
             booking.refundRuleReason = 'Tahsil edilmiş ödeme bulunmadığı için iade tutarı €0.';
         }
-    
+
+        booking.remainingBalance = 0;
+
         saveDB(db);
         const msg = Number(booking.refundedAmount || 0) > 0
             ? `Rezervasyonunuz iptal edildi; 7+ gün kuralı kapsamında €${Number(booking.refundedAmount).toLocaleString()} iade talebi oluşturuldu.`
             : 'Rezervasyonunuz iptal edildi (7 günden az süre kaldığı için iade uygulanmadı).';
         return res.redirect(`/my-booking?pnr=${encodeURIComponent(pnr)}&msg=${encodeURIComponent(msg)}`);
     }
-    
+
     return res.redirect('/my-booking?err=' + encodeURIComponent('İptal işlemi için önce PNR ve e-posta ile doğrulama yapın.'));
-    });
+});
 
 app.get('/admin/login', (req, res) => {
     const db = loadDB();

@@ -571,12 +571,11 @@
                                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-slate-600">
                                             <div><strong>Telefon:</strong> <%= b.phone || '-' %></div>
                                             <div><strong>Ödeme Yöntemi:</strong> <%= b.paymentMethod || 'Belirtilmedi' %></div>
-                                            <div><strong>Ödeme Planı:</strong> <%= b.paymentPlan === 'full' ? 'Tam Ödeme' : ('Hisseli (%' + (b.installmentPercent || planCfg.installmentPercent) + ')') %></div>
+                                            <div><strong>Ödeme Planı:</strong> <%= (b.paymentPlan === 'full' || b.paymentType === 'Tam Ödeme (İndirimli)') ? 'Tam Ödeme' : ('Hisseli (%' + (b.installmentPercent || planCfg.installmentPercent) + ')') %></div>
                                             <div><strong>Ödeme Durumu:</strong> <%= payBadge %></div>
                                             <div><strong>Toplam Tutar:</strong> €<%= totAmt.toLocaleString() %></div>
                                             <div><strong>Ödenen Tutar:</strong> <span class="text-emerald-700 font-bold">€<%= payAmt.toLocaleString() %></span></div>
-                                            <div><strong>Kalan Bakiye:</strong> €<%= Math.max(0, totAmt - payAmt).toLocaleString() %></div>
-                                            <div><strong>Promokod:</strong> <%= b.promoCode || 'Yok' %></div>
+                                            <div><strong>Kalan Bakiye:</strong> €<%= isCanc ? 0 : Math.max(0, totAmt - payAmt).toLocaleString() %></div><div><strong>Promokod:</strong> <%= b.promoCode || 'Yok' %></div>
                                             <% if (isCanc) { %>
                                                 <%
                                                     const autoRefundReason = b.refundRuleReason
@@ -1195,6 +1194,23 @@
             }
         } catch (e) {}
     }
+
+    document.querySelectorAll('form[action*="/delete"], form[action*="/status"]').forEach(form => {
+    form.addEventListener('submit', function (e) {
+        const isDelete = this.action.includes('/delete');
+        const statusInput = this.querySelector('input[name="status"]');
+        const isCancelAction = statusInput && statusInput.value === 'İptal Edildi';
+        if (isDelete) {
+            if (!window.confirm('Bu kaydı silmek istediğinizden emin misiniz?')) {
+                e.preventDefault();
+            }
+        } else if (isCancelAction) {
+            if (!window.confirm('Bu rezervasyonu iptal etmek istediğinizden emin misiniz?')) {
+                e.preventDefault();
+            }
+        }
+    });
+});
 
     function toggleDesktopSidebar() {
         const nextState = !document.body.classList.contains('sidebar-collapsed');
